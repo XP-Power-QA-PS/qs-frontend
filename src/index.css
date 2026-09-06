@@ -1,5 +1,130 @@
 @import "tailwindcss";
 
+@theme {
+  --color-surface-container-high: #dce9ff;
+  --color-text-muted: #64748b;
+  --color-on-tertiary-fixed: #00174b;
+  --color-status-nominal: #059669;
+  --color-primary-container: #007bb9;
+  --color-tertiary-fixed-dim: #b4c5ff;
+  --color-on-secondary: #ffffff;
+  --color-on-primary-fixed-variant: #004b73;
+  --color-surface-dim: #cbdbf5;
+  --color-outline-variant: #bfc7d2;
+  --color-tertiary-fixed: #dbe1ff;
+  --color-secondary-fixed-dim: #bec6e0;
+  --color-secondary-fixed: #dae2fd;
+  --color-primary-fixed: #cce5ff;
+  --color-on-tertiary-container: #fefcff;
+  --color-surface-tint: #006398;
+  --color-surface-subtle: #f1f5f9;
+  --color-background: #f8f9ff;
+  --color-primary-fixed-dim: #93ccff;
+  --color-on-primary-container: #fdfcff;
+  --color-secondary: #565e74;
+  --color-surface-container-highest: #d3e4fe;
+  --color-on-surface: #0b1c30;
+  --color-on-primary-fixed: #001d31;
+  --color-inverse-surface: #213145;
+  --color-status-warning: #d97706;
+  --color-on-surface-variant: #3f4850;
+  --color-outline: #707881;
+  --color-surface-container-low: #eff4ff;
+  --color-surface-canvas: #f8fafc;
+  --color-text-primary: #0f172a;
+  --color-on-secondary-container: #5c647a;
+  --color-surface: #f8f9ff;
+  --color-on-primary: #ffffff;
+  --color-error-container: #ffdad6;
+  --color-tertiary: #0051d5;
+  --color-status-electric: #38bdf8;
+  --color-primary: #006194;
+  --color-on-background: #0b1c30;
+  --color-inverse-primary: #93ccff;
+  --color-text-secondary: #334155;
+  --color-surface-card: #ffffff;
+  --color-error: #ba1a1a;
+  --color-surface-container: #e5eeff;
+  --color-surface-container-lowest: #ffffff;
+  --color-status-critical: #dc2626;
+  --color-tertiary-container: #316bf3;
+  --color-on-error-container: #93000a;
+  --color-inverse-on-surface: #eaf1ff;
+  --color-surface-variant: #d3e4fe;
+  --color-border-subtle: #e2e8f0;
+  --color-on-error: #ffffff;
+  --color-on-tertiary: #ffffff;
+  --color-surface-bright: #f8f9ff;
+  --color-on-tertiary-fixed-variant: #003ea8;
+  --color-on-secondary-fixed-variant: #3f465c;
+  --color-on-secondary-fixed: #131b2e;
+  --color-secondary-container: #dae2fd;
+  --color-border-strong: #cbd5e1;
+
+  --spacing-gutter-tablet: 1.5rem;
+  --spacing-space-3xl: 4rem;
+  --spacing-space-sm: 0.5rem;
+  --spacing-space-2xl: 3rem;
+  --spacing-space-xs: 0.25rem;
+  --spacing-space-xl: 2rem;
+  --spacing-gutter-mobile: 1rem;
+  --spacing-space-md: 0.75rem;
+  --spacing-space-base: 1rem;
+  --spacing-margin-tablet: 2rem;
+  --spacing-space-2xs: 0.125rem;
+  --spacing-gutter-desktop: 1.5rem;
+  --spacing-margin-mobile: 1rem;
+  --spacing-space-lg: 1.5rem;
+  --spacing-margin-desktop: 3rem;
+  --spacing-container-max: 88rem;
+
+  --font-headline-md: "Plus Jakarta Sans";
+  --font-label-md: "Inter";
+  --font-display-hero: "Plus Jakarta Sans";
+  --font-technical-data: "Inter";
+  --font-headline-xl-mobile: "Plus Jakarta Sans";
+  --font-headline-sm: "Plus Jakarta Sans";
+  --font-headline-lg: "Plus Jakarta Sans";
+  --font-headline-xl: "Plus Jakarta Sans";
+  --font-headline-lg-mobile: "Plus Jakarta Sans";
+  --font-body-sm: "Inter";
+  --font-label-sm: "Inter";
+  --font-body-lg: "Inter";
+  --font-display-hero-mobile: "Plus Jakarta Sans";
+  --font-body-md: "Inter";
+
+  --text-headline-md: 20px;
+  --text-headline-md--line-height: 28px;
+  --text-headline-md--letter-spacing: -0.01em;
+  --text-headline-md--font-weight: 600;
+  
+  --text-label-md: 13px;
+  --text-label-md--line-height: 18px;
+  --text-label-md--letter-spacing: 0.01em;
+  --text-label-md--font-weight: 500;
+
+  --text-headline-sm: 16px;
+  --text-headline-sm--line-height: 24px;
+  --text-headline-sm--font-weight: 600;
+
+  --text-body-md: 14px;
+  --text-body-md--line-height: 22px;
+
+  --text-body-sm: 12px;
+  --text-body-sm--line-height: 18px;
+  --text-body-sm--letter-spacing: 0.005em;
+
+  --text-label-sm: 11px;
+  --text-label-sm--line-height: 16px;
+  --text-label-sm--letter-spacing: 0.03em;
+  --text-label-sm--font-weight: 600;
+
+  --text-technical-data: 12px;
+  --text-technical-data--line-height: 16px;
+  --text-technical-data--letter-spacing: 0.02em;
+  --text-technical-data--font-weight: 500;
+}
+
 :root {
   font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
   line-height: 1.5;

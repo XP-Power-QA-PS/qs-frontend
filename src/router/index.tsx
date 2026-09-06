@@ -5,6 +5,9 @@ import { UserManagement } from '@/pages/admin/UserManagement';
 import { RoleManagement } from '@/pages/admin/RoleManagement';
 import { ProtectedRoute } from './ProtectedRoute';
 import { AdminLayout } from '@/components/layout/AdminLayout';
+import { EquipmentPage } from '@/pages/EquipmentPage';
+import { EquipmentHistoryPage } from '@/pages/EquipmentHistoryPage';
+import { EquipmentTestDetailPage } from '@/pages/EquipmentTestDetailPage';
 
 export const router = createBrowserRouter([
   {
@@ -28,6 +31,18 @@ export const router = createBrowserRouter([
           {
             path: '/admin/roles',
             element: <RoleManagement />,
+          },
+          {
+            path: '/equipments',
+            element: <EquipmentPage />,
+          },
+          {
+            path: '/equipments/:equipmentId/history',
+            element: <EquipmentHistoryPage />,
+          },
+          {
+            path: '/equipments/:equipmentId/records/:recordId/daily',
+            element: <EquipmentTestDetailPage />,
           },
           {
             path: '/',

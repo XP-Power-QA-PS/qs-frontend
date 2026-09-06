@@ -77,7 +77,7 @@ export const apiClient = async (endpoint: string, options: RequestInit = {}): Pr
           fetch(endpoint, { ...config, headers: newHeaders })
             .then(res => {
               if (res.status === 204) return resolve({});
-              return res.json().then(resolve);
+              return res.text().then(text => resolve(text ? JSON.parse(text) : {}));
             })
             .catch(reject);
         });
@@ -99,6 +99,7 @@ export const apiClient = async (endpoint: string, options: RequestInit = {}): Pr
     return {};
   }
 
-  return response.json();
+  const text = await response.text();
+  return text ? JSON.parse(text) : {};
 };
 
