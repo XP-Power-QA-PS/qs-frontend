@@ -1,7 +1,16 @@
 import React from 'react';
 import { TrendingUp, Users, Coins, Percent, ArrowUp, ArrowDown } from 'lucide-react';
+import { authService } from '../services/authService';
+import { UserDashboard } from './UserDashboard';
 
 export const Dashboard: React.FC = () => {
+  const role = authService.getUserRole();
+  const isUser = role === 'ROLE_USER';
+
+  if (isUser) {
+    return <UserDashboard />;
+  }
+
   const statCards = [
     {
       title: 'TRAFFIC',
@@ -127,3 +136,4 @@ export const Dashboard: React.FC = () => {
     </div>
   );
 };
+
