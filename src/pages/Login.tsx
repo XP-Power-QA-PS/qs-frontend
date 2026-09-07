@@ -54,7 +54,7 @@ export const Login: React.FC = () => {
           <div className="max-w-[88rem] mx-auto flex items-center justify-between">
             <div className="flex items-center space-x-6">
               <a className="flex items-center space-x-3" href="#">
-                <img alt="XP Power Logo" className="h-8 w-auto object-contain" src="https://lh3.googleusercontent.com/aida/AEtjO1X9HBdnsATqHDue-W6NYHhAaI3f9JsXt_ZcjMhUHYfonDroS57EAuRCIA4slTcrGKXb-f3d-XzI-WYGVW-VJpobmjsSNUxR8h2WRExosvyRXn9jSK5CgSV9mdA6f4EwCtCsf36Jht0PY3G4F5AXaj_L6hlOwUOqthog9TNY3WMCpx0ncrMqRrE4LPXyPZA7v-hCcTLtwGiOWnQkLTxW1w82qhsDJiWv-p_ngPwFejNuhxf18ZD8uspqxeF0" />
+                <img alt="XP Power Logo" className="h-8 w-auto object-contain" src="/logo-xppower.png" />
                 <span className="hidden sm:inline-block h-4 w-px bg-border-strong"></span>
                 <span className="hidden sm:inline-block font-label-sm text-text-muted uppercase tracking-widest text-[11px]">Global Portal</span>
               </a>
@@ -96,11 +96,11 @@ export const Login: React.FC = () => {
                   <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-text-muted">
                     <span className="material-symbols-outlined text-[18px]">badge</span>
                   </div>
-                  <input 
-                    className="w-full pl-10 pr-4 py-2.5 bg-surface-subtle border border-border-subtle rounded-lg font-body-md text-text-primary placeholder:text-text-muted focus:outline-none focus:bg-surface-card focus:shadow-[0_0_0_2px_#006194] transition-all text-[14px]" 
-                    id="corp-email" 
-                    placeholder="name@xppower.com or corporate alias" 
-                    required 
+                  <input
+                    className="w-full pl-10 pr-4 py-2.5 bg-surface-subtle border border-border-subtle rounded-lg font-body-md text-text-primary placeholder:text-text-muted focus:outline-none focus:bg-surface-card focus:shadow-[0_0_0_2px_#006194] transition-all text-[14px]"
+                    id="corp-email"
+                    placeholder="name@xppower.com or corporate alias"
+                    required
                     type="text"
                     value={usernameOrEmail}
                     onChange={(e) => setUsernameOrEmail(e.target.value)}
@@ -120,17 +120,17 @@ export const Login: React.FC = () => {
                   <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-text-muted">
                     <span className="material-symbols-outlined text-[18px]">lock</span>
                   </div>
-                  <input 
-                    className="w-full pl-10 pr-10 py-2.5 bg-surface-subtle border border-border-subtle rounded-lg font-body-md text-text-primary placeholder:text-text-muted focus:outline-none focus:bg-surface-card focus:shadow-[0_0_0_2px_#006194] transition-all text-[14px]" 
-                    id="corp-password" 
-                    placeholder="••••••••••••••••" 
-                    required 
+                  <input
+                    className="w-full pl-10 pr-10 py-2.5 bg-surface-subtle border border-border-subtle rounded-lg font-body-md text-text-primary placeholder:text-text-muted focus:outline-none focus:bg-surface-card focus:shadow-[0_0_0_2px_#006194] transition-all text-[14px]"
+                    id="corp-password"
+                    placeholder="••••••••••••••••"
+                    required
                     type={showPassword ? "text" : "password"}
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                   />
-                  <button 
-                    className="absolute inset-y-0 right-0 pr-3 flex items-center text-text-muted hover:text-text-primary" 
+                  <button
+                    className="absolute inset-y-0 right-0 pr-3 flex items-center text-text-muted hover:text-text-primary"
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
                   >
@@ -147,8 +147,8 @@ export const Login: React.FC = () => {
                 <a className="font-label-md text-[12px] text-primary hover:underline" href="#">Forgot password / Key?</a>
               </div>
 
-              <button 
-                className="w-full mt-4 py-2.5 px-6 bg-[#0284C7] hover:bg-[#0369a1] text-white font-headline-sm text-[16px] rounded-lg shadow transition-colors flex items-center justify-center space-x-2" 
+              <button
+                className="w-full mt-4 py-2.5 px-6 bg-[#0284C7] hover:bg-[#0369a1] text-white font-headline-sm text-[16px] rounded-lg shadow transition-colors flex items-center justify-center space-x-2"
                 type="submit"
                 disabled={loading}
               >
