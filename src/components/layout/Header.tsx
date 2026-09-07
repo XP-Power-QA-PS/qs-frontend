@@ -15,11 +15,11 @@ export const Header: React.FC = () => {
 
   const renderUserLeftSection = () => {
     if (!isUser) return null;
-    
+
     if (location.pathname === '/dashboard') {
       return (
         <div className="flex items-center space-x-3 cursor-pointer" onClick={() => navigate('/dashboard')}>
-          <img alt="XP Power Logo" className="h-8 w-auto object-contain" src="https://lh3.googleusercontent.com/aida/AEtjO1X9HBdnsATqHDue-W6NYHhAaI3f9JsXt_ZcjMhUHYfonDroS57EAuRCIA4slTcrGKXb-f3d-XzI-WYGVW-VJpobmjsSNUxR8h2WRExosvyRXn9jSK5CgSV9mdA6f4EwCtCsf36Jht0PY3G4F5AXaj_L6hlOwUOqthog9TNY3WMCpx0ncrMqRrE4LPXyPZA7v-hCcTLtwGiOWnQkLTxW1w82qhsDJiWv-p_ngPwFejNuhxf18ZD8uspqxeF0" />
+          <img alt="XP Power Logo" className="h-8 w-auto object-contain" src="/logo-xppower.png" />
           <span className="hidden sm:inline-block h-4 w-px bg-border-strong"></span>
           <span className="hidden sm:inline-block font-label-sm text-text-muted uppercase tracking-widest text-[11px]">Global Portal</span>
         </div>
@@ -29,25 +29,25 @@ export const Header: React.FC = () => {
     const searchParams = new URLSearchParams(location.search);
     const floorId = searchParams.get('floorId');
     const floorName = searchParams.get('floorName');
-    
+
     const items = [
       { label: 'Dashboard', path: '/dashboard' }
     ];
 
     if (location.pathname.startsWith('/equipments')) {
       if (floorName && floorId) {
-         items.push({ label: 'Check ' + floorName, path: '/equipments?floorId=' + floorId + '&floorName=' + encodeURIComponent(floorName) });
+        items.push({ label: 'Check ' + floorName, path: '/equipments?floorId=' + floorId + '&floorName=' + encodeURIComponent(floorName) });
       } else {
-         items.push({ label: 'Equipments', path: '/equipments' });
+        items.push({ label: 'Equipments', path: '/equipments' });
       }
-      
+
       if (location.pathname.includes('/history')) {
         items.push({ label: 'Test History', path: location.pathname + location.search });
       } else if (location.pathname.includes('/records/')) {
         const match = location.pathname.match(/\/equipments\/([^/]+)\/records\//);
         if (match) {
-           const equipmentId = match[1];
-           items.push({ label: 'Test History', path: '/equipments/' + equipmentId + '/history' + location.search });
+          const equipmentId = match[1];
+          items.push({ label: 'Test History', path: '/equipments/' + equipmentId + '/history' + location.search });
         }
         items.push({ label: 'Test Details', path: location.pathname + location.search });
       }
@@ -59,7 +59,7 @@ export const Header: React.FC = () => {
           const isLast = index === items.length - 1;
           return (
             <React.Fragment key={index}>
-              <span 
+              <span
                 className={`cursor-pointer transition-colors ${isLast ? 'text-primary font-semibold' : 'hover:text-text-primary'}`}
                 onClick={() => navigate(item.path)}
               >
