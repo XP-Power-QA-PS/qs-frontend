@@ -52,9 +52,9 @@ export const Login: React.FC = () => {
         {/* Header */}
         <header className="relative z-20 w-full border-b border-border-subtle bg-surface-card/85 backdrop-blur-md px-margin-mobile md:px-margin-tablet lg:px-margin-desktop py-3.5">
           <div className="max-w-[88rem] mx-auto flex items-center justify-between">
-            <div className="flex items-center space-x-6">
-              <a className="flex items-center space-x-3" href="#">
-                <img alt="XP Power Logo" className="h-8 w-auto object-contain" src="/logo-xppower.png" />
+            <div className="flex items-center space-x-3 shrink-0">
+              <a className="flex items-center space-x-2.5 shrink-0" href="#">
+                <img alt="XP Power Logo" className="h-7 sm:h-8 w-auto object-contain shrink-0" src="/logo-xppower.png" />
                 <span className="hidden sm:inline-block h-4 w-px bg-border-strong"></span>
                 <span className="hidden sm:inline-block font-label-sm text-text-muted uppercase tracking-widest text-[11px]">Global Portal</span>
               </a>
@@ -63,10 +63,10 @@ export const Login: React.FC = () => {
                 <span className="font-semibold text-text-primary">Mission-Critical Access</span>
               </div>
             </div>
-            <div className="flex items-center space-x-3">
-              <div className="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-surface-subtle border border-border-subtle">
-                <span className="w-2 h-2 rounded-full bg-status-nominal animate-pulse"></span>
-                <span className="font-label-sm text-text-secondary text-[11px]">All Systems Operational</span>
+            <div className="flex items-center space-x-2 shrink-0">
+              <div className="inline-flex items-center space-x-1.5 px-2.5 py-1 rounded-full bg-surface-subtle border border-border-subtle">
+                <span className="w-2 h-2 rounded-full bg-status-nominal animate-pulse shrink-0"></span>
+                <span className="font-label-sm text-text-secondary text-[10px] sm:text-[11px] whitespace-nowrap">Operational</span>
               </div>
             </div>
           </div>
@@ -91,17 +91,19 @@ export const Login: React.FC = () => {
 
             <form className="space-y-4" onSubmit={handleSubmit}>
               <div className="space-y-1.5">
-                <label className="block font-label-md text-text-primary text-[13px]" htmlFor="corp-email">Employee ID / Email</label>
+                <label className="block font-label-md text-text-primary text-xs sm:text-[13px] font-medium" htmlFor="corp-email">Employee ID / Email</label>
                 <div className="relative">
                   <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-text-muted">
                     <span className="material-symbols-outlined text-[18px]">badge</span>
                   </div>
                   <input
-                    className="w-full pl-10 pr-4 py-2.5 bg-surface-subtle border border-border-subtle rounded-lg font-body-md text-text-primary placeholder:text-text-muted focus:outline-none focus:bg-surface-card focus:shadow-[0_0_0_2px_#006194] transition-all text-[14px]"
+                    className="w-full pl-10 pr-4 py-3 sm:py-2.5 bg-surface-subtle border border-border-subtle rounded-xl font-body-md text-text-primary placeholder:text-text-muted focus:outline-none focus:bg-surface-card focus:border-primary focus:ring-1 focus:ring-primary transition-all text-[16px] sm:text-[14px] min-h-[46px]"
                     id="corp-email"
                     placeholder="name@xppower.com or corporate alias"
                     required
                     type="text"
+                    inputMode="email"
+                    autoComplete="username"
                     value={usernameOrEmail}
                     onChange={(e) => setUsernameOrEmail(e.target.value)}
                   />
@@ -110,8 +112,8 @@ export const Login: React.FC = () => {
 
               <div className="space-y-1.5">
                 <div className="flex items-center justify-between">
-                  <label className="block font-label-md text-text-primary text-[13px]" htmlFor="corp-password">Enterprise Password</label>
-                  <button className="inline-flex items-center space-x-1 text-primary hover:text-primary-container font-label-sm text-[12px] transition-colors" type="button">
+                  <label className="block font-label-md text-text-primary text-xs sm:text-[13px] font-medium" htmlFor="corp-password">Enterprise Password</label>
+                  <button className="inline-flex items-center space-x-1 text-primary hover:text-primary-container font-label-sm text-[11px] sm:text-[12px] transition-colors" type="button">
                     <span className="material-symbols-outlined text-[14px]">key</span>
                     <span>Use Passkey / Token</span>
                   </button>
@@ -121,16 +123,17 @@ export const Login: React.FC = () => {
                     <span className="material-symbols-outlined text-[18px]">lock</span>
                   </div>
                   <input
-                    className="w-full pl-10 pr-10 py-2.5 bg-surface-subtle border border-border-subtle rounded-lg font-body-md text-text-primary placeholder:text-text-muted focus:outline-none focus:bg-surface-card focus:shadow-[0_0_0_2px_#006194] transition-all text-[14px]"
+                    className="w-full pl-10 pr-10 py-3 sm:py-2.5 bg-surface-subtle border border-border-subtle rounded-xl font-body-md text-text-primary placeholder:text-text-muted focus:outline-none focus:bg-surface-card focus:border-primary focus:ring-1 focus:ring-primary transition-all text-[16px] sm:text-[14px] min-h-[46px]"
                     id="corp-password"
                     placeholder="••••••••••••••••"
                     required
                     type={showPassword ? "text" : "password"}
+                    autoComplete="current-password"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                   />
                   <button
-                    className="absolute inset-y-0 right-0 pr-3 flex items-center text-text-muted hover:text-text-primary"
+                    className="absolute inset-y-0 right-0 pr-3 flex items-center text-text-muted hover:text-text-primary min-h-[44px] min-w-[44px] justify-center"
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
                   >
@@ -139,7 +142,7 @@ export const Login: React.FC = () => {
                 </div>
               </div>
 
-              <div className="flex items-center justify-between pt-0.5">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pt-0.5">
                 <label className="flex items-center space-x-2 cursor-pointer select-none">
                   <input className="w-4 h-4 rounded text-primary focus:ring-0 bg-surface-subtle accent-[#006194]" type="checkbox" />
                   <span className="font-body-sm text-text-secondary text-[12px]">Remember this device (30 days)</span>
@@ -148,7 +151,7 @@ export const Login: React.FC = () => {
               </div>
 
               <button
-                className="w-full mt-4 py-2.5 px-6 bg-[#0284C7] hover:bg-[#0369a1] text-white font-headline-sm text-[16px] rounded-lg shadow transition-colors flex items-center justify-center space-x-2"
+                className="w-full mt-4 py-3 px-6 bg-[#0284C7] hover:bg-[#0369a1] active:bg-[#024a73] text-white font-headline-sm font-semibold text-[15px] sm:text-[16px] rounded-xl shadow-xs transition-all flex items-center justify-center space-x-2 min-h-[48px]"
                 type="submit"
                 disabled={loading}
               >
