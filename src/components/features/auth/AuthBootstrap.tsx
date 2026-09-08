@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { authService } from '@/services/authService';
+import { authService } from '@/services/auth';
 // Here you would typically dispatch to Redux or update Context
 // For now, it's just a lifecycle wrapper that runs once.
 

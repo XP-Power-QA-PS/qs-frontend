@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { authService } from '@/services/authService';
+import { authService } from '@/services/auth';
 import { useNavigate, useLocation } from 'react-router-dom';
 
 interface HeaderProps {
@@ -113,7 +113,7 @@ export const Header: React.FC<HeaderProps> = ({ onToggleSidebar }) => {
 
   return (
     <header className="sticky top-0 z-30 w-full border-b border-border-subtle bg-surface-card/90 backdrop-blur-md px-margin-mobile md:px-margin-tablet lg:px-margin-desktop py-2.5 sm:py-3.5 shadow-xs transition-all">
-      <div className="flex items-center justify-between max-w-[88rem] mx-auto w-full">
+      <div className="flex items-center justify-between max-w-[96rem] mx-auto w-full">
         {/* Left Section */}
         <div className="flex items-center gap-2">
           {!isUser && (

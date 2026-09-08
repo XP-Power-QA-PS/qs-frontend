@@ -1,14 +1,14 @@
 import React from 'react';
 import { TrendingUp, Users, Coins, Percent, ArrowUp, ArrowDown } from 'lucide-react';
-import { authService } from '../services/authService';
-import { UserDashboard } from './UserDashboard';
+import { authService } from '@/services/auth';
+import { FloorDashboardPage } from '@/pages/gonogo/FloorDashboardPage';
 
-export const Dashboard: React.FC = () => {
+export const DashboardPage: React.FC = () => {
   const role = authService.getUserRole();
   const isUser = role === 'ROLE_USER';
 
   if (isUser) {
-    return <UserDashboard />;
+    return <FloorDashboardPage />;
   }
 
   const statCards = [
@@ -136,3 +136,5 @@ export const Dashboard: React.FC = () => {
     </div>
   );
 };
+
+export const Dashboard = DashboardPage;

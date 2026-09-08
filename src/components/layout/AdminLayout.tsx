@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Outlet } from 'react-router-dom';
 import { Sidebar } from './Sidebar';
 import { Header } from './Header';
-import { authService } from '../../services/authService';
+import { authService } from '@/services/auth';
 
 export const AdminLayout: React.FC = () => {
   const role = authService.getUserRole();
@@ -18,11 +18,11 @@ export const AdminLayout: React.FC = () => {
         />
       )}
 
-      <div className={`${!isUser ? 'md:ml-64' : ''} min-h-screen flex flex-col transition-all duration-300`}>
+      <div className={`${!isUser ? 'md:ml-64' : ''} min-h-screen flex flex-col transition-all duration-300 w-full max-w-full overflow-x-hidden min-w-0`}>
         <Header onToggleSidebar={() => setIsSidebarOpen((prev) => !prev)} />
 
-        {/* Main Content Area */}
-        <main className="flex-1 p-3.5 sm:p-5 md:p-6">
+        {/* Main Content Area - Master Layout for Horizontal Margins */}
+        <main className="flex-1 w-full max-w-full lg:max-w-[96rem] mx-auto px-margin-mobile md:px-margin-tablet lg:px-margin-desktop pt-1 sm:pt-2 pb-6 sm:pb-8 min-w-0">
           <Outlet />
         </main>
       </div>

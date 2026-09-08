@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
-import { authService } from '@/services/authService';
+import { authService } from '@/services/auth';
 
-export const Login: React.FC = () => {
+export const LoginPage: React.FC = () => {
   const navigate = useNavigate();
   const [usernameOrEmail, setUsernameOrEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -192,3 +192,5 @@ export const Login: React.FC = () => {
     </main>
   );
 };
+
+export const Login = LoginPage;

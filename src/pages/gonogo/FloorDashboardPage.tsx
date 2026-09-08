@@ -6,11 +6,11 @@ import {
   Search,
   ChevronRight
 } from 'lucide-react';
-import { equipmentService } from '../services/equipmentService';
-import type { Floor } from '../types/equipment.types';
+import { equipmentService } from '@/services/equipment';
+import type { Floor } from '@/types/equipment';
 import toast from 'react-hot-toast';
 
-export const UserDashboard: React.FC = () => {
+export const FloorDashboardPage: React.FC = () => {
   const navigate = useNavigate();
   const [floors, setFloors] = useState<Floor[]>([]);
   const [loading, setLoading] = useState(true);
@@ -35,11 +35,11 @@ export const UserDashboard: React.FC = () => {
   );
 
   return (
-    <div className="min-h-screen bg-surface-canvas font-body-md">
-      <div className="max-w-[88rem] mx-auto py-4 sm:py-space-xl px-2 sm:px-margin-mobile md:px-margin-tablet lg:px-margin-desktop">
+    <div className="w-full font-body-md">
+      <div className="w-full pt-0.5 sm:pt-1 pb-6 sm:pb-space-xl">
 
         {/* Header Section */}
-        <div className="mb-6 sm:mb-space-xl border-b border-border-subtle pb-4 sm:pb-space-lg">
+        <div className="mb-4 sm:mb-5 border-b border-border-subtle pb-3 sm:pb-4">
           <div className="flex items-center space-x-3 mb-2">
             <div className="p-2 sm:p-2.5 bg-primary/10 rounded-xl border border-primary/20 text-primary shrink-0">
               <MonitorCheck className="w-6 h-6 sm:w-7 sm:h-7" />
@@ -78,7 +78,7 @@ export const UserDashboard: React.FC = () => {
               <div className="flex items-center justify-between mb-4 sm:mb-space-lg">
                 <h2 className="text-base sm:text-lg font-bold text-text-primary flex items-center space-x-2">
                   <span className="w-1.5 h-5 sm:h-6 bg-primary rounded-full"></span>
-                  <span>GO/NOGO Floors</span>
+                  <span>GO/NOGO</span>
                   <span className="text-xs font-semibold text-text-muted bg-surface-subtle px-2 py-0.5 rounded-full border border-border-subtle">
                     {filteredFloors.length}
                   </span>
@@ -128,3 +128,5 @@ export const UserDashboard: React.FC = () => {
     </div>
   );
 };
+
+export const UserDashboard = FloorDashboardPage;

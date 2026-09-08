@@ -1,6 +1,6 @@
 import { RouterProvider } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
-import { AuthBootstrap } from '@/pages/commons/AuthBootstrap';
+import { AuthBootstrap } from '@/components/features/auth/AuthBootstrap';
 import { router } from '@/router';
 import { ViewModeProvider } from '@/context/ViewModeContext';
 

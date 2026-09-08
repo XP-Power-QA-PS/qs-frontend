@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { Edit, Trash2, Search, Plus, ChevronDown, Check } from 'lucide-react';
-import { adminService } from '../../services/adminService';
-import type { User } from '../../types/admin.types';
+import { adminService } from '@/services/admin';
+import type { User } from '@/types/admin';
 import toast from 'react-hot-toast';
-import { useViewMode } from '../../context/ViewModeContext';
-import { ViewModeToggle } from '../../components/common/ViewModeToggle';
+import { useViewMode } from '@/context/ViewModeContext';
+import { ViewModeToggle } from '@/components/common/ViewModeToggle';
 
-export const UserManagement: React.FC = () => {
+export const UserManagementPage: React.FC = () => {
   const [users, setUsers] = useState<User[]>([]);
   const [page, setPage] = useState(0);
   const [size] = useState(10);
@@ -148,7 +148,7 @@ export const UserManagement: React.FC = () => {
   const { viewMode } = useViewMode();
 
   return (
-    <div className="p-2 sm:p-4 max-w-7xl mx-auto font-body-md">
+    <div className="w-full pt-0.5 sm:pt-1 pb-6 font-body-md">
       {/* Header & Toolbar */}
       <div className="flex flex-col gap-4 mb-6">
         {/* Top bar: Title + Tab Switcher */}
@@ -258,19 +258,19 @@ export const UserManagement: React.FC = () => {
       </div>
 
       {/* Main Content Area: Cards vs Table */}
-      <div className="bg-white rounded-xl shadow-xs border border-gray-100 overflow-hidden">
-        {loading ? (
-          <div className="py-20 flex justify-center items-center">
-            <span className="material-symbols-outlined text-blue-600 text-[32px] animate-spin">progress_activity</span>
-          </div>
-        ) : users.length === 0 ? (
-          <div className="py-16 text-center text-gray-500">
-            <p className="text-base font-medium">No users found</p>
-            <p className="text-xs text-gray-400 mt-1">Try adjusting your search or filters.</p>
-          </div>
-        ) : viewMode === 'card' ? (
-          /* Cards Directory View (Mobile Optimized) */
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5 p-3 sm:p-4">
+      {loading ? (
+        <div className="bg-white rounded-xl shadow-xs border border-gray-100 overflow-hidden py-20 flex justify-center items-center">
+          <span className="material-symbols-outlined text-blue-600 text-[32px] animate-spin">progress_activity</span>
+        </div>
+      ) : users.length === 0 ? (
+        <div className="bg-white rounded-xl shadow-xs border border-gray-100 overflow-hidden py-16 text-center text-gray-500">
+          <p className="text-base font-medium">No users found</p>
+          <p className="text-xs text-gray-400 mt-1">Try adjusting your search or filters.</p>
+        </div>
+      ) : viewMode === 'card' ? (
+        /* Cards Directory View (Mobile Optimized) */
+        <div className="space-y-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5">
             {users.map((user) => (
               <div key={user.id} className="p-4 rounded-xl border border-gray-200 hover:border-blue-400 shadow-2xs hover:shadow-md transition-all flex flex-col justify-between bg-white">
                 <div>
@@ -320,13 +320,13 @@ export const UserManagement: React.FC = () => {
                     <>
                       <button
                         onClick={() => handleRestore(user.id)}
-                        className="px-3 py-1.5 text-xs font-semibold text-green-700 bg-green-50 hover:bg-green-100 rounded-lg transition-colors"
+                        className="px-3 py-1.5 text-xs font-semibold text-green-700 bg-green-50 hover:bg-green-100 rounded-lg transition-colors min-h-[38px]"
                       >
                         Restore
                       </button>
                       <button
                         onClick={() => handlePermanentDelete(user.id)}
-                        className="px-3 py-1.5 text-xs font-semibold text-red-700 bg-red-50 hover:bg-red-100 rounded-lg transition-colors"
+                        className="px-3 py-1.5 text-xs font-semibold text-red-700 bg-red-50 hover:bg-red-100 rounded-lg transition-colors min-h-[38px]"
                       >
                         Permanent Delete
                       </button>
@@ -336,55 +336,88 @@ export const UserManagement: React.FC = () => {
               </div>
             ))}
           </div>
-        ) : (
-          /* Table View with Horizontal Scrolling */
-          <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse min-w-[800px]">
-              <thead>
-                <tr className="bg-gray-50/50 border-b border-gray-100">
-                  <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">ID</th>
-                  <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">ACCOUNT MEMBER</th>
-                  <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">ROLE</th>
-                  <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">STATUS</th>
-                  <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">PHONE NUMBER</th>
-                  <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">CREATED DATE</th>
-                  <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider text-right">ACTIONS</th>
+
+          {/* Pagination Footer for Card Mode */}
+          {users.length > 0 && (
+            <div className="bg-white rounded-xl shadow-xs border border-gray-200 px-4 sm:px-6 py-3.5 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs sm:text-sm">
+              <span className="text-gray-500 text-center sm:text-left">
+                Showing <span className="font-semibold text-gray-900">{page * size + 1}</span> to <span className="font-semibold text-gray-900">{Math.min((page + 1) * size, totalElements)}</span> of <span className="font-semibold text-gray-900">{totalElements}</span> results
+              </span>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => setPage(p => Math.max(0, p - 1))}
+                  disabled={page === 0}
+                  className="px-3 py-1.5 border border-gray-200 rounded-lg disabled:opacity-50 hover:bg-gray-50 transition-colors min-h-[36px]"
+                >
+                  Previous
+                </button>
+                <span className="px-2 font-medium text-gray-700">
+                  Page {page + 1} of {Math.max(1, totalPages)}
+                </span>
+                <button
+                  onClick={() => setPage(p => Math.min(totalPages - 1, p + 1))}
+                  disabled={page >= totalPages - 1}
+                  className="px-3 py-1.5 border border-gray-200 rounded-lg disabled:opacity-50 hover:bg-gray-50 transition-colors min-h-[36px]"
+                >
+                  Next
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+      ) : (
+        /* Table View with Horizontal Scrolling */
+        <div className="bg-white rounded-xl shadow-xs border border-gray-100 overflow-hidden max-w-full w-full">
+          <div className="overflow-x-auto max-w-full w-full">
+            <table className="w-full text-left border-collapse text-sm min-w-[700px]">
+              <thead className="bg-gray-50/50 border-b border-gray-100 text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                <tr>
+                  <th className="px-6 py-4">User</th>
+                  <th className="px-6 py-4">Email</th>
+                  <th className="px-6 py-4">Roles</th>
+                  <th className="px-6 py-4">Status</th>
+                  <th className="px-6 py-4">Created Date</th>
+                  <th className="px-6 py-4 text-right">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100">
                 {users.map((user) => (
                   <tr key={user.id} className="hover:bg-gray-50/50 transition-colors">
-                    <td className="px-6 py-4 text-sm font-medium text-gray-900">#{user.id.substring(0, 8)}</td>
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-full bg-blue-50 text-blue-600 font-bold flex items-center justify-center text-xs">
+                        <div className="w-9 h-9 rounded-full bg-blue-50 text-blue-600 font-bold flex items-center justify-center shrink-0 border border-blue-100">
                           {getInitial(user)}
                         </div>
                         <div>
-                          <div className="text-sm font-medium text-gray-900">{getName(user)}</div>
-                          <div className="text-xs text-gray-400">{user.email}</div>
+                          <div className="font-semibold text-gray-900">{getName(user)}</div>
+                          <div className="text-xs text-gray-400">@{user.username}</div>
                         </div>
                       </div>
                     </td>
-                    <td className="px-6 py-4 text-sm text-gray-600">
-                      <div className="flex gap-1 flex-wrap">
-                        {user.roles && user.roles.map((r, i) => (
-                          <span key={i} className="px-2 py-0.5 text-xs bg-gray-100 text-gray-600 rounded">
-                            {r.replace('ROLE_', '')}
-                          </span>
-                        ))}
+                    <td className="px-6 py-4 text-gray-600">{user.email || 'N/A'}</td>
+                    <td className="px-6 py-4">
+                      <div className="flex flex-wrap gap-1">
+                        {user.roles && user.roles.length > 0 ? (
+                          user.roles.map(role => (
+                            <span key={role} className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-50 text-blue-700 border border-blue-100">
+                              {role.replace('ROLE_', '')}
+                            </span>
+                          ))
+                        ) : (
+                          <span className="text-gray-400 text-xs">No role</span>
+                        )}
                       </div>
                     </td>
                     <td className="px-6 py-4">
-                      <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${user.enabled ? 'bg-green-50 text-green-700' : 'bg-gray-100 text-gray-600'}`}>
+                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${user.enabled ? 'bg-green-50 text-green-700' : 'bg-gray-100 text-gray-600'
+                        }`}>
                         {user.enabled ? 'Active' : 'Inactive'}
                       </span>
                     </td>
-                    <td className="px-6 py-4 text-sm text-gray-500">{user.phoneNumber || 'N/A'}</td>
-                    <td className="px-6 py-4 text-sm text-gray-500">
+                    <td className="px-6 py-4 text-gray-500 text-xs">
                       {user.createdAt ? new Date(user.createdAt).toLocaleDateString() : 'N/A'}
                     </td>
-                    <td className="px-6 py-4 text-right text-sm">
+                    <td className="px-6 py-4 text-right">
                       <div className="flex items-center justify-end gap-2">
                         {currentTab === 'Active' ? (
                           <>
@@ -428,36 +461,36 @@ export const UserManagement: React.FC = () => {
               </tbody>
             </table>
           </div>
-        )}
 
-        {/* Pagination Footer */}
-        {!loading && users.length > 0 && (
-          <div className="px-4 sm:px-6 py-3.5 border-t border-gray-100 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs sm:text-sm">
-            <span className="text-gray-500 text-center sm:text-left">
-              Showing <span className="font-semibold text-gray-900">{page * size + 1}</span> to <span className="font-semibold text-gray-900">{Math.min((page + 1) * size, totalElements)}</span> of <span className="font-semibold text-gray-900">{totalElements}</span> results
-            </span>
-            <div className="flex items-center gap-2">
-              <button
-                onClick={() => setPage(p => Math.max(0, p - 1))}
-                disabled={page === 0}
-                className="px-3 py-1.5 border border-gray-200 rounded-lg disabled:opacity-50 hover:bg-gray-50 transition-colors min-h-[36px]"
-              >
-                Previous
-              </button>
-              <span className="px-2 font-medium text-gray-700">
-                Page {page + 1} of {Math.max(1, totalPages)}
+          {/* Pagination Footer */}
+          {!loading && users.length > 0 && (
+            <div className="px-4 sm:px-6 py-3.5 border-t border-gray-100 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs sm:text-sm">
+              <span className="text-gray-500 text-center sm:text-left">
+                Showing <span className="font-semibold text-gray-900">{page * size + 1}</span> to <span className="font-semibold text-gray-900">{Math.min((page + 1) * size, totalElements)}</span> of <span className="font-semibold text-gray-900">{totalElements}</span> results
               </span>
-              <button
-                onClick={() => setPage(p => Math.min(totalPages - 1, p + 1))}
-                disabled={page >= totalPages - 1}
-                className="px-3 py-1.5 border border-gray-200 rounded-lg disabled:opacity-50 hover:bg-gray-50 transition-colors min-h-[36px]"
-              >
-                Next
-              </button>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => setPage(p => Math.max(0, p - 1))}
+                  disabled={page === 0}
+                  className="px-3 py-1.5 border border-gray-200 rounded-lg disabled:opacity-50 hover:bg-gray-50 transition-colors min-h-[36px]"
+                >
+                  Previous
+                </button>
+                <span className="px-2 font-medium text-gray-700">
+                  Page {page + 1} of {Math.max(1, totalPages)}
+                </span>
+                <button
+                  onClick={() => setPage(p => Math.min(totalPages - 1, p + 1))}
+                  disabled={page >= totalPages - 1}
+                  className="px-3 py-1.5 border border-gray-200 rounded-lg disabled:opacity-50 hover:bg-gray-50 transition-colors min-h-[36px]"
+                >
+                  Next
+                </button>
+              </div>
             </div>
-          </div>
-        )}
-      </div>
+          )}
+        </div>
+      )}
 
       {/* Add Modal */}
       {isAddOpen && (
@@ -605,3 +638,5 @@ export const UserManagement: React.FC = () => {
     </div>
   );
 };
+
+export const UserManagement = UserManagementPage;

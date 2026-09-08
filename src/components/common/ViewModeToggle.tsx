@@ -12,12 +12,16 @@ export const ViewModeToggle: React.FC<ViewModeToggleProps> = ({ className = '', 
   const isSmall = size === 'sm';
 
   return (
-    <div className={`flex items-center bg-surface-subtle p-1 rounded-xl border border-border-subtle shadow-2xs ${className}`}>
+    <div
+      className={`inline-flex items-center bg-surface-subtle p-1 rounded-xl border border-border-subtle shadow-2xs ${
+        isSmall ? 'h-9' : 'h-10'
+      } ${className}`}
+    >
       <button
         type="button"
         onClick={() => setViewMode('card')}
-        className={`flex items-center gap-1.5 rounded-lg text-xs font-semibold transition-all ${
-          isSmall ? 'px-2.5 py-1 min-h-[30px]' : 'px-3 py-1.5 min-h-[34px]'
+        className={`inline-flex items-center gap-1.5 rounded-lg text-xs font-semibold transition-all h-full ${
+          isSmall ? 'px-2.5' : 'px-3'
         } ${
           viewMode === 'card'
             ? 'bg-surface-card text-primary shadow-xs font-bold'
@@ -32,9 +36,7 @@ export const ViewModeToggle: React.FC<ViewModeToggleProps> = ({ className = '', 
       <button
         type="button"
         onClick={() => setViewMode('table')}
-        className={`flex items-center gap-1.5 rounded-lg text-xs font-semibold transition-all ${
-          isSmall ? 'px-2.5 py-1 min-h-[30px]' : 'px-3 py-1.5 min-h-[34px]'
-        } ${
+        className={`inline-flex items-center gap-1.5 rounded-lg text-xs font-semibold transition-all h-full px-3 ${
           viewMode === 'table'
             ? 'bg-surface-card text-primary shadow-xs font-bold'
             : 'text-text-muted hover:text-text-primary'
