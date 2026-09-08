@@ -1,6 +1,6 @@
-import type { AuthResponse, LoginRequest } from '../types/auth.types';
-import { AUTH_CONSTANTS } from '../constants/app.constants';
-import { apiClient } from '../config/api';
+import type { AuthResponse, LoginRequest } from '@/types/auth';
+import { AUTH_CONSTANTS } from '@/constants/app.constants';
+import { apiClient } from '@/config/api';
 
 const BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api';
 

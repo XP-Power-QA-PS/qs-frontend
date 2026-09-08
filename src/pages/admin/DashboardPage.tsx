@@ -1,14 +1,14 @@
 import React from 'react';
 import { TrendingUp, Users, Coins, Percent, ArrowUp, ArrowDown } from 'lucide-react';
-import { authService } from '../services/authService';
-import { UserDashboard } from './UserDashboard';
+import { authService } from '@/services/auth';
+import { FloorDashboardPage } from '@/pages/gonogo/FloorDashboardPage';
 
-export const Dashboard: React.FC = () => {
+export const DashboardPage: React.FC = () => {
   const role = authService.getUserRole();
   const isUser = role === 'ROLE_USER';
 
   if (isUser) {
-    return <UserDashboard />;
+    return <FloorDashboardPage />;
   }
 
   const statCards = [
@@ -51,36 +51,36 @@ export const Dashboard: React.FC = () => {
   ];
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       {/* Stat Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6">
         {statCards.map((card, idx) => (
-          <div key={idx} className="bg-white rounded-xl shadow-sm border border-gray-100 p-5">
+          <div key={idx} className="bg-white rounded-xl shadow-2xs border border-gray-100 p-4 sm:p-5">
             <div className="flex justify-between items-start">
               <div>
-                <p className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-1">
+                <p className="text-xs sm:text-sm font-semibold text-gray-500 uppercase tracking-wider mb-1">
                   {card.title}
                 </p>
-                <h3 className="text-2xl font-bold text-gray-800">{card.value}</h3>
+                <h3 className="text-xl sm:text-2xl font-bold text-gray-800">{card.value}</h3>
               </div>
-              <div className={`p-3 rounded-full ${card.iconColor} text-white shadow-md`}>
+              <div className={`p-2.5 sm:p-3 rounded-xl ${card.iconColor} text-white shadow-xs`}>
                 <card.icon className="w-5 h-5" />
               </div>
             </div>
-            <div className="mt-4 flex items-center text-sm">
+            <div className="mt-3 sm:mt-4 flex items-center text-xs sm:text-sm">
               <span className={`flex items-center font-medium ${card.trendUp ? 'text-green-500' : 'text-red-500'}`}>
-                {card.trendUp ? <ArrowUp className="w-4 h-4 mr-1" /> : <ArrowDown className="w-4 h-4 mr-1" />}
+                {card.trendUp ? <ArrowUp className="w-3.5 h-3.5 mr-1" /> : <ArrowDown className="w-3.5 h-3.5 mr-1" />}
                 {card.trend}
               </span>
-              <span className="text-gray-400 ml-2">{card.desc}</span>
+              <span className="text-gray-400 ml-2 truncate">{card.desc}</span>
             </div>
           </div>
         ))}
       </div>
 
       {/* Charts Section */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-2 bg-[#172b4d] rounded-xl shadow-sm p-6 min-h-[350px] relative overflow-hidden">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
+        <div className="lg:col-span-2 bg-[#172b4d] rounded-xl shadow-2xs p-4 sm:p-6 min-h-[300px] sm:min-h-[350px] relative overflow-hidden">
           <div className="relative z-10 flex justify-between items-start mb-4">
             <div>
               <p className="text-gray-400 text-sm font-semibold uppercase tracking-wider">Overview</p>
@@ -137,3 +137,4 @@ export const Dashboard: React.FC = () => {
   );
 };
 
+export const Dashboard = DashboardPage;

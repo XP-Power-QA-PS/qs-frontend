@@ -1,5 +1,5 @@
-import { apiClient } from '../config/api';
-import type { User, Role, PageResponse } from '../types/admin.types';
+import { apiClient } from '@/config/api';
+import type { User, Role, PageResponse } from '@/types/admin';
 
 const BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api';
 

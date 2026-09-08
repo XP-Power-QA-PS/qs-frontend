@@ -1,18 +1,19 @@
 import { createBrowserRouter, Navigate } from 'react-router-dom';
-import { Login } from '@/pages/Login';
-import { Dashboard } from '@/pages/Dashboard';
-import { UserManagement } from '@/pages/admin/UserManagement';
-import { RoleManagement } from '@/pages/admin/RoleManagement';
+import { LoginPage } from '@/pages/auth/LoginPage';
+import { DashboardPage } from '@/pages/admin/DashboardPage';
+import { UserManagementPage } from '@/pages/admin/UserManagementPage';
+import { RoleManagementPage } from '@/pages/admin/RoleManagementPage';
 import { ProtectedRoute } from './ProtectedRoute';
 import { AdminLayout } from '@/components/layout/AdminLayout';
-import { EquipmentPage } from '@/pages/EquipmentPage';
-import { EquipmentHistoryPage } from '@/pages/EquipmentHistoryPage';
-import { EquipmentTestDetailPage } from '@/pages/EquipmentTestDetailPage';
+import { EquipmentListPage } from '@/pages/gonogo/EquipmentListPage';
+import { EquipmentHistoryPage } from '@/pages/gonogo/EquipmentHistoryPage';
+import { EquipmentTestDetailPage } from '@/pages/gonogo/EquipmentTestDetailPage';
+import { EquipmentDayComparisonPage } from '@/pages/gonogo/EquipmentDayComparisonPage';
 
 export const router = createBrowserRouter([
   {
     path: '/login',
-    element: <Login />,
+    element: <LoginPage />,
   },
   {
     element: <ProtectedRoute />,
@@ -22,19 +23,19 @@ export const router = createBrowserRouter([
         children: [
           {
             path: '/dashboard',
-            element: <Dashboard />,
+            element: <DashboardPage />,
           },
           {
             path: '/admin/users',
-            element: <UserManagement />,
+            element: <UserManagementPage />,
           },
           {
             path: '/admin/roles',
-            element: <RoleManagement />,
+            element: <RoleManagementPage />,
           },
           {
             path: '/equipments',
-            element: <EquipmentPage />,
+            element: <EquipmentListPage />,
           },
           {
             path: '/equipments/:equipmentId/history',
@@ -43,6 +44,10 @@ export const router = createBrowserRouter([
           {
             path: '/equipments/:equipmentId/records/:recordId/daily',
             element: <EquipmentTestDetailPage />,
+          },
+          {
+            path: '/equipments/:equipmentId/records/:recordId/compare',
+            element: <EquipmentDayComparisonPage />,
           },
           {
             path: '/',

@@ -49,3 +49,28 @@ export interface CreateTestAttemptRequest {
   remark?: string;
 }
 
+export interface DailySummaryDTO {
+  dailyTestId: string;
+  testDate: string;
+  totalAttempts: number;
+  passCount: number;
+  failCount: number;
+  passRate: number;
+  overallStatus: string;
+  latestTester: string;
+  attempts: EquipmentTestAttempt[];
+}
+
+export interface ComparisonInsightDTO {
+  sameTester: boolean;
+  allTesters: string[];
+  passRateDifference: number;
+  parameterDifferences: string[];
+  summaryText: string;
+}
+
+export interface DayComparisonDTO {
+  days: DailySummaryDTO[];
+  insights: ComparisonInsightDTO;
+}
+
