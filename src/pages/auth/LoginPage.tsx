@@ -77,7 +77,7 @@ export const LoginPage: React.FC = () => {
           <div className="w-full max-w-lg bg-surface-card/95 backdrop-blur-xl border border-border-subtle rounded-xl shadow-xl p-space-lg sm:p-space-xl space-y-space-md">
             <div className="flex flex-col items-center text-center space-y-2">
               <div className="p-2.5 bg-surface-subtle rounded-xl border border-border-subtle mb-1 shadow-sm">
-                <img alt="XP Power" className="h-7 w-auto object-contain" src="https://lh3.googleusercontent.com/aida/AEtjO1X9HBdnsATqHDue-W6NYHhAaI3f9JsXt_ZcjMhUHYfonDroS57EAuRCIA4slTcrGKXb-f3d-XzI-WYGVW-VJpobmjsSNUxR8h2WRExosvyRXn9jSK5CgSV9mdA6f4EwCtCsf36Jht0PY3G4F5AXaj_L6hlOwUOqthog9TNY3WMCpx0ncrMqRrE4LPXyPZA7v-hCcTLtwGiOWnQkLTxW1w82qhsDJiWv-p_ngPwFejNuhxf18ZD8uspqxeF0" />
+                <img alt="XP Power" className="h-7 w-auto object-contain" src="" />
               </div>
               <div className="inline-flex items-center space-x-1.5 text-primary font-label-sm font-semibold uppercase tracking-wider text-[11px]">
                 <span className="material-symbols-outlined text-[16px]">shield_lock</span>

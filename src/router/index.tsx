@@ -9,6 +9,8 @@ import { EquipmentListPage } from '@/pages/gonogo/EquipmentListPage';
 import { EquipmentHistoryPage } from '@/pages/gonogo/EquipmentHistoryPage';
 import { EquipmentTestDetailPage } from '@/pages/gonogo/EquipmentTestDetailPage';
 import { EquipmentDayComparisonPage } from '@/pages/gonogo/EquipmentDayComparisonPage';
+import { GoNoGoDashboardPage } from '@/pages/gonogo/GoNoGoDashboardPage';
+import { EquipmentAnalyticsPage } from '@/pages/gonogo/EquipmentAnalyticsPage';
 
 export const router = createBrowserRouter([
   {
@@ -48,6 +50,14 @@ export const router = createBrowserRouter([
           {
             path: '/equipments/:equipmentId/records/:recordId/compare',
             element: <EquipmentDayComparisonPage />,
+          },
+          {
+            path: '/stats',
+            element: <GoNoGoDashboardPage />,
+          },
+          {
+            path: '/stats/equipment/:equipmentId',
+            element: <EquipmentAnalyticsPage />,
           },
           {
             path: '/',
