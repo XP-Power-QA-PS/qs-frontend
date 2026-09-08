@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { useParams, useSearchParams, useNavigate } from 'react-router-dom';
-import { ChevronLeft, BarChart3, TrendingUp, ShieldAlert, ClipboardCheck } from 'lucide-react';
+import { useParams, useSearchParams } from 'react-router-dom';
+import { ChevronLeft, BarChart3 } from 'lucide-react';
 import { statsService } from '@/services/equipment';
 import type { EquipmentStatsDTO } from '@/types/equipment';
 import { MonthlyTrendChart } from '@/components/features/gonogo/charts/MonthlyTrendChart';
@@ -87,7 +87,6 @@ const MonthSelector: React.FC<MonthSelectorProps> = ({ selectedMonth, selectedYe
 export const EquipmentAnalyticsPage: React.FC = () => {
   const { equipmentId } = useParams<{ equipmentId: string }>();
   const [searchParams] = useSearchParams();
-  const navigate = useNavigate();
 
   const equipmentCode = searchParams.get('code') || '';
   const equipmentName = searchParams.get('name') || '';

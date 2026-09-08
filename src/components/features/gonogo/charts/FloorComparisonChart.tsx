@@ -91,7 +91,7 @@ export const FloorComparisonChart: React.FC<FloorComparisonChartProps> = ({ data
           <LabelList
             dataKey="passRate"
             position="right"
-            formatter={(v: number) => `${v}%`}
+            formatter={(v: any) => `${v}%`}
             style={{ fontSize: 12, fontWeight: 600, fill: 'var(--color-text-primary, #111827)' }}
           />
         </Bar>
