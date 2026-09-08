@@ -27,7 +27,7 @@ export const ViewModeToggle: React.FC<ViewModeToggleProps> = ({ className = '', 
             ? 'bg-surface-card text-primary shadow-xs font-bold'
             : 'text-text-muted hover:text-text-primary'
         }`}
-        title="Chuyển sang chế độ Thẻ (Cards)"
+        title="Switch to Card view"
         aria-pressed={viewMode === 'card'}
       >
         <span className="material-symbols-outlined text-[17px]">grid_view</span>
@@ -41,7 +41,7 @@ export const ViewModeToggle: React.FC<ViewModeToggleProps> = ({ className = '', 
             ? 'bg-surface-card text-primary shadow-xs font-bold'
             : 'text-text-muted hover:text-text-primary'
         }`}
-        title="Chuyển sang chế độ Bảng (Table)"
+        title="Switch to Table view"
         aria-pressed={viewMode === 'table'}
       >
         <span className="material-symbols-outlined text-[17px]">table_rows</span>

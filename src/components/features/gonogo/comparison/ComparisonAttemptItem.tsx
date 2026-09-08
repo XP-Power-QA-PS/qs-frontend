@@ -25,7 +25,7 @@ export const ComparisonAttemptItem: React.FC<ComparisonAttemptItemProps> = ({ at
           <span className="font-technical-data font-medium text-text-secondary">
             {new Date(attempt.attemptTime).toLocaleTimeString()}
           </span>
-          <span className="text-text-muted">• KTV: {attempt.testerUsername}</span>
+          <span className="text-text-muted">• Tech: {attempt.testerUsername}</span>
         </div>
         <span
           className={`px-2.5 py-0.5 rounded-full font-bold text-xs ${

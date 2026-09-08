@@ -61,7 +61,7 @@ export const EquipmentTestDetailPage: React.FC = () => {
           if (prev[dt.id] !== undefined) {
             initial[dt.id] = prev[dt.id];
           } else {
-            // Mặc định: ngày hôm nay hoặc ngày đầu tiên (mới nhất) sẽ mở, các ngày cũ hơn sẽ thu gọn
+            // Default: today or the first (latest) day will be expanded, older days will be collapsed
             initial[dt.id] = dt.testDate === todayDateStr || idx === 0;
           }
         });
@@ -83,7 +83,7 @@ export const EquipmentTestDetailPage: React.FC = () => {
 
   const openCompareModal = () => {
     if (dailyTests.length < 2) {
-      toast.error('Cần ít nhất 2 ngày kiểm tra để thực hiện so sánh!');
+      toast.error('At least 2 test days are required to compare!');
       return;
     }
     setCompareDayA(dailyTests[0]?.id || '');
@@ -94,11 +94,11 @@ export const EquipmentTestDetailPage: React.FC = () => {
   const handleLaunchCompare = (e: React.FormEvent) => {
     e.preventDefault();
     if (!compareDayA || !compareDayB) {
-      toast.error('Vui lòng chọn đủ 2 ngày để so sánh!');
+      toast.error('Please select 2 days to compare!');
       return;
     }
     if (compareDayA === compareDayB) {
-      toast.error('Vui lòng chọn 2 ngày khác nhau để so sánh!');
+      toast.error('Please select 2 different days to compare!');
       return;
     }
     setIsCompareModalOpen(false);
@@ -118,7 +118,7 @@ export const EquipmentTestDetailPage: React.FC = () => {
     const passRate = total > 0 ? Math.round((passCount / total) * 100) : 0;
     const hasFail = failCount > 0;
     const allPass = total > 0 && failCount === 0;
-    const latestTester = day.attempts[day.attempts.length - 1]?.testerUsername || 'Chưa có KTV';
+    const latestTester = day.attempts[day.attempts.length - 1]?.testerUsername || 'No tester';
     return {
       testDate: day.testDate,
       total,
@@ -267,7 +267,7 @@ export const EquipmentTestDetailPage: React.FC = () => {
                 type="button"
                 onClick={handleToggleAll}
                 className="h-10 inline-flex items-center justify-center gap-1.5 px-3.5 rounded-xl border border-border-subtle bg-surface-card hover:bg-surface-subtle text-text-secondary hover:text-text-primary text-xs sm:text-sm font-semibold shadow-2xs transition-all"
-                title={isAllExpanded ? "Thu gọn tất cả các ngày" : "Mở rộng tất cả các ngày"}
+                title={isAllExpanded ? "Collapse all days" : "Expand all days"}
               >
                 <span className="material-symbols-outlined text-[18px]">
                   {isAllExpanded ? 'unfold_less' : 'unfold_more'}
@@ -323,10 +323,10 @@ export const EquipmentTestDetailPage: React.FC = () => {
                       onChange={(e) => setSelectedDateFilter(e.target.value)}
                       className="bg-transparent text-xs sm:text-sm font-medium text-text-primary focus:outline-none cursor-pointer pr-1 w-full"
                     >
-                      <option value="">Tất cả các ngày ({dailyTests.length})</option>
+                      <option value="">All Days ({dailyTests.length})</option>
                       {dailyTests.map((dt) => (
                         <option key={dt.id} value={dt.testDate}>
-                          Ngày {dt.testDate} {dt.testDate === todayStr ? '(Hôm nay)' : ''}
+                          Date {dt.testDate} {dt.testDate === todayStr ? '(Today)' : ''}
                         </option>
                       ))}
                     </select>
@@ -343,7 +343,7 @@ export const EquipmentTestDetailPage: React.FC = () => {
                           : 'text-text-secondary hover:text-text-primary'
                       }`}
                     >
-                      Tất cả
+                      All
                     </button>
                     <button
                       type="button"
@@ -354,7 +354,7 @@ export const EquipmentTestDetailPage: React.FC = () => {
                           : 'text-text-secondary hover:text-status-critical'
                       }`}
                     >
-                      <span>Có lỗi</span>
+                      <span>Has Fail</span>
                       {failDaysCount > 0 && (
                         <span className="px-1.5 py-0.2 rounded-full bg-status-critical text-white text-[10px] font-bold">
                           {failDaysCount}
@@ -370,7 +370,7 @@ export const EquipmentTestDetailPage: React.FC = () => {
                           : 'text-text-secondary hover:text-status-nominal'
                       }`}
                     >
-                      <span>Đạt 100%</span>
+                      <span>100% Pass</span>
                       {passDaysCount > 0 && (
                         <span className="px-1.5 py-0.2 rounded-full bg-status-nominal text-white text-[10px] font-bold">
                           {passDaysCount}
@@ -390,7 +390,7 @@ export const EquipmentTestDetailPage: React.FC = () => {
                       className="h-10 text-xs text-primary hover:underline inline-flex items-center gap-1 px-3 rounded-xl hover:bg-primary/5 border border-transparent transition-colors whitespace-nowrap"
                     >
                       <span className="material-symbols-outlined text-[16px]">filter_alt_off</span>
-                      <span>Xóa bộ lọc</span>
+                      <span>Clear filter</span>
                     </button>
                   )}
                 </div>
@@ -402,14 +402,14 @@ export const EquipmentTestDetailPage: React.FC = () => {
                       type="button"
                       onClick={openCompareModal}
                       className="h-10 inline-flex items-center justify-center gap-1.5 px-3.5 rounded-xl text-xs sm:text-sm font-semibold text-primary bg-primary/10 hover:bg-primary/20 border border-primary/25 transition-all shadow-2xs w-full sm:w-auto"
-                      title="Mở hộp thoại chọn nhanh 2 ngày để so sánh"
+                      title="Open quick 2-day comparison modal"
                     >
                       <span className="material-symbols-outlined text-[18px]">compare_arrows</span>
-                      <span>So sánh 2 ngày</span>
+                      <span>Compare 2 Days</span>
                     </button>
                   )}
                   <span className="text-xs text-text-muted font-medium">
-                    Hiển thị <strong className="text-text-primary">{filteredDailyTests.length}</strong> / {dailyTests.length} ngày
+                    Showing <strong className="text-text-primary">{filteredDailyTests.length}</strong> / {dailyTests.length} days
                   </span>
                 </div>
               </div>
@@ -421,10 +421,10 @@ export const EquipmentTestDetailPage: React.FC = () => {
                     filter_list_off
                   </span>
                   <h4 className="font-headline-sm text-sm sm:text-base font-bold text-text-primary mb-1">
-                    Không tìm thấy ngày phù hợp
+                    No matching days found
                   </h4>
                   <p className="text-xs text-text-muted max-w-sm mx-auto mb-4">
-                    Không có ngày kiểm tra nào thỏa mãn bộ lọc hiện tại. Hãy thử chọn ngày hoặc trạng thái khác.
+                    No test days match the current filters. Try selecting another date or status.
                   </p>
                   <button
                     type="button"
@@ -434,7 +434,7 @@ export const EquipmentTestDetailPage: React.FC = () => {
                     }}
                     className="px-4 py-2 text-xs font-semibold text-primary bg-primary/10 hover:bg-primary/20 rounded-xl transition-colors"
                   >
-                    Xóa tất cả bộ lọc
+                    Clear all filters
                   </button>
                 </div>
               ) : (
@@ -507,7 +507,7 @@ export const EquipmentTestDetailPage: React.FC = () => {
                         {/* Accordion Arrow Button on the Right */}
                         <div
                           className="w-8 h-8 rounded-lg bg-surface-card border border-border-subtle flex items-center justify-center text-text-muted hover:text-primary transition-colors shrink-0 shadow-2xs ml-auto sm:ml-0"
-                          title={isExpanded ? "Thu gọn ngày này" : "Mở rộng ngày này"}
+                          title={isExpanded ? "Collapse this day" : "Expand this day"}
                         >
                           <span
                             className={`material-symbols-outlined text-[22px] transition-transform duration-200 ${
@@ -842,10 +842,10 @@ export const EquipmentTestDetailPage: React.FC = () => {
                 </div>
                 <div>
                   <h3 className="font-headline-sm text-base sm:text-lg font-bold text-text-primary">
-                    Chọn 2 Ngày Để So Sánh Đối Chiếu
+                    Select 2 Days to Compare
                   </h3>
                   <p className="text-xs text-text-muted">
-                    Chọn nhanh 2 mốc thời gian trong kỳ để đối chiếu dữ liệu song song
+                    Quickly select 2 dates in this period for side-by-side comparison
                   </p>
                 </div>
               </div>
@@ -864,7 +864,7 @@ export const EquipmentTestDetailPage: React.FC = () => {
                 {/* Day A Selector */}
                 <div className="space-y-2">
                   <label className="block text-xs font-bold uppercase tracking-wider text-text-secondary">
-                    Mốc Kiểm Tra A (Ngày thứ nhất)
+                    Test Date A (First Day)
                   </label>
                   <select
                     value={compareDayA}
@@ -875,10 +875,10 @@ export const EquipmentTestDetailPage: React.FC = () => {
                       const passCount = dt.attempts.filter((a) => a.resultStatus === 'PASS').length;
                       const passRate = dt.attempts.length > 0 ? Math.round((passCount / dt.attempts.length) * 100) : 0;
                       const hasFail = dt.attempts.some((a) => a.resultStatus === 'FAIL');
-                      const statusLabel = dt.attempts.length === 0 ? 'Chưa test' : hasFail ? `Có lỗi (${passRate}% Đạt)` : 'Đạt 100%';
+                      const statusLabel = dt.attempts.length === 0 ? 'Untested' : hasFail ? `Has Fail (${passRate}% Pass)` : '100% Pass';
                       return (
                         <option key={dt.id} value={dt.id}>
-                          {dt.testDate} • {statusLabel} • {dt.attempts.length} lượt
+                          {dt.testDate} • {statusLabel} • {dt.attempts.length} attempts
                         </option>
                       );
                     })}
@@ -891,7 +891,7 @@ export const EquipmentTestDetailPage: React.FC = () => {
                     return (
                       <div className="p-3 bg-surface-subtle/70 rounded-xl border border-border-subtle space-y-1.5 text-xs">
                         <div className="flex items-center justify-between">
-                          <span className="text-text-muted">Trạng thái:</span>
+                          <span className="text-text-muted">Status:</span>
                           <span
                             className={`px-2 py-0.5 rounded-md font-bold text-[11px] ${
                               sumA.allPass
@@ -901,17 +901,17 @@ export const EquipmentTestDetailPage: React.FC = () => {
                                 : 'bg-surface-card text-text-muted'
                             }`}
                           >
-                            {sumA.allPass ? 'ĐẠT 100%' : sumA.hasFail ? 'CÓ LỖI' : 'CHƯA TEST'}
+                            {sumA.allPass ? '100% PASS' : sumA.hasFail ? 'HAS FAIL' : 'NOT TESTED'}
                           </span>
                         </div>
                         <div className="flex items-center justify-between text-text-secondary">
-                          <span>Số lượt test:</span>
+                          <span>Total attempts:</span>
                           <span className="font-technical-data font-bold text-text-primary">
-                            {sumA.total} lượt ({sumA.passRate}% Đạt)
+                            {sumA.total} attempts ({sumA.passRate}% Pass)
                           </span>
                         </div>
                         <div className="flex items-center justify-between text-text-muted">
-                          <span>KTV gần nhất:</span>
+                          <span>Latest tester:</span>
                           <span className="font-medium text-text-primary">{sumA.latestTester}</span>
                         </div>
                       </div>
@@ -929,7 +929,7 @@ export const EquipmentTestDetailPage: React.FC = () => {
                       setCompareDayB(temp);
                     }}
                     className="w-10 h-10 rounded-full border border-border-subtle bg-surface-card hover:bg-primary hover:text-white text-text-secondary transition-all flex items-center justify-center shadow-xs"
-                    title="Hoán đổi 2 ngày A và B"
+                    title="Swap Date A and Date B"
                   >
                     <span className="material-symbols-outlined text-[20px]">swap_horiz</span>
                   </button>
@@ -938,7 +938,7 @@ export const EquipmentTestDetailPage: React.FC = () => {
                 {/* Day B Selector */}
                 <div className="space-y-2">
                   <label className="block text-xs font-bold uppercase tracking-wider text-text-secondary">
-                    Mốc Kiểm Tra B (Ngày thứ hai)
+                    Test Date B (Second Day)
                   </label>
                   <select
                     value={compareDayB}
@@ -949,10 +949,10 @@ export const EquipmentTestDetailPage: React.FC = () => {
                       const passCount = dt.attempts.filter((a) => a.resultStatus === 'PASS').length;
                       const passRate = dt.attempts.length > 0 ? Math.round((passCount / dt.attempts.length) * 100) : 0;
                       const hasFail = dt.attempts.some((a) => a.resultStatus === 'FAIL');
-                      const statusLabel = dt.attempts.length === 0 ? 'Chưa test' : hasFail ? `Có lỗi (${passRate}% Đạt)` : 'Đạt 100%';
+                      const statusLabel = dt.attempts.length === 0 ? 'Untested' : hasFail ? `Has Fail (${passRate}% Pass)` : '100% Pass';
                       return (
                         <option key={dt.id} value={dt.id}>
-                          {dt.testDate} • {statusLabel} • {dt.attempts.length} lượt
+                          {dt.testDate} • {statusLabel} • {dt.attempts.length} attempts
                         </option>
                       );
                     })}
@@ -965,7 +965,7 @@ export const EquipmentTestDetailPage: React.FC = () => {
                     return (
                       <div className="p-3 bg-surface-subtle/70 rounded-xl border border-border-subtle space-y-1.5 text-xs">
                         <div className="flex items-center justify-between">
-                          <span className="text-text-muted">Trạng thái:</span>
+                          <span className="text-text-muted">Status:</span>
                           <span
                             className={`px-2 py-0.5 rounded-md font-bold text-[11px] ${
                               sumB.allPass
@@ -975,17 +975,17 @@ export const EquipmentTestDetailPage: React.FC = () => {
                                 : 'bg-surface-card text-text-muted'
                             }`}
                           >
-                            {sumB.allPass ? 'ĐẠT 100%' : sumB.hasFail ? 'CÓ LỖI' : 'CHƯA TEST'}
+                            {sumB.allPass ? '100% PASS' : sumB.hasFail ? 'HAS FAIL' : 'NOT TESTED'}
                           </span>
                         </div>
                         <div className="flex items-center justify-between text-text-secondary">
-                          <span>Số lượt test:</span>
+                          <span>Total attempts:</span>
                           <span className="font-technical-data font-bold text-text-primary">
-                            {sumB.total} lượt ({sumB.passRate}% Đạt)
+                            {sumB.total} attempts ({sumB.passRate}% Pass)
                           </span>
                         </div>
                         <div className="flex items-center justify-between text-text-muted">
-                          <span>KTV gần nhất:</span>
+                          <span>Latest tester:</span>
                           <span className="font-medium text-text-primary">{sumB.latestTester}</span>
                         </div>
                       </div>
@@ -998,7 +998,7 @@ export const EquipmentTestDetailPage: React.FC = () => {
               {compareDayA && compareDayB && compareDayA === compareDayB && (
                 <div className="p-3 bg-amber-500/10 border border-amber-500/30 rounded-xl flex items-center space-x-2 text-xs text-amber-700 dark:text-amber-300">
                   <span className="material-symbols-outlined text-[18px]">warning</span>
-                  <span>Vui lòng chọn 2 ngày kiểm tra khác nhau để thực hiện so sánh đối chiếu.</span>
+                  <span>Please select 2 different test dates to perform side-by-side comparison.</span>
                 </div>
               )}
 
@@ -1009,7 +1009,7 @@ export const EquipmentTestDetailPage: React.FC = () => {
                   onClick={() => setIsCompareModalOpen(false)}
                   className="w-full sm:w-auto px-4 py-2.5 text-xs sm:text-sm font-semibold text-text-secondary hover:text-text-primary bg-surface-subtle hover:bg-surface border border-border-subtle rounded-xl transition-colors min-h-[42px]"
                 >
-                  Hủy
+                  Cancel
                 </button>
                 <button
                   type="submit"
@@ -1017,7 +1017,7 @@ export const EquipmentTestDetailPage: React.FC = () => {
                   className="w-full sm:w-auto px-5 py-2.5 text-xs sm:text-sm font-bold text-white bg-primary hover:bg-[#0369a1] rounded-xl shadow-xs disabled:opacity-50 transition-all inline-flex items-center justify-center gap-2 min-h-[42px]"
                 >
                   <span className="material-symbols-outlined text-[18px]">compare_arrows</span>
-                  <span>So sánh ngay</span>
+                  <span>Compare Now</span>
                 </button>
               </div>
             </form>

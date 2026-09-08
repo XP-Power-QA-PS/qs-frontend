@@ -15,7 +15,7 @@ export const ComparisonInsightsBanner: React.FC<ComparisonInsightsBannerProps> =
         <div className="space-y-2.5 flex-1">
           <div>
             <h3 className="text-xs font-bold uppercase tracking-wider text-primary">
-              Kết Luận &amp; Nhận Định Hệ Thống
+              System Insights &amp; Conclusions
             </h3>
             <p className="text-sm sm:text-base font-semibold text-text-primary leading-relaxed mt-0.5">
               {insights.summaryText}
@@ -33,11 +33,11 @@ export const ComparisonInsightsBanner: React.FC<ComparisonInsightsBannerProps> =
               <span className="material-symbols-outlined text-[15px]">
                 {insights.sameTester ? 'verified' : 'group'}
               </span>
-              {insights.sameTester ? 'Cùng kỹ thuật viên phụ trách' : 'Khác kỹ thuật viên phụ trách'}
+              {insights.sameTester ? 'Same technician for both days' : 'Different technicians'}
             </span>
 
             <span className="px-3 py-1 rounded-lg font-technical-data text-xs font-bold bg-surface-card border border-border-subtle text-text-secondary">
-              Chênh lệch tỷ lệ Đạt: {insights.passRateDifference}%
+              Pass rate difference: {insights.passRateDifference}%
             </span>
 
             {insights.parameterDifferences && insights.parameterDifferences.length > 0 ? (
@@ -53,7 +53,7 @@ export const ComparisonInsightsBanner: React.FC<ComparisonInsightsBannerProps> =
             ) : (
               <span className="px-3 py-1 rounded-lg text-xs font-semibold bg-status-nominal/10 text-status-nominal border border-status-nominal/20 inline-flex items-center gap-1">
                 <span className="material-symbols-outlined text-[14px]">check_circle</span>
-                Thông số kiểm tra đồng nhất
+                All test parameters are consistent
               </span>
             )}
           </div>

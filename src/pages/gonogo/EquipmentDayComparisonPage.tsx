@@ -31,7 +31,7 @@ export const EquipmentDayComparisonPage: React.FC = () => {
   useEffect(() => {
     const fetchComparison = async () => {
       if (!recordId) {
-        setError('Không tìm thấy thông tin kỳ kiểm tra (recordId).');
+        setError('Inspection period information (recordId) not found.');
         setLoading(false);
         return;
       }
@@ -42,7 +42,7 @@ export const EquipmentDayComparisonPage: React.FC = () => {
         .filter((id) => id.length > 0);
 
       if (dayIds.length !== 2) {
-        setError('Vui lòng chọn chính xác 2 ngày kiểm tra để thực hiện so sánh.');
+        setError('Please select exactly 2 test days to compare.');
         setLoading(false);
         return;
       }
@@ -53,8 +53,8 @@ export const EquipmentDayComparisonPage: React.FC = () => {
         const data = await equipmentService.compareDays(recordId, dayIds);
         setComparisonData(data);
       } catch (err: any) {
-        setError(err.message || 'Không thể tải dữ liệu so sánh giữa 2 ngày.');
-        toast.error('Lỗi khi tải dữ liệu so sánh');
+        setError(err.message || 'Unable to load comparison data between the 2 days.');
+        toast.error('Error loading comparison data');
       } finally {
         setLoading(false);
       }
@@ -65,7 +65,7 @@ export const EquipmentDayComparisonPage: React.FC = () => {
 
   const comparisonRangeLabel =
     comparisonData && comparisonData.days.length === 2
-      ? `${comparisonData.days[0].testDate} đối chiếu ${comparisonData.days[1].testDate}`
+      ? `${comparisonData.days[0].testDate} vs ${comparisonData.days[1].testDate}`
       : undefined;
 
   return (
@@ -87,7 +87,7 @@ export const EquipmentDayComparisonPage: React.FC = () => {
             progress_activity
           </span>
           <p className="text-sm font-medium text-text-secondary">
-            Đang tải và xử lý phân tích dữ liệu đối chiếu...
+            Loading and analyzing comparison data...
           </p>
         </div>
       )}
@@ -99,7 +99,7 @@ export const EquipmentDayComparisonPage: React.FC = () => {
             <span className="material-symbols-outlined text-[28px]">error</span>
           </div>
           <div>
-            <h3 className="text-base font-bold text-text-primary mb-1">Không thể hiển thị so sánh</h3>
+            <h3 className="text-base font-bold text-text-primary mb-1">Unable to display comparison</h3>
             <p className="text-xs sm:text-sm text-text-muted">{error}</p>
           </div>
           <button
@@ -107,7 +107,7 @@ export const EquipmentDayComparisonPage: React.FC = () => {
             onClick={() => navigate(backUrl)}
             className="px-4 py-2 text-xs sm:text-sm font-semibold text-white bg-primary hover:bg-[#0369a1] rounded-xl shadow-xs transition-colors cursor-pointer"
           >
-            Quay lại chọn ngày
+            Back to Date Selection
           </button>
         </div>
       )}
@@ -126,7 +126,7 @@ export const EquipmentDayComparisonPage: React.FC = () => {
               <ComparisonDayCard
                 key={day.dailyTestId || dIdx}
                 day={day}
-                dayLabel={`Ngày ${dIdx === 0 ? 'A' : 'B'}`}
+                dayLabel={`Day ${dIdx === 0 ? 'A' : 'B'}`}
               />
             ))}
           </div>

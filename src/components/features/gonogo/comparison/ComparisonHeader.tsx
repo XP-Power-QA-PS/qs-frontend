@@ -30,15 +30,15 @@ export const ComparisonHeader: React.FC<ComparisonHeaderProps> = ({
           className="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl border border-border-subtle bg-surface-card hover:bg-surface-subtle text-text-secondary hover:text-text-primary text-xs sm:text-sm font-semibold shadow-2xs transition-all cursor-pointer"
         >
           <span className="material-symbols-outlined text-[18px]">arrow_back</span>
-          <span>Quay lại trang chi tiết ngày</span>
+          <span>Back to Daily Details</span>
         </button>
 
         <div className="flex items-center space-x-2 text-xs text-text-muted">
-          <span>Thiết bị</span>
+          <span>Equipment</span>
           <span className="material-symbols-outlined text-[14px]">chevron_right</span>
           <span>{equipmentName || 'Record'}</span>
           <span className="material-symbols-outlined text-[14px]">chevron_right</span>
-          <span className="text-primary font-semibold">Đối chiếu 2 ngày</span>
+          <span className="text-primary font-semibold">2-Day Comparison</span>
         </div>
       </div>
 
@@ -51,10 +51,10 @@ export const ComparisonHeader: React.FC<ComparisonHeaderProps> = ({
             </div>
             <div>
               <h1 className="text-xl sm:text-2xl font-bold font-headline-xl text-text-primary tracking-tight">
-                So Sánh Chi Tiết Ngày Kiểm Tra
+                Daily Test Detailed Comparison
               </h1>
               <p className="text-xs sm:text-sm text-text-secondary">
-                Trang chuyên biệt đối chiếu trực quan toàn diện kết quả, thông số và lịch sử kiểm tra
+                Dedicated side-by-side visual comparison of test results, parameters, and history
               </p>
             </div>
           </div>
@@ -70,7 +70,7 @@ export const ComparisonHeader: React.FC<ComparisonHeaderProps> = ({
               <>
                 <span className="text-border-strong px-1">|</span>
                 <span className="text-text-secondary">
-                  Kỳ kiểm tra: <strong className="text-text-primary font-semibold">Tháng {month}/{year}</strong>
+                  Inspection Period: <strong className="text-text-primary font-semibold">Month {month}/{year}</strong>
                 </span>
               </>
             )}

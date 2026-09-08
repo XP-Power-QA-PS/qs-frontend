@@ -44,13 +44,22 @@ export const Header: React.FC<HeaderProps> = ({ onToggleSidebar }) => {
         }
         items.push({ label: 'Daily Details', path: location.pathname + location.search });
       }
+    } else if (location.pathname.startsWith('/stats')) {
+      items.push({ label: 'Statistics', path: '/stats' });
+
+      if (location.pathname.includes('/equipment/')) {
+        const eqName = searchParams.get('name') || searchParams.get('code') || 'Equipment Analytics';
+        items.push({ label: eqName, path: location.pathname + location.search });
+      }
     }
 
     return items;
   };
 
   const renderUserLeftSection = () => {
-    if (!isUser) {
+    const items = getBreadcrumbItems();
+
+    if (!isUser && items.length <= 1) {
       return (
         <div className="flex items-center space-x-2">
           <span className="font-headline-sm text-text-primary hidden sm:inline-block">Admin Portal</span>
@@ -68,7 +77,6 @@ export const Header: React.FC<HeaderProps> = ({ onToggleSidebar }) => {
       );
     }
 
-    const items = getBreadcrumbItems();
     const currentItem = items[items.length - 1];
     const prevItem = items.length > 1 ? items[items.length - 2] : items[0];
 
@@ -153,7 +161,7 @@ export const Header: React.FC<HeaderProps> = ({ onToggleSidebar }) => {
               </div>
               <div className="hidden sm:flex flex-col items-start">
                 <span className="text-[12px] font-semibold text-text-primary leading-tight">
-                  {isUser ? 'Người dùng' : 'Quản trị viên'}
+                  {isUser ? 'Field Technician' : 'System Administrator'}
                 </span>
                 <span className="text-[10px] font-technical-data text-text-muted leading-tight">
                   Active Session
@@ -184,7 +192,7 @@ export const Header: React.FC<HeaderProps> = ({ onToggleSidebar }) => {
                     className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-status-critical hover:bg-status-critical/10 rounded-lg transition-colors font-medium min-h-[40px]"
                   >
                     <span className="material-symbols-outlined text-[18px]">logout</span>
-                    <span>Đăng xuất (Logout)</span>
+                    <span>Log out</span>
                   </button>
                 </div>
               </>
