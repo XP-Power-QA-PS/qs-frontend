@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
+import { Navigate } from 'react-router-dom';
 import { BarChart3, ShieldAlert, ClipboardCheck, TrendingUp, RefreshCw, Filter } from 'lucide-react';
+import { authService } from '@/services/auth';
 import { useGoNoGoStats } from '@/hooks/useGoNoGoStats';
 import { PassRateTrendChart } from '@/components/features/gonogo/charts/PassRateTrendChart';
 import { DefectDonutChart } from '@/components/features/gonogo/charts/DefectDonutChart';
@@ -44,7 +46,12 @@ const KpiCard: React.FC<KpiCardProps> = ({ title, value, subtitle, icon, iconBg,
 type TrendMode = 'line-area' | 'stacked-bar';
 
 // ─── Main Page ────────────────────────────────────────────────────────────────
-export const GoNoGoDashboardPage: React.FC = () => {
+export const GoNoGoStatisticsPage: React.FC = () => {
+  const role = authService.getUserRole();
+  if (role === 'ROLE_USER') {
+    return <Navigate to="/dashboard" replace />;
+  }
+
   const { summary, dailyTrend, defectBreakdown, floorStats, worstEquipments, loading, filter, setFilter, refresh } =
     useGoNoGoStats();
 
@@ -224,4 +231,4 @@ export const GoNoGoDashboardPage: React.FC = () => {
   );
 };
 
-export default GoNoGoDashboardPage;
+export default GoNoGoStatisticsPage;
