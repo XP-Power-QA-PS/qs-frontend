@@ -33,7 +33,7 @@ export const apiClient = async (endpoint: string, options: RequestInit = {}): Pr
   const response = await fetch(endpoint, config);
 
   if (!response.ok) {
-    if (response.status === 401 || response.status === 403) {
+    if (response.status === 401) {
       const refreshToken = localStorage.getItem(AUTH_CONSTANTS.REFRESH_TOKEN_KEY);
       
       if (!refreshToken) {
@@ -66,6 +66,7 @@ export const apiClient = async (endpoint: string, options: RequestInit = {}): Pr
           isRefreshing = false;
         });
       }
+
 
       // Wait for the refresh to complete, then retry the request
       return new Promise((resolve, reject) => {

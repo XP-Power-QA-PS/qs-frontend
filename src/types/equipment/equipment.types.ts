@@ -31,6 +31,7 @@ export interface EquipmentTestAttempt {
   goStatus: TestStatus;
   noGoStatus: TestStatus;
   resultStatus: TestStatus;
+  machineVerified?: boolean;
   remark?: string;
   testerUsername: string;
 }
@@ -46,8 +47,10 @@ export interface CreateTestAttemptRequest {
   programStatus: TestStatus;
   goStatus: TestStatus;
   noGoStatus: TestStatus;
+  confirmedMachineCheck: boolean;
   remark?: string;
 }
+
 
 export interface DailySummaryDTO {
   dailyTestId: string;

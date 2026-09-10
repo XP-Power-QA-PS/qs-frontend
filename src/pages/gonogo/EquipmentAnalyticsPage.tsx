@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { useParams, useSearchParams, Navigate } from 'react-router-dom';
+import { useParams, useSearchParams } from 'react-router-dom';
 import { ChevronLeft, BarChart3 } from 'lucide-react';
-import { authService } from '@/services/auth';
 import { statsService } from '@/services/equipment';
 import type { EquipmentStatsDTO } from '@/types/equipment';
 import { MonthlyTrendChart } from '@/components/features/gonogo/charts/MonthlyTrendChart';
@@ -86,11 +85,6 @@ const MonthSelector: React.FC<MonthSelectorProps> = ({ selectedMonth, selectedYe
 
 // ─── Main Page ─────────────────────────────────────────────────────────────────
 export const EquipmentAnalyticsPage: React.FC = () => {
-  const role = authService.getUserRole();
-  if (role === 'ROLE_USER') {
-    return <Navigate to="/dashboard" replace />;
-  }
-
   const { equipmentId } = useParams<{ equipmentId: string }>();
   const [searchParams] = useSearchParams();
 
