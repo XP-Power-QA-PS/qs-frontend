@@ -1,14 +1,17 @@
 import React, { useState } from 'react';
 import { authService } from '@/services/auth';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate, useLocation, useMatches } from 'react-router-dom';
+import type { BreadcrumbHandle } from '@/router';
 
 interface HeaderProps {
   onToggleSidebar?: () => void;
+  isSidebarCollapsed?: boolean;
 }
 
-export const Header: React.FC<HeaderProps> = ({ onToggleSidebar }) => {
+export const Header: React.FC<HeaderProps> = ({ onToggleSidebar, isSidebarCollapsed }) => {
   const navigate = useNavigate();
   const location = useLocation();
+  const matches = useMatches();
   const role = authService.getUserRole();
   const isUser = role === 'ROLE_USER';
   const [isProfileOpen, setIsProfileOpen] = useState(false);
@@ -20,36 +23,29 @@ export const Header: React.FC<HeaderProps> = ({ onToggleSidebar }) => {
 
   const getBreadcrumbItems = () => {
     const searchParams = new URLSearchParams(location.search);
-    const floorId = searchParams.get('floorId');
-    const floorName = searchParams.get('floorName');
-
-    const items = [
+    const items: Array<{ label: string; path: string }> = [
       { label: 'Dashboard', path: '/dashboard' }
     ];
 
-    if (location.pathname.startsWith('/equipments')) {
-      if (floorName && floorId) {
-        items.push({ label: 'Check ' + floorName, path: '/equipments?floorId=' + floorId + '&floorName=' + encodeURIComponent(floorName) });
-      } else {
-        items.push({ label: 'Equipments', path: '/equipments' });
-      }
+    for (const match of matches) {
+      const handle = match.handle as BreadcrumbHandle | undefined;
+      if (handle?.crumb) {
+        const result = handle.crumb({
+          params: match.params,
+          searchParams,
+          location: { pathname: location.pathname, search: location.search },
+        });
 
-      if (location.pathname.includes('/history')) {
-        items.push({ label: 'Test History', path: location.pathname + location.search });
-      } else if (location.pathname.includes('/records/')) {
-        const match = location.pathname.match(/\/equipments\/([^/]+)\/records\//);
-        if (match) {
-          const equipmentId = match[1];
-          items.push({ label: 'Test History', path: '/equipments/' + equipmentId + '/history' + location.search });
+        if (result) {
+          if (typeof result === 'string') {
+            items.push({ label: result, path: match.pathname + location.search });
+          } else {
+            items.push({
+              label: result.label,
+              path: result.path || match.pathname + location.search,
+            });
+          }
         }
-        items.push({ label: 'Daily Details', path: location.pathname + location.search });
-      }
-    } else if (location.pathname.startsWith('/stats')) {
-      items.push({ label: 'Statistics', path: '/stats' });
-
-      if (location.pathname.includes('/equipment/')) {
-        const eqName = searchParams.get('name') || searchParams.get('code') || 'Equipment Analytics';
-        items.push({ label: eqName, path: location.pathname + location.search });
       }
     }
 
@@ -59,15 +55,7 @@ export const Header: React.FC<HeaderProps> = ({ onToggleSidebar }) => {
   const renderUserLeftSection = () => {
     const items = getBreadcrumbItems();
 
-    if (!isUser && items.length <= 1) {
-      return (
-        <div className="flex items-center space-x-2">
-          <span className="font-headline-sm text-text-primary hidden sm:inline-block">Admin Portal</span>
-        </div>
-      );
-    }
-
-    if (location.pathname === '/dashboard') {
+    if (isUser && location.pathname === '/dashboard') {
       return (
         <div className="flex items-center space-x-2.5 cursor-pointer" onClick={() => navigate('/dashboard')}>
           <img alt="XP Power Logo" className="h-7 sm:h-8 w-auto object-contain" src="/logo-xppower.png" />
@@ -120,17 +108,20 @@ export const Header: React.FC<HeaderProps> = ({ onToggleSidebar }) => {
   };
 
   return (
-    <header className="sticky top-0 z-30 w-full border-b border-border-subtle bg-surface-card/90 backdrop-blur-md px-margin-mobile md:px-margin-tablet lg:px-margin-desktop py-2.5 sm:py-3.5 shadow-xs transition-all">
+    <header className="sticky top-0 z-40 w-full border-b border-border-subtle bg-surface-card/90 backdrop-blur-md px-margin-mobile md:px-margin-tablet lg:px-margin-desktop py-2.5 sm:py-3.5 shadow-xs transition-all">
       <div className="flex items-center justify-between max-w-[96rem] mx-auto w-full">
         {/* Left Section */}
         <div className="flex items-center gap-2">
           {!isUser && (
             <button
               onClick={onToggleSidebar}
-              className="md:hidden p-2 -ml-1 text-text-secondary hover:text-primary hover:bg-surface-subtle rounded-lg transition-colors min-h-[44px] min-w-[44px] flex items-center justify-center"
+              className="p-2 -ml-1 text-text-secondary hover:text-primary hover:bg-surface-subtle rounded-lg transition-colors min-h-[44px] min-w-[44px] flex items-center justify-center cursor-pointer"
               aria-label="Toggle Navigation Menu"
+              title={isSidebarCollapsed ? 'Expand Sidebar' : 'Collapse Sidebar'}
             >
-              <span className="material-symbols-outlined text-[24px]">menu</span>
+              <span className="material-symbols-outlined text-[22px]">
+                {isSidebarCollapsed ? 'menu' : 'menu_open'}
+              </span>
             </button>
           )}
           {renderUserLeftSection()}

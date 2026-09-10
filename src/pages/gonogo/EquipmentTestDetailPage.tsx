@@ -39,6 +39,7 @@ export const EquipmentTestDetailPage: React.FC = () => {
     programStatus: 'PASS',
     goStatus: 'PASS',
     noGoStatus: 'FAIL',
+    confirmedMachineCheck: false,
     remark: ''
   });
 
@@ -181,6 +182,7 @@ export const EquipmentTestDetailPage: React.FC = () => {
       programStatus: 'PASS',
       goStatus: 'PASS',
       noGoStatus: 'FAIL',
+      confirmedMachineCheck: false,
       remark: ''
     });
     setIsModalOpen(true);
@@ -189,6 +191,12 @@ export const EquipmentTestDetailPage: React.FC = () => {
   const handleSubmitAttempt = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedDailyTestId) return;
+
+    if (!attemptForm.confirmedMachineCheck) {
+      toast.error('Please confirm that the correct GO / NO GO machine is selected before saving!');
+      return;
+    }
+
 
     setSubmittingAttempt(true);
     try {
@@ -562,13 +570,23 @@ export const EquipmentTestDetailPage: React.FC = () => {
                                       </span>
                                     </div>
 
-                                    {/* Tester Info */}
-                                    <div className="flex items-center space-x-2 text-xs text-text-secondary">
-                                      <span className="material-symbols-outlined text-[16px] text-text-muted">person</span>
-                                      <span>
-                                        Tester: <strong className="text-text-primary">{attempt.testerUsername}</strong>
-                                      </span>
+                                    {/* Tester Info & Verified Badge */}
+                                    <div className="flex items-center justify-between text-xs text-text-secondary">
+                                      <div className="flex items-center space-x-2">
+                                        <span className="material-symbols-outlined text-[16px] text-text-muted">person</span>
+                                        <span>
+                                          Tester: <strong className="text-text-primary">{attempt.testerUsername}</strong>
+                                        </span>
+                                      </div>
+                                      {attempt.machineVerified && (
+                                        <span className="inline-flex items-center gap-0.5 text-[10px] text-primary font-semibold bg-primary/10 px-1.5 py-0.5 rounded border border-primary/20" title="Machine verified (GO/NO GO)">
+                                          <span className="material-symbols-outlined text-[12px]">verified</span>
+                                          <span>Verified</span>
+                                        </span>
+                                      )}
+
                                     </div>
+
 
                                     {/* Metric Strip */}
                                     <div className="grid grid-cols-3 gap-2 pt-1 border-t border-border-subtle/50 text-center">
@@ -627,7 +645,9 @@ export const EquipmentTestDetailPage: React.FC = () => {
                                   <tr>
                                     <th className="px-4 py-2.5 font-label-md text-text-muted uppercase tracking-wider text-xs">Time</th>
                                     <th className="px-4 py-2.5 font-label-md text-text-muted uppercase tracking-wider text-xs">Tester</th>
+                                    <th className="px-4 py-2.5 font-label-md text-text-muted uppercase tracking-wider text-center text-xs">Verified</th>
                                     <th className="px-4 py-2.5 font-label-md text-text-muted uppercase tracking-wider text-center text-xs">Program</th>
+
                                     <th className="px-4 py-2.5 font-label-md text-text-muted uppercase tracking-wider text-center text-xs">GO</th>
                                     <th className="px-4 py-2.5 font-label-md text-text-muted uppercase tracking-wider text-center text-xs">NO GO</th>
                                     <th className="px-4 py-2.5 font-label-md text-text-muted uppercase tracking-wider text-center border-l border-border-subtle text-xs">Result</th>
@@ -645,6 +665,16 @@ export const EquipmentTestDetailPage: React.FC = () => {
                                       </td>
                                       <td className="px-4 py-3 font-body-sm text-text-primary font-medium whitespace-nowrap">
                                         {attempt.testerUsername}
+                                      </td>
+                                      <td className="px-4 py-3 text-center">
+                                        {attempt.machineVerified ? (
+                                          <span className="inline-flex items-center gap-0.5 px-2 py-0.5 rounded text-[11px] font-semibold bg-primary/10 text-primary border border-primary/20">
+                                            <span className="material-symbols-outlined text-[13px]">check_circle</span>
+                                            <span>Yes</span>
+                                          </span>
+                                        ) : (
+                                          <span className="text-[11px] text-text-muted">—</span>
+                                        )}
                                       </td>
                                       <td className="px-4 py-3 text-center">
                                         <span
@@ -738,35 +768,99 @@ export const EquipmentTestDetailPage: React.FC = () => {
             </div>
 
             <form onSubmit={handleSubmitAttempt} className="p-4 sm:p-6 space-y-4 sm:space-y-5">
-              <div className="grid grid-cols-3 gap-2.5 sm:gap-4">
-                <div>
-                  <label className="block font-label-md text-text-primary text-xs sm:text-[13px] font-semibold mb-1.5">Program</label>
-                  <select
-                    value={attemptForm.programStatus}
-                    onChange={(e) => setAttemptForm({ ...attemptForm, programStatus: e.target.value as TestStatus })}
-                    className="w-full bg-surface-subtle border border-border-subtle rounded-xl font-body-md text-text-primary focus:bg-surface-card focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none transition-all py-2.5 px-2.5 sm:px-3 text-sm min-h-[44px]"
-                  >
-                    <option value="PASS">PASS</option>
-                    <option value="FAIL">FAIL</option>
-                  </select>
+              {/* Step 1: Program Status & Machine Verification Checkbox */}
+              <div>
+
+                <label className="block font-label-md text-text-primary text-xs sm:text-[13px] font-semibold mb-1.5">
+                  1. Program Status
+                </label>
+                <select
+                  value={attemptForm.programStatus}
+                  onChange={(e) => setAttemptForm({ ...attemptForm, programStatus: e.target.value as TestStatus })}
+                  className="w-full bg-surface-subtle border border-border-subtle rounded-xl font-body-md text-text-primary focus:bg-surface-card focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none transition-all py-2.5 px-3 text-sm min-h-[44px]"
+                >
+                  <option value="PASS">PASS</option>
+                  <option value="FAIL">FAIL</option>
+                </select>
+              </div>
+
+              {/* Confirmation Checkbox Card */}
+              <div
+                onClick={() => setAttemptForm({ ...attemptForm, confirmedMachineCheck: !attemptForm.confirmedMachineCheck })}
+                className={`p-3.5 rounded-xl border transition-all cursor-pointer select-none flex items-start gap-3 ${
+                  attemptForm.confirmedMachineCheck
+                    ? 'bg-primary/5 border-primary/40 ring-1 ring-primary/20'
+                    : 'bg-amber-500/5 border-amber-500/30 hover:border-amber-500/50'
+                }`}
+              >
+                <input
+                  type="checkbox"
+                  id="confirmedMachineCheck"
+                  checked={attemptForm.confirmedMachineCheck}
+                  onChange={(e) => setAttemptForm({ ...attemptForm, confirmedMachineCheck: e.target.checked })}
+                  onClick={(e) => e.stopPropagation()}
+                  className="mt-0.5 h-4.5 w-4.5 rounded border-border-strong text-primary focus:ring-primary/30 cursor-pointer accent-primary shrink-0"
+                />
+                <div className="flex-1">
+                  <label htmlFor="confirmedMachineCheck" className="text-xs sm:text-sm font-bold text-text-primary block cursor-pointer">
+                    Confirm correct GO and NO GO sample machine selected
+                  </label>
+                  <p className="text-[11px] sm:text-xs text-text-secondary mt-0.5 leading-relaxed">
+                    {attemptForm.confirmedMachineCheck
+                      ? '✓ Machine samples verified. You can now select evaluation results for GO and NO GO below.'
+                      : '⚠️ Please inspect the physical sample machines and check this box to unlock GO & NO GO evaluation.'}
+                  </p>
                 </div>
-                <div>
-                  <label className="block font-label-md text-text-primary text-xs sm:text-[13px] font-semibold mb-1.5">GO</label>
+              </div>
+
+              {/* Step 2: GO & NO GO Status (Gated by confirmation checkbox) */}
+              <div className="grid grid-cols-2 gap-3 sm:gap-4">
+                <div className={!attemptForm.confirmedMachineCheck ? 'opacity-60' : ''}>
+                  <div className="flex items-center justify-between mb-1.5">
+                    <label className="block font-label-md text-text-primary text-xs sm:text-[13px] font-semibold">
+                      2. GO Status
+                    </label>
+                    {!attemptForm.confirmedMachineCheck && (
+                      <span className="text-[10px] text-amber-600 dark:text-amber-400 font-medium flex items-center gap-0.5">
+                        <span className="material-symbols-outlined text-[13px]">lock</span> Locked
+                      </span>
+                    )}
+                  </div>
                   <select
                     value={attemptForm.goStatus}
+                    disabled={!attemptForm.confirmedMachineCheck}
                     onChange={(e) => setAttemptForm({ ...attemptForm, goStatus: e.target.value as TestStatus })}
-                    className="w-full bg-surface-subtle border border-border-subtle rounded-xl font-body-md text-text-primary focus:bg-surface-card focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none transition-all py-2.5 px-2.5 sm:px-3 text-sm min-h-[44px]"
+                    className={`w-full border rounded-xl font-body-md text-text-primary transition-all py-2.5 px-2.5 sm:px-3 text-sm min-h-[44px] ${
+                      !attemptForm.confirmedMachineCheck
+                        ? 'bg-surface-subtle/50 border-border-subtle cursor-not-allowed text-text-muted'
+                        : 'bg-surface-subtle border-border-subtle focus:bg-surface-card focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none cursor-pointer'
+                    }`}
                   >
                     <option value="PASS">PASS</option>
                     <option value="FAIL">FAIL</option>
                   </select>
                 </div>
-                <div>
-                  <label className="block font-label-md text-text-primary text-xs sm:text-[13px] font-semibold mb-1.5">NO GO</label>
+
+                <div className={!attemptForm.confirmedMachineCheck ? 'opacity-60' : ''}>
+                  <div className="flex items-center justify-between mb-1.5">
+                    <label className="block font-label-md text-text-primary text-xs sm:text-[13px] font-semibold">
+                      3. NO GO Status
+                    </label>
+                    {!attemptForm.confirmedMachineCheck && (
+                      <span className="text-[10px] text-amber-600 dark:text-amber-400 font-medium flex items-center gap-0.5">
+                        <span className="material-symbols-outlined text-[13px]">lock</span> Locked
+                      </span>
+                    )}
+                  </div>
                   <select
                     value={attemptForm.noGoStatus}
+                    disabled={!attemptForm.confirmedMachineCheck}
                     onChange={(e) => setAttemptForm({ ...attemptForm, noGoStatus: e.target.value as TestStatus })}
-                    className="w-full bg-surface-subtle border border-border-subtle rounded-xl font-body-md text-text-primary focus:bg-surface-card focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none transition-all py-2.5 px-2.5 sm:px-3 text-sm min-h-[44px]"
+                    className={`w-full border rounded-xl font-body-md text-text-primary transition-all py-2.5 px-2.5 sm:px-3 text-sm min-h-[44px] ${
+                      !attemptForm.confirmedMachineCheck
+                        ? 'bg-surface-subtle/50 border-border-subtle cursor-not-allowed text-text-muted'
+                        : 'bg-surface-subtle border-border-subtle focus:bg-surface-card focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none cursor-pointer'
+                    }`}
                   >
                     <option value="PASS">PASS</option>
                     <option value="FAIL">FAIL</option>
@@ -808,8 +902,9 @@ export const EquipmentTestDetailPage: React.FC = () => {
                 </button>
                 <button
                   type="submit"
-                  disabled={submittingAttempt}
-                  className="w-full sm:w-auto px-5 py-2.5 text-sm font-bold text-white bg-primary border border-transparent rounded-xl hover:bg-[#0369a1] active:bg-[#024a73] shadow-xs disabled:opacity-50 transition-colors inline-flex items-center justify-center gap-2 min-h-[44px]"
+                  disabled={submittingAttempt || !attemptForm.confirmedMachineCheck}
+                  title={!attemptForm.confirmedMachineCheck ? 'Please confirm the correct GO / NO GO machine before saving' : ''}
+                  className="w-full sm:w-auto px-5 py-2.5 text-sm font-bold text-white bg-primary border border-transparent rounded-xl hover:bg-[#0369a1] active:bg-[#024a73] shadow-xs disabled:opacity-50 disabled:cursor-not-allowed transition-colors inline-flex items-center justify-center gap-2 min-h-[44px]"
                 >
                   {submittingAttempt ? (
                     <span className="material-symbols-outlined animate-spin text-[18px]">progress_activity</span>
@@ -818,6 +913,8 @@ export const EquipmentTestDetailPage: React.FC = () => {
                   )}
                   <span>Save Attempt</span>
                 </button>
+
+
               </div>
             </form>
           </div>

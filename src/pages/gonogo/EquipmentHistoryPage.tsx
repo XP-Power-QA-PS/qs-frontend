@@ -90,9 +90,15 @@ export const EquipmentHistoryPage: React.FC = () => {
           <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
             {/* View Analytics */}
             <button
-              onClick={() =>
-                navigate(`/stats/equipment/${equipmentId}?code=${encodeURIComponent(equipmentCode)}&name=${encodeURIComponent(equipmentName)}`)
-              }
+              onClick={() => {
+                const query = new URLSearchParams({
+                  code: equipmentCode,
+                  name: equipmentName,
+                  ...(floorId ? { floorId } : {}),
+                  ...(floorName ? { floorName } : {}),
+                });
+                navigate(`/equipments/${equipmentId}/analytics?${query.toString()}`);
+              }}
               className="flex items-center justify-center space-x-2 px-4 py-2.5 rounded-xl font-headline-sm text-[14px] border border-primary text-primary hover:bg-primary/5 transition-all duration-200 min-h-[44px] cursor-pointer"
             >
               <span className="material-symbols-outlined text-[18px]">bar_chart</span>
