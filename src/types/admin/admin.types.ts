@@ -17,10 +17,14 @@ export interface Role {
   description: string;
 }
 
+export interface PageMetadata {
+  size: number;
+  number: number;
+  totalElements: number;
+  totalPages: number;
+}
+
 export interface PageResponse<T> {
   content: T[];
-  totalPages: number;
-  totalElements: number;
-  number: number;
-  size: number;
+  page: PageMetadata;
 }

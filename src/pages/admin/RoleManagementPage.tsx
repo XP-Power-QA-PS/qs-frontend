@@ -24,9 +24,9 @@ export const RoleManagementPage: React.FC = () => {
     setLoading(true);
     try {
       const data = await adminService.getRoles(page, size);
-      setRoles(data.content);
-      setTotalPages(data.totalPages);
-      setTotalElements(data.totalElements);
+      setRoles(data.content || []);
+      setTotalPages(data.page?.totalPages ?? (data as any).totalPages ?? 0);
+      setTotalElements(data.page?.totalElements ?? (data as any).totalElements ?? 0);
     } catch (error: any) {
       toast.error('Failed to load roles: ' + (error.message || 'Unknown error'));
     } finally {

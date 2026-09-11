@@ -12,6 +12,9 @@ import { EquipmentTestDetailPage } from '@/pages/gonogo/EquipmentTestDetailPage'
 import { EquipmentDayComparisonPage } from '@/pages/gonogo/EquipmentDayComparisonPage';
 import { GoNoGoStatisticsPage } from '@/pages/gonogo/GoNoGoStatisticsPage';
 import { EquipmentAnalyticsPage } from '@/pages/gonogo/EquipmentAnalyticsPage';
+import { MeetingInvitePage } from '@/pages/email/MeetingInvitePage';
+import { ComplaintListPage } from '@/pages/complaint/ComplaintListPage';
+import { ComplaintDetailPage } from '@/pages/complaint/ComplaintDetailPage';
 
 export interface BreadcrumbCrumbResult {
   label: string;
@@ -62,6 +65,33 @@ export const router = createBrowserRouter([
             element: <RoleManagementPage />,
             handle: {
               crumb: () => ({ label: 'Role Management', path: '/admin/roles' }),
+            } satisfies BreadcrumbHandle,
+          },
+          {
+            path: '/complaints',
+            element: <Outlet />,
+            handle: {
+              crumb: () => ({ label: 'Khiếu Nại Khách Hàng (CAPA)', path: '/complaints' }),
+            } satisfies BreadcrumbHandle,
+            children: [
+              {
+                index: true,
+                element: <ComplaintListPage />,
+              },
+              {
+                path: ':id',
+                element: <ComplaintDetailPage />,
+                handle: {
+                  crumb: ({ params }) => ({ label: `Hồ Sơ #${params.id}` }),
+                } satisfies BreadcrumbHandle,
+              },
+            ],
+          },
+          {
+            path: '/meeting-invite',
+            element: <MeetingInvitePage />,
+            handle: {
+              crumb: () => ({ label: 'Tổ Chức Họp & Gửi Mail', path: '/meeting-invite' }),
             } satisfies BreadcrumbHandle,
           },
           {
