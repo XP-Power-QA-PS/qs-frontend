@@ -32,9 +32,9 @@ export const UserManagementPage: React.FC = () => {
       const data = currentTab === 'Active'
         ? await adminService.getUsers(page, size, statusFilter, searchKeyword)
         : await adminService.getDeletedUsers(page, size);
-      setUsers(data.content);
-      setTotalPages(data.totalPages);
-      setTotalElements(data.totalElements);
+      setUsers(data.content || []);
+      setTotalPages(data.page?.totalPages ?? (data as any).totalPages ?? 0);
+      setTotalElements(data.page?.totalElements ?? (data as any).totalElements ?? 0);
     } catch (error: any) {
       toast.error('Failed to load users: ' + (error.message || 'Unknown error'));
     } finally {

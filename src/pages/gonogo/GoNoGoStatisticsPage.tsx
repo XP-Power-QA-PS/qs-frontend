@@ -96,7 +96,8 @@ export const GoNoGoStatisticsPage: React.FC = () => {
               type="date"
               value={filter.startDate}
               onChange={(e) => setFilter({ startDate: e.target.value })}
-              className="px-3 py-1.5 text-sm bg-surface-card border border-border-subtle rounded-xl text-text-primary focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"
+              onClick={(e) => e.currentTarget.showPicker?.()}
+              className="px-3 py-1.5 text-sm bg-surface-card border border-border-subtle rounded-xl text-text-primary focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary cursor-pointer hover:border-primary/60 transition-colors"
             />
           </div>
           <div className="flex flex-col gap-1">
@@ -105,7 +106,8 @@ export const GoNoGoStatisticsPage: React.FC = () => {
               type="date"
               value={filter.endDate}
               onChange={(e) => setFilter({ endDate: e.target.value })}
-              className="px-3 py-1.5 text-sm bg-surface-card border border-border-subtle rounded-xl text-text-primary focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"
+              onClick={(e) => e.currentTarget.showPicker?.()}
+              className="px-3 py-1.5 text-sm bg-surface-card border border-border-subtle rounded-xl text-text-primary focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary cursor-pointer hover:border-primary/60 transition-colors"
             />
           </div>
           <div className="flex items-center gap-1.5 text-xs text-text-muted self-end pb-1.5">

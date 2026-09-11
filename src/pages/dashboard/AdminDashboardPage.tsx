@@ -45,13 +45,13 @@ export const AdminDashboardPage: React.FC = () => {
 
         if (usersRes.status === 'fulfilled') {
           setUsers(usersRes.value.content || []);
-          setTotalUsers(usersRes.value.totalElements || (usersRes.value.content || []).length);
+          setTotalUsers(usersRes.value.page?.totalElements ?? (usersRes.value as any).totalElements ?? (usersRes.value.content || []).length);
         }
         if (rolesRes.status === 'fulfilled') {
           setRoles(rolesRes.value.content || []);
         }
         if (deletedRes.status === 'fulfilled') {
-          setDeletedCount(deletedRes.value.totalElements || (deletedRes.value.content || []).length);
+          setDeletedCount(deletedRes.value.page?.totalElements ?? (deletedRes.value as any).totalElements ?? (deletedRes.value.content || []).length);
         }
       } catch (err: any) {
         toast.error('Failed to load administration overview');

@@ -10,6 +10,8 @@ import {
   ChevronDown,
   X,
   ChevronLeft,
+  Mail,
+  FileSpreadsheet,
 } from 'lucide-react';
 
 interface SidebarProps {
@@ -168,6 +170,36 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 <LayoutDashboard className="w-5 h-5 shrink-0" />
               </NavLink>
 
+              <NavLink
+                to="/complaints"
+                onClick={() => onMobileClose?.()}
+                title="Customer Complaints (CAPA)"
+                className={({ isActive }) =>
+                  `flex items-center justify-center p-2.5 rounded-xl text-sm font-medium transition-all min-h-[44px] ${
+                    isActive
+                      ? 'bg-primary/10 text-primary font-semibold shadow-xs'
+                      : 'text-text-secondary hover:bg-surface-subtle hover:text-text-primary'
+                  }`
+                }
+              >
+                <FileSpreadsheet className="w-5 h-5 shrink-0" />
+              </NavLink>
+
+              <NavLink
+                to="/meeting-invite"
+                onClick={() => onMobileClose?.()}
+                title="Tổ Chức Họp & Gửi Mail"
+                className={({ isActive }) =>
+                  `flex items-center justify-center p-2.5 rounded-xl text-sm font-medium transition-all min-h-[44px] ${
+                    isActive
+                      ? 'bg-primary/10 text-primary font-semibold shadow-xs'
+                      : 'text-text-secondary hover:bg-surface-subtle hover:text-text-primary'
+                  }`
+                }
+              >
+                <Mail className="w-5 h-5 shrink-0" />
+              </NavLink>
+
               <div className="my-2 border-t border-border-subtle mx-2" />
 
               {/* Statistics Parent Item (Collapsed) */}
@@ -292,6 +324,36 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 >
                   <LayoutDashboard className="w-5 h-5 shrink-0" />
                   <span className="truncate">Admin Dashboard</span>
+                </NavLink>
+
+                <NavLink
+                  to="/complaints"
+                  onClick={() => onMobileClose?.()}
+                  className={({ isActive }) =>
+                    `flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-medium transition-all min-h-[44px] mt-1 ${
+                      isActive
+                        ? 'bg-primary/10 text-primary font-semibold shadow-xs'
+                        : 'text-text-secondary hover:bg-surface-subtle hover:text-text-primary'
+                    }`
+                  }
+                >
+                  <FileSpreadsheet className="w-5 h-5 shrink-0" />
+                  <span className="truncate">Customer Complaints (CAPA)</span>
+                </NavLink>
+
+                <NavLink
+                  to="/meeting-invite"
+                  onClick={() => onMobileClose?.()}
+                  className={({ isActive }) =>
+                    `flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-medium transition-all min-h-[44px] mt-1 ${
+                      isActive
+                        ? 'bg-primary/10 text-primary font-semibold shadow-xs'
+                        : 'text-text-secondary hover:bg-surface-subtle hover:text-text-primary'
+                    }`
+                  }
+                >
+                  <Mail className="w-5 h-5 shrink-0" />
+                  <span className="truncate">Tổ Chức Họp & Email</span>
                 </NavLink>
               </div>
 

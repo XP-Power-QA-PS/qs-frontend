@@ -33,13 +33,13 @@ export const apiClient = async (endpoint: string, options: RequestInit = {}): Pr
   const response = await fetch(endpoint, config);
 
   if (!response.ok) {
-    if (response.status === 401) {
+    if (response.status === 401 || response.status === 403) {
       const refreshToken = localStorage.getItem(AUTH_CONSTANTS.REFRESH_TOKEN_KEY);
       
       if (!refreshToken) {
         localStorage.removeItem(AUTH_CONSTANTS.ACCESS_TOKEN_KEY);
         window.location.href = '/login';
-        return Promise.reject(new Error('Unauthorized'));
+        return Promise.reject(new Error('Phiên làm việc đã hết hạn. Vui lòng đăng nhập lại.'));
       }
 
       if (!isRefreshing) {
