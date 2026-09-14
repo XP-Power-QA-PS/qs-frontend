@@ -86,33 +86,33 @@ export const EmailLivePreview: React.FC<EmailLivePreviewProps> = ({ request }) =
               QS Quality System • Preliminary Review
             </span>
             <h2 className="text-base sm:text-lg font-bold m-0 leading-tight">
-              THƯ MỜI HỌP ĐÁNH GIÁ KHIẾU NẠI KHÁCH HÀNG
+              CUSTOMER COMPLAINT REVIEW MEETING INVITATION
             </h2>
           </div>
 
           <div className="p-5 space-y-4">
             <p className="text-slate-700 leading-relaxed text-xs">
-              Kính gửi các thành viên đội ngũ liên chức năng (CFT),<br />
-              Hệ thống chất lượng QS kính gửi thông tin cuộc họp đánh giá sơ bộ cho khiếu nại khách hàng: 
+              Dear Cross-Functional Team (CFT) Members,<br />
+              The QS Quality System invites you to attend the Preliminary Review meeting for customer complaint case: 
               <strong className="text-primary font-bold ml-1">#{request.trackingNo || '2026-09-XXXX'}</strong>.
             </p>
 
             {/* 4 CORE MEETING FIELDS HIGHLIGHT BOX */}
             <div className="bg-sky-50/80 border border-sky-200 border-l-4 border-l-[#006194] rounded-md p-3.5 text-xs space-y-2">
               <h3 className="text-[#004b73] font-bold text-xs uppercase tracking-wider mb-2">
-                THÔNG TIN CUỘC HỌP (MEETING DETAILS)
+                MEETING DETAILS
               </h3>
               
               <div className="grid grid-cols-[110px_1fr] gap-1 items-center">
                 <span className="text-sky-900 font-semibold flex items-center gap-1.5">
-                  <Calendar className="w-3.5 h-3.5 text-[#006194]" /> Ngày họp:
+                  <Calendar className="w-3.5 h-3.5 text-[#006194]" /> Date:
                 </span>
-                <span className="font-bold text-slate-900">{request.meetingDate || 'Chưa chọn'}</span>
+                <span className="font-bold text-slate-900">{request.meetingDate || 'Not selected'}</span>
               </div>
 
               <div className="grid grid-cols-[110px_1fr] gap-1 items-center">
                 <span className="text-sky-900 font-semibold flex items-center gap-1.5">
-                  <Clock className="w-3.5 h-3.5 text-[#006194]" /> Giờ họp:
+                  <Clock className="w-3.5 h-3.5 text-[#006194]" /> Time:
                 </span>
                 <span className="font-bold text-slate-900">
                   {request.startTime || '--:--'} {request.endTime ? `- ${request.endTime}` : ''} (GMT+7)
@@ -121,26 +121,26 @@ export const EmailLivePreview: React.FC<EmailLivePreviewProps> = ({ request }) =
 
               <div className="grid grid-cols-[110px_1fr] gap-1 items-center">
                 <span className="text-sky-900 font-semibold flex items-center gap-1.5">
-                  <MapPin className="w-3.5 h-3.5 text-[#006194]" /> Phòng họp:
+                  <MapPin className="w-3.5 h-3.5 text-[#006194]" /> Location:
                 </span>
                 <span className="font-bold text-slate-900 break-all">
-                  {request.roomLocation || 'Chưa nhập phòng họp / link'}
+                  {request.roomLocation || 'Not specified / Link'}
                 </span>
               </div>
 
               <div className="grid grid-cols-[110px_1fr] gap-1 items-start pt-1">
                 <span className="text-sky-900 font-semibold flex items-center gap-1.5 mt-1">
-                  <FileText className="w-3.5 h-3.5 text-[#006194]" /> Nội dung:
+                  <FileText className="w-3.5 h-3.5 text-[#006194]" /> Agenda:
                 </span>
                 <div className="bg-white border border-sky-100 rounded p-2 text-slate-800 whitespace-pre-line text-xs font-normal">
-                  {request.agenda || 'Nội dung chương trình họp...'}
+                  {request.agenda || 'Meeting agenda details...'}
                 </div>
               </div>
 
               {request.organizerName && (
                 <div className="grid grid-cols-[110px_1fr] gap-1 items-center pt-1 border-t border-sky-200/60">
                   <span className="text-sky-900 font-semibold flex items-center gap-1.5">
-                    <User className="w-3.5 h-3.5 text-[#006194]" /> Người triệu tập:
+                    <User className="w-3.5 h-3.5 text-[#006194]" /> Organizer:
                   </span>
                   <span className="font-medium text-slate-800">
                     {request.organizerName} {request.organizerEmail ? `(${request.organizerEmail})` : ''}
@@ -153,34 +153,34 @@ export const EmailLivePreview: React.FC<EmailLivePreviewProps> = ({ request }) =
             <div className="bg-amber-50 border border-amber-200 text-amber-900 p-2.5 rounded-md text-[11px] leading-relaxed flex items-start gap-2">
               <CheckCircle2 className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
               <div>
-                File lịch đính kèm <strong>(meeting-invite.ics)</strong> được gửi kèm. Người nhận có thể bấm <strong>Accept</strong> trên Outlook để tự động đồng bộ vào lịch.
+                A calendar invitation file <strong>(meeting-invite.ics)</strong> is attached. Recipients can click <strong>Accept</strong> in Outlook or Google Calendar to automatically add it to their schedule.
               </div>
             </div>
 
             {/* Complaint summary */}
             <div className="text-xs space-y-1">
               <div className="font-bold text-slate-800 pb-1 border-b border-border-subtle">
-                TÓM TẮT HỒ SƠ KHIẾU NẠI
+                COMPLAINT SUMMARY
               </div>
               <div className="grid grid-cols-[120px_1fr] gap-1 py-1 text-slate-700">
-                <span className="text-text-muted">Mã theo dõi:</span>
+                <span className="text-text-muted">Tracking No.:</span>
                 <span className="font-semibold text-slate-900">#{request.trackingNo}</span>
               </div>
               {request.customerName && (
                 <div className="grid grid-cols-[120px_1fr] gap-1 py-1 text-slate-700">
-                  <span className="text-text-muted">Khách hàng:</span>
+                  <span className="text-text-muted">Customer:</span>
                   <span>{request.customerName}</span>
                 </div>
               )}
               {request.model && (
                 <div className="grid grid-cols-[120px_1fr] gap-1 py-1 text-slate-700">
-                  <span className="text-text-muted">Model:</span>
+                  <span className="text-text-muted">Product Model:</span>
                   <span className="font-medium">{request.model}</span>
                 </div>
               )}
               {request.issueDescription && (
                 <div className="grid grid-cols-[120px_1fr] gap-1 py-1 text-slate-700">
-                  <span className="text-text-muted">Hiện tượng lỗi:</span>
+                  <span className="text-text-muted">Issue Description:</span>
                   <span>{request.issueDescription}</span>
                 </div>
               )}
@@ -188,7 +188,7 @@ export const EmailLivePreview: React.FC<EmailLivePreviewProps> = ({ request }) =
           </div>
 
           <div className="bg-slate-50 border-t border-border-subtle p-3 text-center text-[10px] text-text-muted">
-            Email tự động từ Hệ thống Quản lý Chất lượng QS (Quality System).
+            This is an automated notification from the QS Quality System. Please do not reply directly to this email address.
           </div>
         </div>
       </div>

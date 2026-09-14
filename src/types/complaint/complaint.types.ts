@@ -11,6 +11,10 @@ export type ComplaintStatus =
 
 export type InternalExternal = 'INTERNAL' | 'EXTERNAL';
 
+export type Priority = 'LOW' | 'MEDIUM' | 'HIGH';
+
+export type EffectivenessStatus = 'PENDING' | 'EFFECTIVE' | 'NOT_EFFECTIVE';
+
 export interface ComplaintCreateRequest {
   receivedDate: string; // YYYY-MM-DD
   controlNo?: string;
@@ -29,6 +33,12 @@ export interface ComplaintCreateRequest {
   quantity?: number;
   serialNumbers?: string;
   pictureUrls?: string;
+
+  // Phase 2: Initial Assignment & Priority (optional on intake)
+  assignedTeam?: string;
+  assignedPerson?: string;
+  priority?: Priority | string;
+  assignmentDeadline?: string;
 }
 
 export interface ComplaintMeeting {
@@ -62,6 +72,7 @@ export interface ComplaintSummary {
   id: string | number;
   trackingNo: string;
   controlNo?: string;
+  capaNo?: string;
   year: number;
   month: string;
   week?: number;
@@ -74,8 +85,15 @@ export interface ComplaintSummary {
   defectName?: string;
   quantity?: number;
   internalExternal: InternalExternal;
+
+  // Assignment
+  assignedTeam?: string;
+  assignedPerson?: string;
+  priority?: Priority | string;
+
   status: ComplaintStatus;
   actionStatus?: string;
+  effectivenessStatus?: EffectivenessStatus;
   finalStatus?: string;
   ageingOpen?: number | null;
   ageingClosed?: number | null;
@@ -83,7 +101,6 @@ export interface ComplaintSummary {
 
 export interface ComplaintDetail extends ComplaintSummary {
   buildingStage?: string;
-  capaNo?: string;
   closureDate?: string;
   originOfComplaint?: string;
   salesforceCapa?: string;
@@ -91,13 +108,40 @@ export interface ComplaintDetail extends ComplaintSummary {
   customerFinding?: string;
   serialNumbers?: string;
   pictureUrls?: string;
-  rootCause?: string;
+
+  // Phase 2: Assignment
+  assignmentDeadline?: string;
+
+  // Phase 3: Containment
   containmentAction?: string;
   containmentDueDate?: string;
+  containmentOwner?: string;
+  containmentCompletionDate?: string;
+  containmentStatus?: string;
+
+  // Phase 4: Root Cause
+  rootCause?: string;
+  rootCauseCategory?: string;
+  rootCauseOwner?: string;
+  rootCauseCompletionDate?: string;
+
+  // Phase 5 & 6: CAPA
+  correctiveAction?: string;
+  preventiveAction?: string;
   correctivePreventiveAction?: string;
   actionOwner?: string;
   actionDueDate?: string;
+  capaCompletionDate?: string;
+
+  // Phase 7: Effectiveness Verification
+  effectivenessVerifiedDate?: string;
+  effectivenessVerifiedBy?: string;
+  effectivenessRemarks?: string;
+
+  // Phase 8: Closure
+  finalEvidence?: string;
   remarks?: string;
+
   meetings: ComplaintMeeting[];
   createdBy: string;
   createdAt: string;
@@ -205,22 +249,44 @@ export interface ComplaintUpdateRequest {
   serialNumbers?: string;
   pictureUrls?: string;
 
+  // Phase 2: Assignment
+  assignedTeam?: string;
+  assignedPerson?: string;
+  priority?: Priority | string;
+  assignmentDeadline?: string;
+
   // Phase 3: Containment
   containmentAction?: string;
   containmentDueDate?: string;
+  containmentOwner?: string;
+  containmentCompletionDate?: string;
+  containmentStatus?: string;
 
   // Phase 4: Root Cause
   rootCause?: string;
+  rootCauseCategory?: string;
+  rootCauseOwner?: string;
+  rootCauseCompletionDate?: string;
 
   // Phase 5 & 6: CAPA
+  correctiveAction?: string;
+  preventiveAction?: string;
   correctivePreventiveAction?: string;
   actionOwner?: string;
   actionDueDate?: string;
   actionStatus?: string;
+  capaCompletionDate?: string;
 
-  // Phase 7: Closure
+  // Phase 7: Effectiveness Verification
+  effectivenessStatus?: EffectivenessStatus;
+  effectivenessVerifiedDate?: string;
+  effectivenessVerifiedBy?: string;
+  effectivenessRemarks?: string;
+
+  // Phase 8: Closure
   closureDate?: string;
   finalStatus?: string;
+  finalEvidence?: string;
   remarks?: string;
 
   // Lifecycle Status

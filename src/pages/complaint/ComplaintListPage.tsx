@@ -311,6 +311,26 @@ export const ComplaintListPage: React.FC = () => {
                         <span className="hover:underline flex items-center gap-1">
                           {c.trackingNo}
                         </span>
+                        <div className="flex flex-wrap items-center gap-1 mt-1">
+                          {c.capaNo && (
+                            <span className="text-[10px] font-mono text-purple-700 bg-purple-50 px-1.5 py-0.5 rounded border border-purple-200">
+                              {c.capaNo}
+                            </span>
+                          )}
+                          {c.priority && (
+                            <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded uppercase tracking-wider ${
+                              c.priority === 'CRITICAL'
+                                ? 'bg-rose-100 text-rose-800'
+                                : c.priority === 'HIGH'
+                                ? 'bg-amber-100 text-amber-800'
+                                : c.priority === 'LOW'
+                                ? 'bg-slate-100 text-slate-700'
+                                : 'bg-blue-100 text-blue-800'
+                            }`}>
+                              {c.priority}
+                            </span>
+                          )}
+                        </div>
                       </td>
                       <td className="py-3.5 px-4 font-semibold text-text-primary">
                         {c.customerName}
