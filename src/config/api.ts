@@ -1,14 +1,27 @@
 import { AUTH_CONSTANTS } from '../constants/app.constants';
 
-let isRefreshing = false;
-let refreshSubscribers: ((token: string) => void)[] = [];
+interface RefreshSubscriber {
+  resolve: (token: string) => void;
+  reject: (err: any) => void;
+}
 
-const subscribeTokenRefresh = (cb: (token: string) => void) => {
-  refreshSubscribers.push(cb);
+let isRefreshing = false;
+let refreshSubscribers: RefreshSubscriber[] = [];
+
+const subscribeTokenRefresh = (
+  resolve: (token: string) => void,
+  reject: (err: any) => void
+) => {
+  refreshSubscribers.push({ resolve, reject });
 };
 
 const onRefreshed = (token: string) => {
-  refreshSubscribers.forEach((cb) => cb(token));
+  refreshSubscribers.forEach((sub) => sub.resolve(token));
+  refreshSubscribers = [];
+};
+
+const onRefreshFailed = (err: any) => {
+  refreshSubscribers.forEach((sub) => sub.reject(err));
   refreshSubscribers = [];
 };
 
@@ -33,7 +46,7 @@ export const apiClient = async (endpoint: string, options: RequestInit = {}): Pr
   const response = await fetch(endpoint, config);
 
   if (!response.ok) {
-    if (response.status === 401 || response.status === 403) {
+    if (response.status === 401) {
       const refreshToken = localStorage.getItem(AUTH_CONSTANTS.REFRESH_TOKEN_KEY);
       
       if (!refreshToken) {
@@ -58,31 +71,48 @@ export const apiClient = async (endpoint: string, options: RequestInit = {}): Pr
           localStorage.setItem(AUTH_CONSTANTS.ACCESS_TOKEN_KEY, data.accessToken);
           localStorage.setItem(AUTH_CONSTANTS.REFRESH_TOKEN_KEY, data.refreshToken);
           onRefreshed(data.accessToken);
-        }).catch(() => {
+        }).catch((_err) => {
           localStorage.removeItem(AUTH_CONSTANTS.ACCESS_TOKEN_KEY);
           localStorage.removeItem(AUTH_CONSTANTS.REFRESH_TOKEN_KEY);
+          const sessionErr = new Error('Phiên làm việc đã hết hạn. Vui lòng đăng nhập lại.');
+          onRefreshFailed(sessionErr);
           window.location.href = '/login';
         }).finally(() => {
           isRefreshing = false;
         });
       }
 
-
       // Wait for the refresh to complete, then retry the request
       return new Promise((resolve, reject) => {
-        subscribeTokenRefresh((newToken) => {
-          const newHeaders = {
-            ...headers,
-            'Authorization': `Bearer ${newToken}`
-          };
-          fetch(endpoint, { ...config, headers: newHeaders })
-            .then(res => {
-              if (res.status === 204) return resolve({});
-              return res.text().then(text => resolve(text ? JSON.parse(text) : {}));
-            })
-            .catch(reject);
-        });
+        subscribeTokenRefresh(
+          (newToken) => {
+            const newHeaders = {
+              ...headers,
+              'Authorization': `Bearer ${newToken}`
+            };
+            fetch(endpoint, { ...config, headers: newHeaders })
+              .then(res => {
+                if (res.status === 204) return resolve({});
+                return res.text().then(text => resolve(text ? JSON.parse(text) : {}));
+              })
+              .catch(reject);
+          },
+          (err) => {
+            reject(err);
+          }
+        );
       });
+    }
+
+    if (response.status === 403) {
+      let forbiddenMsg = 'Bạn không có quyền truy cập hoặc thực hiện thao tác này (403 Forbidden).';
+      try {
+        const errorData = await response.json();
+        forbiddenMsg = errorData.message || forbiddenMsg;
+      } catch (e) {
+        // use default message
+      }
+      throw new Error(forbiddenMsg);
     }
 
     let errorMsg = `Server error (${response.status})`;
