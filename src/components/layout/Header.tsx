@@ -16,8 +16,8 @@ export const Header: React.FC<HeaderProps> = ({ onToggleSidebar, isSidebarCollap
   const isUser = role === 'ROLE_USER';
   const [isProfileOpen, setIsProfileOpen] = useState(false);
 
-  const handleLogout = () => {
-    authService.logout();
+  const handleLogout = async () => {
+    await authService.logout();
     navigate('/login');
   };
 

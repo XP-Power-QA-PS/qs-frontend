@@ -32,9 +32,42 @@ export const authService = {
     return data;
   },
 
-  logout: () => {
-    localStorage.removeItem(AUTH_CONSTANTS.ACCESS_TOKEN_KEY);
-    localStorage.removeItem(AUTH_CONSTANTS.REFRESH_TOKEN_KEY);
+  logout: async (): Promise<void> => {
+    const token = localStorage.getItem(AUTH_CONSTANTS.ACCESS_TOKEN_KEY);
+    try {
+      if (token) {
+        await fetch(`${BASE_URL}/auth/logout`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+          },
+        });
+      }
+    } catch (err) {
+      console.warn('Backend logout request failed, clearing local tokens:', err);
+    } finally {
+      localStorage.removeItem(AUTH_CONSTANTS.ACCESS_TOKEN_KEY);
+      localStorage.removeItem(AUTH_CONSTANTS.REFRESH_TOKEN_KEY);
+    }
+  },
+
+  logoutAll: async (): Promise<void> => {
+    const token = localStorage.getItem(AUTH_CONSTANTS.ACCESS_TOKEN_KEY);
+    try {
+      if (token) {
+        await fetch(`${BASE_URL}/auth/logout-all`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+          },
+        });
+      }
+    } catch (err) {
+      console.warn('Backend logout-all request failed, clearing local tokens:', err);
+    } finally {
+      localStorage.removeItem(AUTH_CONSTANTS.ACCESS_TOKEN_KEY);
+      localStorage.removeItem(AUTH_CONSTANTS.REFRESH_TOKEN_KEY);
+    }
   },
 
   getAccessToken: () => {
@@ -42,7 +75,7 @@ export const authService = {
   },
 
   isAuthenticated: () => {
-    return !!localStorage.getItem(AUTH_CONSTANTS.ACCESS_TOKEN_KEY);
+    return !!localStorage.getItem(AUTH_CONSTANTS.ACCESS_TOKEN_KEY) || !!localStorage.getItem(AUTH_CONSTANTS.REFRESH_TOKEN_KEY);
   },
 
   getUserRole: (): string | null => {
@@ -57,6 +90,11 @@ export const authService = {
     }
     
     return decoded?.role || null;
+  },
+
+  hasRole: (requiredRole: string): boolean => {
+    const role = authService.getUserRole();
+    return role === requiredRole;
   }
 };
 

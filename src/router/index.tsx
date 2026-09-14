@@ -5,6 +5,7 @@ import { AdminDashboardPage } from '@/pages/dashboard/AdminDashboardPage';
 import { UserManagementPage } from '@/pages/admin/UserManagementPage';
 import { RoleManagementPage } from '@/pages/admin/RoleManagementPage';
 import { ProtectedRoute } from './ProtectedRoute';
+import { AdminRoute } from './AdminRoute';
 import { AdminLayout } from '@/components/layout/AdminLayout';
 import { EquipmentListPage } from '@/pages/gonogo/EquipmentListPage';
 import { EquipmentHistoryPage } from '@/pages/gonogo/EquipmentHistoryPage';
@@ -47,25 +48,30 @@ export const router = createBrowserRouter([
             element: <UserDashboardPage />,
           },
           {
-            path: '/admin/dashboard',
-            element: <AdminDashboardPage />,
-            handle: {
-              crumb: () => ({ label: 'Admin Dashboard', path: '/admin/dashboard' }),
-            } satisfies BreadcrumbHandle,
-          },
-          {
-            path: '/admin/users',
-            element: <UserManagementPage />,
-            handle: {
-              crumb: () => ({ label: 'User Management', path: '/admin/users' }),
-            } satisfies BreadcrumbHandle,
-          },
-          {
-            path: '/admin/roles',
-            element: <RoleManagementPage />,
-            handle: {
-              crumb: () => ({ label: 'Role Management', path: '/admin/roles' }),
-            } satisfies BreadcrumbHandle,
+            element: <AdminRoute />,
+            children: [
+              {
+                path: '/admin/dashboard',
+                element: <AdminDashboardPage />,
+                handle: {
+                  crumb: () => ({ label: 'Admin Dashboard', path: '/admin/dashboard' }),
+                } satisfies BreadcrumbHandle,
+              },
+              {
+                path: '/admin/users',
+                element: <UserManagementPage />,
+                handle: {
+                  crumb: () => ({ label: 'User Management', path: '/admin/users' }),
+                } satisfies BreadcrumbHandle,
+              },
+              {
+                path: '/admin/roles',
+                element: <RoleManagementPage />,
+                handle: {
+                  crumb: () => ({ label: 'Role Management', path: '/admin/roles' }),
+                } satisfies BreadcrumbHandle,
+              },
+            ],
           },
           {
             path: '/complaints',
