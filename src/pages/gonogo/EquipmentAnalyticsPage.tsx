@@ -90,6 +90,7 @@ export const EquipmentAnalyticsPage: React.FC = () => {
 
   const equipmentCode = searchParams.get('code') || '';
   const equipmentName = searchParams.get('name') || '';
+  const snParam = searchParams.get('sn') || '';
 
   const now = new Date();
   const [month, setMonth] = useState(now.getMonth() + 1);
@@ -143,6 +144,11 @@ export const EquipmentAnalyticsPage: React.FC = () => {
               <span className="px-2.5 py-0.5 bg-primary/10 text-primary font-technical-data text-xs font-semibold rounded-lg border border-primary/20">
                 {data?.equipmentCode || equipmentCode}
               </span>
+              {(data?.serialNumber || snParam) && (
+                <span className="px-2.5 py-0.5 bg-surface-subtle text-text-secondary font-technical-data text-xs rounded-lg border border-border-subtle">
+                  SN: {data?.serialNumber || snParam}
+                </span>
+              )}
             </div>
             <p className="text-xs text-text-secondary">
               Equipment Analytics — {data?.floorName ?? ''}

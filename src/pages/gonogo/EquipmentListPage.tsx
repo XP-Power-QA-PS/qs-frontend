@@ -42,12 +42,13 @@ export const EquipmentListPage: React.FC = () => {
   };
 
   const openHistoryPage = (equipment: Equipment) => {
-    navigate(`/equipments/${equipment.id}/history?code=${encodeURIComponent(equipment.equipmentCode)}&name=${encodeURIComponent(equipment.equipmentName)}&floorId=${floorIdParam}&floorName=${encodeURIComponent(floorNameParam)}`);
+    navigate(`/equipments/${equipment.id}/history?code=${encodeURIComponent(equipment.equipmentCode)}&name=${encodeURIComponent(equipment.equipmentName)}&floorId=${floorIdParam}&floorName=${encodeURIComponent(floorNameParam)}${equipment.serialNumber ? `&sn=${encodeURIComponent(equipment.serialNumber)}` : ''}`);
   };
 
   const filteredEquipments = equipments.filter((eq) =>
     eq.equipmentName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    eq.equipmentCode.toLowerCase().includes(searchQuery.toLowerCase())
+    eq.equipmentCode.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    (eq.serialNumber && eq.serialNumber.toLowerCase().includes(searchQuery.toLowerCase()))
   );
 
   return (
@@ -81,7 +82,7 @@ export const EquipmentListPage: React.FC = () => {
           </span>
           <input
             type="text"
-            placeholder="Search equipment code or name..."
+            placeholder="Search equipment code, name, or serial number..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="w-full pl-10 pr-4 py-2 bg-surface-card border border-border-subtle rounded-xl text-sm text-text-primary placeholder:text-text-muted focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary shadow-2xs transition-all"
@@ -121,9 +122,15 @@ export const EquipmentListPage: React.FC = () => {
                     #{idx + 1}
                   </span>
                 </div>
-                <h3 className="font-headline-sm text-base sm:text-lg font-bold text-text-primary group-hover:text-primary transition-colors line-clamp-2 mb-3">
+                <h3 className="font-headline-sm text-base sm:text-lg font-bold text-text-primary group-hover:text-primary transition-colors line-clamp-2 mb-2">
                   {eq.equipmentName}
                 </h3>
+                {eq.serialNumber && (
+                  <div className="flex items-center text-xs text-text-muted font-technical-data mb-3">
+                    <span className="font-medium text-text-secondary mr-1.5">SN:</span>
+                    <span className="text-text-primary">{eq.serialNumber}</span>
+                  </div>
+                )}
               </div>
 
               <div className="pt-3 border-t border-border-subtle/80 flex items-center justify-between text-primary font-medium text-sm">
@@ -139,13 +146,14 @@ export const EquipmentListPage: React.FC = () => {
         /* Table View Mode with Horizontal Scrolling */
         <div className="bg-surface-card rounded-xl shadow-xs border border-border-subtle overflow-hidden max-w-full w-full">
           <div className="overflow-x-auto max-w-full w-full">
-            <table className="w-full text-left border-collapse min-w-[600px]">
+            <table className="w-full text-left border-collapse min-w-[650px]">
               <thead className="bg-surface-subtle border-b border-border-subtle">
                 <tr>
-                  <th className="px-4 sm:px-space-lg py-3 font-label-md text-text-muted uppercase tracking-wider w-[10%] text-xs">No.</th>
-                  <th className="px-4 sm:px-space-lg py-3 font-label-md text-text-muted uppercase tracking-wider w-[25%] text-xs">Equipment Code</th>
-                  <th className="px-4 sm:px-space-lg py-3 font-label-md text-text-muted uppercase tracking-wider w-[40%] text-xs">Equipment Name</th>
-                  <th className="px-4 sm:px-space-lg py-3 font-label-md text-text-muted uppercase tracking-wider text-right w-[15%] text-xs">Action</th>
+                  <th className="px-4 sm:px-space-lg py-3 font-label-md text-text-muted uppercase tracking-wider w-[8%] text-xs">No.</th>
+                  <th className="px-4 sm:px-space-lg py-3 font-label-md text-text-muted uppercase tracking-wider w-[22%] text-xs">Equipment Code</th>
+                  <th className="px-4 sm:px-space-lg py-3 font-label-md text-text-muted uppercase tracking-wider w-[35%] text-xs">Equipment Name</th>
+                  <th className="px-4 sm:px-space-lg py-3 font-label-md text-text-muted uppercase tracking-wider w-[25%] text-xs">Serial Number</th>
+                  <th className="px-4 sm:px-space-lg py-3 font-label-md text-text-muted uppercase tracking-wider text-right w-[10%] text-xs">Action</th>
                 </tr>
               </thead>
               <tbody>
@@ -163,6 +171,9 @@ export const EquipmentListPage: React.FC = () => {
                     </td>
                     <td className="px-4 sm:px-space-lg py-4 font-body-md text-text-secondary group-hover:text-primary transition-colors">
                       {eq.equipmentName}
+                    </td>
+                    <td className="px-4 sm:px-space-lg py-4 font-technical-data text-xs text-text-secondary">
+                      {eq.serialNumber || '—'}
                     </td>
                     <td className="px-4 sm:px-space-lg py-4 text-right">
                       <span className="material-symbols-outlined text-border-strong group-hover:text-primary transition-colors text-[24px]">
