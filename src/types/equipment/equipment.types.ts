@@ -8,6 +8,7 @@ export interface Equipment {
   id: string;
   equipmentCode: string;
   equipmentName: string;
+  serialNumber?: string;
   floorId: string;
 }
 

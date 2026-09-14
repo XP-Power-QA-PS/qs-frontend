@@ -14,6 +14,7 @@ export const EquipmentTestDetailPage: React.FC = () => {
 
   const equipmentCode = searchParams.get('code') || 'Unknown Code';
   const equipmentName = searchParams.get('name') || 'Unknown Name';
+  const serialNumber = searchParams.get('sn') || '';
   const month = searchParams.get('month') || '';
   const year = searchParams.get('year') || '';
 
@@ -240,6 +241,11 @@ export const EquipmentTestDetailPage: React.FC = () => {
               <span className="px-2 py-0.5 bg-primary/10 text-primary font-technical-data font-semibold rounded-md border border-primary/20">
                 {equipmentCode}
               </span>
+              {serialNumber && (
+                <span className="px-2 py-0.5 bg-surface-subtle text-text-secondary font-technical-data rounded-md border border-border-subtle">
+                  SN: {serialNumber}
+                </span>
+              )}
               <span className="text-border-strong px-1">|</span>
               <span className="text-text-secondary">
                 Period: {month && year ? <strong className="text-text-primary font-semibold">Month {month}/{year}</strong> : 'Unknown'}

@@ -1,31 +1,59 @@
-import React from 'react';
-import { Image as ImageIcon, X, Save } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Image as ImageIcon, X, Save, AlertCircle } from 'lucide-react';
+import { complaintService } from '@/services/complaint/complaintService';
 import type { ComplaintDetail } from '@/types/complaint/complaint.types';
 
-interface EditDefectPicturesModalProps {
+export interface EditDefectPicturesModalProps {
   isOpen: boolean;
   complaint: ComplaintDetail | null;
-  pictureUrls: string;
-  isSaving: boolean;
   onClose: () => void;
-  onUrlsChange: (urls: string) => void;
-  onSave: () => void;
-  parsePictureUrls: (urls?: string) => string[];
+  onSuccess: (updatedComplaint: ComplaintDetail) => void;
 }
+
+const parsePictureUrls = (urls?: string): string[] => {
+  if (!urls) return [];
+  return urls
+    .split(/[\n,;]+/)
+    .map((u) => u.trim())
+    .filter((u) => u.startsWith('http://') || u.startsWith('https://') || u.startsWith('data:image/'));
+};
 
 export const EditDefectPicturesModal: React.FC<EditDefectPicturesModalProps> = ({
   isOpen,
   complaint,
-  pictureUrls,
-  isSaving,
   onClose,
-  onUrlsChange,
-  onSave,
-  parsePictureUrls,
+  onSuccess,
 }) => {
+  const [pictureUrls, setPictureUrls] = useState('');
+  const [isSaving, setIsSaving] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (complaint && isOpen) {
+      setPictureUrls(complaint.pictureUrls || '');
+      setErrorMessage(null);
+    }
+  }, [complaint, isOpen]);
+
   if (!isOpen || !complaint) return null;
 
   const validUrls = parsePictureUrls(pictureUrls);
+
+  const handleSave = async () => {
+    setIsSaving(true);
+    setErrorMessage(null);
+    try {
+      const updated = await complaintService.updateComplaint(complaint.id, {
+        pictureUrls: pictureUrls.trim() || undefined,
+      });
+      onSuccess(updated);
+      onClose();
+    } catch (err: any) {
+      setErrorMessage(err.message || 'Failed to update defect pictures. Please try again.');
+    } finally {
+      setIsSaving(false);
+    }
+  };
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-xs animate-in fade-in duration-200">
@@ -54,6 +82,13 @@ export const EditDefectPicturesModal: React.FC<EditDefectPicturesModalProps> = (
         </div>
 
         <div className="p-6 space-y-4 text-xs">
+          {errorMessage && (
+            <div className="flex items-center gap-2 p-3 bg-rose-50 border border-rose-200 rounded-xl text-rose-700 text-xs animate-in fade-in">
+              <AlertCircle className="w-4 h-4 shrink-0" />
+              <span>{errorMessage}</span>
+            </div>
+          )}
+
           <div className="space-y-1.5">
             <label className="block font-semibold text-text-secondary">
               Defect Picture URLs:
@@ -61,7 +96,7 @@ export const EditDefectPicturesModal: React.FC<EditDefectPicturesModalProps> = (
             <textarea
               rows={4}
               value={pictureUrls}
-              onChange={(e) => onUrlsChange(e.target.value)}
+              onChange={(e) => setPictureUrls(e.target.value)}
               placeholder="Paste defect picture URLs (multiple URLs supported, separated by newlines or commas):&#10;https://example.com/defect1.jpg&#10;https://example.com/defect2.png"
               className="w-full px-3 py-2 bg-surface-canvas border border-border-subtle rounded-xl text-text-primary text-xs font-mono focus:ring-2 focus:ring-primary/20 focus:border-primary"
             />
@@ -109,7 +144,7 @@ export const EditDefectPicturesModal: React.FC<EditDefectPicturesModalProps> = (
             <button
               type="button"
               disabled={isSaving}
-              onClick={onSave}
+              onClick={handleSave}
               className="inline-flex items-center gap-2 px-4 py-2 bg-primary hover:bg-primary-hover disabled:opacity-50 text-white text-xs font-semibold rounded-xl shadow-xs transition-all active:scale-98 cursor-pointer"
             >
               {isSaving ? (

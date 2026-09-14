@@ -34,14 +34,21 @@ export const ComplaintDetailPage: React.FC = () => {
 
   const getInitialActivePhase = (status?: string): 2 | 3 | 4 | 5 | 6 | 7 => {
     switch (status) {
-      case 'RECEIVED': return 2;
-      case 'MEETING_SCHEDULED': return 3;
-      case 'CONTAINMENT_COMMITTED': return 3;
-      case 'ROOT_CAUSE_ANALYZED': return 4;
-      case 'CAPA_COMMITTED': return 5;
-      case 'EFFECTIVENESS_VERIFYING': return 6;
-      case 'CLOSED': return 7;
-      default: return 3;
+      case 'RECEIVED':
+        return 2;
+      case 'MEETING_SCHEDULED':
+      case 'CONTAINMENT_COMMITTED':
+        return 3;
+      case 'ROOT_CAUSE_ANALYZED':
+        return 4;
+      case 'CAPA_COMMITTED':
+        return 5;
+      case 'EFFECTIVENESS_VERIFYING':
+        return 6;
+      case 'CLOSED':
+        return 7;
+      default:
+        return 3;
     }
   };
 
@@ -49,105 +56,16 @@ export const ComplaintDetailPage: React.FC = () => {
   const [activeWorkflowPhase, setActiveWorkflowPhase] = useState<2 | 3 | 4 | 5 | 6 | 7>(3);
   const [isInitialPhaseSet, setIsInitialPhaseSet] = useState<boolean>(false);
 
-  // Conclude Meeting Modal State
+  // Modals state
   const [concludeModalMeeting, setConcludeModalMeeting] = useState<ComplaintMeeting | null>(null);
-  const [concludeFormData, setConcludeFormData] = useState({
-    conclusion: '',
-    minutes: '',
-    agreedContainment: '',
-    transitionToContainment: true,
-  });
-  const [isSubmittingConclude, setIsSubmittingConclude] = useState<boolean>(false);
+  const [previewImageUrl, setPreviewImageUrl] = useState<string | null>(null);
+  const [showEditPictureModal, setShowEditPictureModal] = useState<boolean>(false);
+  const [showReopenModal, setShowReopenModal] = useState<boolean>(false);
 
   // In-place phase update states
   const [isUpdating, setIsUpdating] = useState<boolean>(false);
   const [updateSuccessMsg, setUpdateSuccessMsg] = useState<string | null>(null);
   const [updateErrorMsg, setUpdateErrorMsg] = useState<string | null>(null);
-
-  // Phase 2: Assignment Data
-  const [assignmentData, setAssignmentData] = useState({
-    assignedTeam: '',
-    assignedPerson: '',
-    priority: 'MEDIUM',
-    assignmentDeadline: '',
-  });
-
-  // Phase 3: Containment Data (3-Way Checklist & Clean Point)
-  const [containmentData, setContainmentData] = useState({
-    containmentAction: '',
-    containmentDueDate: '',
-    containmentOwner: '',
-    containmentCompletionDate: '',
-    containmentStatus: 'IN_PROGRESS',
-    inHouseQty: '',
-    inHouseRedTagged: true,
-    customerQty: '',
-    customerNotified: false,
-    cleanPoint: '',
-  });
-
-  // Phase 4: Root Cause Data (5-Why Occurrence & Escape)
-  const [rootCauseData, setRootCauseData] = useState({
-    rootCause: '',
-    rootCauseCategory: 'Method',
-    rootCauseOwner: '',
-    rootCauseCompletionDate: '',
-    occurrenceCause: '',
-    escapeCause: '',
-  });
-
-  // Phase 5: CAPA Data
-  const [capaData, setCapaData] = useState({
-    correctivePreventiveAction: '',
-    correctiveAction: '',
-    preventiveAction: '',
-    actionOwner: '',
-    actionDueDate: '',
-    actionStatus: 'OPEN',
-    capaCompletionDate: '',
-    evidenceDocumentation: '',
-  });
-
-  // Phase 6: Effectiveness Data
-  const [effectivenessData, setEffectivenessData] = useState<{
-    effectivenessStatus: 'PENDING' | 'EFFECTIVE' | 'NOT_EFFECTIVE';
-    effectivenessVerifiedDate: string;
-    effectivenessVerifiedBy: string;
-    effectivenessRemarks: string;
-  }>({
-    effectivenessStatus: 'PENDING',
-    effectivenessVerifiedDate: '',
-    effectivenessVerifiedBy: '',
-    effectivenessRemarks: '',
-  });
-
-  // Phase 7: Closure Data
-  const [closureData, setClosureData] = useState({
-    closureDate: new Date().toISOString().slice(0, 10),
-    finalStatus: 'ACCEPTED',
-    finalEvidence: '',
-    remarks: '',
-  });
-
-  // Lightbox & Defect Pictures Modal State
-  const [previewImageUrl, setPreviewImageUrl] = useState<string | null>(null);
-  const [showEditPictureModal, setShowEditPictureModal] = useState<boolean>(false);
-  const [editPictureUrls, setEditPictureUrls] = useState<string>('');
-  const [isSavingPictures, setIsSavingPictures] = useState<boolean>(false);
-
-  const parsePictureUrls = (urls?: string): string[] => {
-    if (!urls) return [];
-    return urls
-      .split(/[\n,;]+/)
-      .map((u) => u.trim())
-      .filter((u) => u.startsWith('http://') || u.startsWith('https://') || u.startsWith('data:image/'));
-  };
-
-  // Reopen Modal
-  const [showReopenModal, setShowReopenModal] = useState<boolean>(false);
-  const [reopenTargetStatus, setReopenTargetStatus] = useState<string>('ROOT_CAUSE_ANALYZED');
-  const [reopenReason, setReopenReason] = useState<string>('');
-  const [isSubmittingReopen, setIsSubmittingReopen] = useState<boolean>(false);
 
   const fetchDetail = async () => {
     if (!id) return;
@@ -167,119 +85,11 @@ export const ComplaintDetailPage: React.FC = () => {
   }, [id]);
 
   useEffect(() => {
-    if (complaint) {
-      setAssignmentData({
-        assignedTeam: complaint.assignedTeam || '',
-        assignedPerson: complaint.assignedPerson || '',
-        priority: complaint.priority || 'MEDIUM',
-        assignmentDeadline: complaint.assignmentDeadline || '',
-      });
-
-      setContainmentData((prev) => ({
-        ...prev,
-        containmentAction: complaint.containmentAction || '',
-        containmentDueDate: complaint.containmentDueDate || '',
-        containmentOwner: complaint.containmentOwner || '',
-        containmentCompletionDate: complaint.containmentCompletionDate || '',
-        containmentStatus: complaint.containmentStatus || 'IN_PROGRESS',
-        inHouseQty: prev.inHouseQty || (complaint.quantity ? String(complaint.quantity) : ''),
-      }));
-
-      setRootCauseData((prev) => ({
-        ...prev,
-        rootCause: complaint.rootCause || '',
-        rootCauseCategory: complaint.rootCauseCategory || 'Method',
-        rootCauseOwner: complaint.rootCauseOwner || '',
-        rootCauseCompletionDate: complaint.rootCauseCompletionDate || '',
-      }));
-
-      // Parse corrective and preventive actions if structured
-      let cAction = complaint.correctiveAction || '';
-      let pAction = complaint.preventiveAction || '';
-      if (!cAction && !pAction && complaint.correctivePreventiveAction) {
-        const raw = complaint.correctivePreventiveAction;
-        if (raw.includes('[Corrective') || raw.includes('[Preventive') || raw.includes('[Khắc phục') || raw.includes('[Phòng ngừa')) {
-          const parts = raw.split(/\[(?:Preventive|Phòng ngừa)[^\]]*\]:/);
-          if (parts[0]) {
-            cAction = parts[0].replace(/\[(?:Corrective|Khắc phục)[^\]]*\]:/, '').trim();
-          }
-          if (parts[1]) {
-            pAction = parts[1].trim();
-          }
-        } else {
-          cAction = raw;
-        }
-      }
-
-      // Parse action status and evidence documentation if structured
-      let parsedActionStatus = complaint.actionStatus || 'OPEN';
-      let parsedEvidence = '';
-      if (complaint.actionStatus && (complaint.actionStatus.includes('[Evidence:') || complaint.actionStatus.includes('[Minh chứng:'))) {
-        const match = complaint.actionStatus.match(/^(.*?)\s*\|\s*\[(?:Evidence|Minh chứng):\s*(.*?)\]$/);
-        if (match) {
-          parsedActionStatus = match[1].trim();
-          parsedEvidence = match[2].trim();
-        } else {
-          const parts = complaint.actionStatus.split(/\|\s*\[(?:Evidence|Minh chứng):\s*/);
-          parsedActionStatus = parts[0].trim();
-          if (parts[1]) {
-            parsedEvidence = parts[1].replace(/\]$/, '').trim();
-          }
-        }
-      }
-
-      setCapaData({
-        correctivePreventiveAction: complaint.correctivePreventiveAction || '',
-        correctiveAction: cAction,
-        preventiveAction: pAction,
-        actionOwner: complaint.actionOwner || '',
-        actionDueDate: complaint.actionDueDate || '',
-        actionStatus: parsedActionStatus,
-        capaCompletionDate: complaint.capaCompletionDate || '',
-        evidenceDocumentation: parsedEvidence,
-      });
-
-      setEffectivenessData({
-        effectivenessStatus: (complaint.effectivenessStatus as any) || 'PENDING',
-        effectivenessVerifiedDate: complaint.effectivenessVerifiedDate || '',
-        effectivenessVerifiedBy: complaint.effectivenessVerifiedBy || '',
-        effectivenessRemarks: complaint.effectivenessRemarks || '',
-      });
-
-      setEditPictureUrls(complaint.pictureUrls || '');
-
-      setClosureData({
-        closureDate: complaint.closureDate || new Date().toISOString().slice(0, 10),
-        finalStatus: complaint.finalStatus || 'ACCEPTED',
-        finalEvidence: complaint.finalEvidence || '',
-        remarks: complaint.remarks || '',
-      });
-
-      // Only set initial active phase once on first load
-      if (!isInitialPhaseSet) {
-        setActiveWorkflowPhase(getInitialActivePhase(complaint.status));
-        setIsInitialPhaseSet(true);
-      }
+    if (complaint && !isInitialPhaseSet) {
+      setActiveWorkflowPhase(getInitialActivePhase(complaint.status));
+      setIsInitialPhaseSet(true);
     }
   }, [complaint, isInitialPhaseSet]);
-
-  const handleSavePictures = async () => {
-    if (!complaint) return;
-    setIsSavingPictures(true);
-    try {
-      const updated = await complaintService.updateComplaint(complaint.id, {
-        pictureUrls: editPictureUrls.trim() || undefined,
-      });
-      setComplaint(updated);
-      setShowEditPictureModal(false);
-      setUpdateSuccessMsg('Defect picture URLs updated successfully!');
-      setTimeout(() => setUpdateSuccessMsg(null), 4000);
-    } catch (err: any) {
-      setUpdateErrorMsg(err.message || 'Failed to update defect pictures. Please try again.');
-    } finally {
-      setIsSavingPictures(false);
-    }
-  };
 
   const handleUpdatePhase = async (
     payload: ComplaintUpdateRequest,
@@ -302,68 +112,6 @@ export const ComplaintDetailPage: React.FC = () => {
       setUpdateErrorMsg(err.message || 'Update failed. Please check your network connection.');
     } finally {
       setIsUpdating(false);
-    }
-  };
-
-  const openConcludeModal = (meeting: ComplaintMeeting) => {
-    setConcludeModalMeeting(meeting);
-    setConcludeFormData({
-      conclusion: meeting.conclusion || 'VALID Complaint - Immediate Containment required within 48h',
-      minutes: meeting.minutes || '',
-      agreedContainment: meeting.agreedContainment || complaint?.containmentAction || '',
-      transitionToContainment: true,
-    });
-  };
-
-  const handleConcludeSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!complaint || !concludeModalMeeting) return;
-    if (!concludeFormData.conclusion.trim()) {
-      alert('Please enter meeting conclusion.');
-      return;
-    }
-
-    setIsSubmittingConclude(true);
-    try {
-      const updated = await complaintService.concludeMeetingForComplaint(
-        complaint.id,
-        concludeModalMeeting.id,
-        concludeFormData
-      );
-      setComplaint(updated);
-      setUpdateSuccessMsg('Meeting concluded and minutes logged successfully!');
-      setTimeout(() => setUpdateSuccessMsg(null), 5000);
-      setConcludeModalMeeting(null);
-    } catch (err: any) {
-      alert('Error logging meeting minutes: ' + (err.message || 'Unknown error'));
-    } finally {
-      setIsSubmittingConclude(false);
-    }
-  };
-
-  const handleReopenSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!complaint) return;
-    if (!reopenReason.trim()) {
-      alert('Please enter reason for reopening the case.');
-      return;
-    }
-    setIsSubmittingReopen(true);
-    try {
-      const updated = await complaintService.updateComplaint(complaint.id, {
-        status: reopenTargetStatus as any,
-        remarks: `[REOPENED ON ${new Date().toLocaleDateString('en-US')}]: ${reopenReason}\n\n${complaint.remarks || ''}`,
-      });
-      setComplaint(updated);
-      setShowReopenModal(false);
-      setReopenReason('');
-      setUpdateSuccessMsg('Complaint case successfully reopened! Status reset to active investigation.');
-      setTimeout(() => setUpdateSuccessMsg(null), 5000);
-      setActiveWorkflowPhase(getInitialActivePhase(reopenTargetStatus));
-    } catch (err: any) {
-      alert('Error reopening case: ' + (err.message || 'Unknown error'));
-    } finally {
-      setIsSubmittingReopen(false);
     }
   };
 
@@ -392,7 +140,6 @@ export const ComplaintDetailPage: React.FC = () => {
       </div>
     );
   }
-
 
   const isPhase6Verified =
     complaint.status === 'CLOSED' ||
@@ -535,7 +282,6 @@ export const ComplaintDetailPage: React.FC = () => {
       {activeTab === 'info' && (
         <ComplaintInfoTab
           complaint={complaint}
-          parsePictureUrls={parsePictureUrls}
           onOpenEditPictures={() => setShowEditPictureModal(true)}
           onPreviewImage={setPreviewImageUrl}
           onNavigateToActions={() => {
@@ -549,7 +295,7 @@ export const ComplaintDetailPage: React.FC = () => {
       {activeTab === 'meetings' && (
         <ComplaintMeetingsTab
           complaint={complaint}
-          onOpenConcludeModal={openConcludeModal}
+          onOpenConcludeModal={(meeting) => setConcludeModalMeeting(meeting)}
         />
       )}
 
@@ -635,8 +381,6 @@ export const ComplaintDetailPage: React.FC = () => {
             {activeWorkflowPhase === 2 && (
               <Phase2Assignment
                 complaint={complaint}
-                assignmentData={assignmentData}
-                setAssignmentData={setAssignmentData}
                 isUpdating={isUpdating}
                 handleUpdatePhase={handleUpdatePhase}
                 setActiveTab={setActiveTab}
@@ -648,85 +392,76 @@ export const ComplaintDetailPage: React.FC = () => {
             {activeWorkflowPhase === 3 && (
               <Phase3Containment
                 complaint={complaint}
-                containmentData={containmentData}
-                setContainmentData={setContainmentData}
                 isUpdating={isUpdating}
                 handleUpdatePhase={handleUpdatePhase}
-                setShowReopenModal={setShowReopenModal}
                 latestConcludedMeeting={latestConcludedMeeting}
+                onReopenCase={() => setShowReopenModal(true)}
               />
             )}
 
             {activeWorkflowPhase === 4 && (
               <Phase4RootCause
                 complaint={complaint}
-                rootCauseData={rootCauseData}
-                setRootCauseData={setRootCauseData}
                 isUpdating={isUpdating}
                 handleUpdatePhase={handleUpdatePhase}
-                setShowReopenModal={setShowReopenModal}
+                onReopenCase={() => setShowReopenModal(true)}
               />
             )}
 
             {activeWorkflowPhase === 5 && (
               <Phase5CapaPlan
                 complaint={complaint}
-                capaData={capaData}
-                setCapaData={setCapaData}
                 isUpdating={isUpdating}
                 handleUpdatePhase={handleUpdatePhase}
-                setShowReopenModal={setShowReopenModal}
+                onReopenCase={() => setShowReopenModal(true)}
               />
             )}
 
             {activeWorkflowPhase === 6 && (
               <Phase6Effectiveness
                 complaint={complaint}
-                effectivenessData={effectivenessData}
-                setEffectivenessData={setEffectivenessData}
-                capaData={capaData}
-                setCapaData={setCapaData}
                 isUpdating={isUpdating}
                 handleUpdatePhase={handleUpdatePhase}
-                setShowReopenModal={setShowReopenModal}
-                setReopenTargetStatus={setReopenTargetStatus}
+                onReopenCase={() => setShowReopenModal(true)}
               />
             )}
 
             {activeWorkflowPhase === 7 && (
               <Phase7Closure
                 complaint={complaint}
-                closureData={closureData}
-                setClosureData={setClosureData}
                 isUpdating={isUpdating}
                 handleUpdatePhase={handleUpdatePhase}
-                setShowReopenModal={setShowReopenModal}
+                onReopenCase={() => setShowReopenModal(true)}
               />
             )}
           </div>
         </div>
       )}
 
-      {/* Modals */}
+      {/* Modals - Deep Modules with Encapsulated State */}
       <ConcludeMeetingModal
+        complaintId={complaint.id}
         meeting={concludeModalMeeting}
-        formData={concludeFormData}
-        isSubmitting={isSubmittingConclude}
+        initialContainmentAction={complaint.containmentAction}
         onClose={() => setConcludeModalMeeting(null)}
-        onChange={setConcludeFormData}
-        onSubmit={handleConcludeSubmit}
+        onSuccess={(updated) => {
+          setComplaint(updated);
+          setUpdateSuccessMsg('Meeting concluded and minutes logged successfully!');
+          setTimeout(() => setUpdateSuccessMsg(null), 5000);
+        }}
       />
 
       <ReopenTicketModal
         isOpen={showReopenModal}
         complaint={complaint}
-        reopenTargetStatus={reopenTargetStatus}
-        reopenReason={reopenReason}
-        isSubmitting={isSubmittingReopen}
         onClose={() => setShowReopenModal(false)}
-        onTargetStatusChange={setReopenTargetStatus}
-        onReasonChange={setReopenReason}
-        onSubmit={handleReopenSubmit}
+        onSuccess={(updated, newPhase) => {
+          setComplaint(updated);
+          setShowReopenModal(false);
+          setUpdateSuccessMsg('Complaint case successfully reopened! Status reset to active investigation.');
+          setTimeout(() => setUpdateSuccessMsg(null), 5000);
+          setActiveWorkflowPhase(newPhase);
+        }}
       />
 
       <ImageLightboxModal
@@ -737,12 +472,12 @@ export const ComplaintDetailPage: React.FC = () => {
       <EditDefectPicturesModal
         isOpen={showEditPictureModal}
         complaint={complaint}
-        pictureUrls={editPictureUrls}
-        isSaving={isSavingPictures}
         onClose={() => setShowEditPictureModal(false)}
-        onUrlsChange={setEditPictureUrls}
-        onSave={handleSavePictures}
-        parsePictureUrls={parsePictureUrls}
+        onSuccess={(updated) => {
+          setComplaint(updated);
+          setUpdateSuccessMsg('Defect picture URLs updated successfully!');
+          setTimeout(() => setUpdateSuccessMsg(null), 4000);
+        }}
       />
     </div>
   );

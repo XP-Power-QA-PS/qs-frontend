@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   CheckCircle2,
   AlertTriangle,
@@ -8,49 +8,55 @@ import {
 } from 'lucide-react';
 import type { ComplaintDetail, ComplaintUpdateRequest } from '@/types/complaint/complaint.types';
 
-interface Phase6EffectivenessProps {
+export interface Phase6EffectivenessProps {
   complaint: ComplaintDetail;
-  effectivenessData: {
-    effectivenessStatus: 'PENDING' | 'EFFECTIVE' | 'NOT_EFFECTIVE';
-    effectivenessVerifiedDate: string;
-    effectivenessVerifiedBy: string;
-    effectivenessRemarks: string;
-  };
-  setEffectivenessData: React.Dispatch<
-    React.SetStateAction<{
-      effectivenessStatus: 'PENDING' | 'EFFECTIVE' | 'NOT_EFFECTIVE';
-      effectivenessVerifiedDate: string;
-      effectivenessVerifiedBy: string;
-      effectivenessRemarks: string;
-    }>
-  >;
-  capaData: {
-    evidenceDocumentation: string;
-  };
-  setCapaData: React.Dispatch<
-    React.SetStateAction<any>
-  >;
   isUpdating: boolean;
   handleUpdatePhase: (
     data: ComplaintUpdateRequest,
     successMsg: string,
     nextPhase?: 2 | 3 | 4 | 5 | 6 | 7
   ) => Promise<void>;
-  setShowReopenModal: (show: boolean) => void;
-  setReopenTargetStatus: (status: string) => void;
+  onReopenCase?: (targetStatus?: string) => void;
 }
+
+const parseEvidenceFromActionStatus = (actionStatus?: string): string => {
+  if (!actionStatus) return '';
+  const match = actionStatus.match(/\[(?:Evidence|Minh chứng):\s*(.*?)\]/);
+  return match ? match[1].trim() : '';
+};
 
 export const Phase6Effectiveness: React.FC<Phase6EffectivenessProps> = ({
   complaint,
-  effectivenessData,
-  setEffectivenessData,
-  capaData,
-  setCapaData,
   isUpdating,
   handleUpdatePhase,
-  setShowReopenModal,
-  setReopenTargetStatus,
+  onReopenCase,
 }) => {
+  const [effectivenessData, setEffectivenessData] = useState<{
+    effectivenessStatus: 'PENDING' | 'EFFECTIVE' | 'NOT_EFFECTIVE';
+    effectivenessVerifiedDate: string;
+    effectivenessVerifiedBy: string;
+    effectivenessRemarks: string;
+  }>({
+    effectivenessStatus: (complaint.effectivenessStatus as any) || 'PENDING',
+    effectivenessVerifiedDate: complaint.effectivenessVerifiedDate || '',
+    effectivenessVerifiedBy: complaint.effectivenessVerifiedBy || '',
+    effectivenessRemarks: complaint.effectivenessRemarks || '',
+  });
+
+  const [evidenceDocumentation, setEvidenceDocumentation] = useState<string>(() =>
+    parseEvidenceFromActionStatus(complaint.actionStatus)
+  );
+
+  useEffect(() => {
+    setEffectivenessData({
+      effectivenessStatus: (complaint.effectivenessStatus as any) || 'PENDING',
+      effectivenessVerifiedDate: complaint.effectivenessVerifiedDate || '',
+      effectivenessVerifiedBy: complaint.effectivenessVerifiedBy || '',
+      effectivenessRemarks: complaint.effectivenessRemarks || '',
+    });
+    setEvidenceDocumentation(parseEvidenceFromActionStatus(complaint.actionStatus));
+  }, [complaint]);
+
   return (
     <>
       {/* Left Column: Context */}
@@ -64,7 +70,7 @@ export const Phase6Effectiveness: React.FC<Phase6EffectivenessProps> = ({
               <h4 className="text-xs font-bold text-text-primary uppercase tracking-wider">
                 Phase 6: 30-Day Effectiveness Verification (D7)
               </h4>
-              <span className="text-[11px] text-teal-800 font-semibold">SLA: 30-Day Monitoring Period</span>
+              <span className="text-[11px] text-teal-800 font-semibold">SLA: 30 Calendar Days</span>
             </div>
           </div>
           <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-teal-50 text-teal-800 border border-teal-200">
@@ -72,25 +78,33 @@ export const Phase6Effectiveness: React.FC<Phase6EffectivenessProps> = ({
           </span>
         </div>
 
-        {/* Evidence from Phase 5 */}
-        <div className="p-3.5 bg-teal-50/70 border border-teal-200/80 rounded-xl text-xs space-y-1.5 text-teal-950">
-          <strong className="font-bold flex items-center gap-1.5 text-teal-900">
-            <CheckCircle2 className="w-4 h-4 text-teal-600" />
-            Active CAPA Plan Under Monitoring:
-          </strong>
-          <p className="bg-white p-2.5 rounded-lg border border-teal-200 text-[11px] text-text-primary whitespace-pre-wrap">
-            {complaint.correctivePreventiveAction || 'CAPA implementation in progress'}
+        <div className="p-3.5 bg-surface-canvas rounded-xl text-xs space-y-2 border border-border-subtle">
+          <strong className="text-text-primary block">Verification Methodology (Jeanette 7-Step):</strong>
+          <p className="text-text-secondary leading-relaxed text-[11px]">
+            Follow-up period: <strong>30 calendar days</strong> after CAPA execution.
           </p>
-          <p className="text-[11px] text-teal-800 pt-1">
-            Owner: <strong>{complaint.actionOwner || 'N/A'}</strong> (Due: {complaint.actionDueDate || 'Not set'})
-          </p>
+          <ul className="list-disc pl-4 text-text-secondary text-[11px] space-y-1">
+            <li>Verify zero defect recurrence in mass production lots.</li>
+            <li>Perform line audit & operator adherence check.</li>
+            <li>If verified effective &rarr; Proceed to <strong>Phase 7 (Sign-off & Closure)</strong>.</li>
+            <li>If defect recurs &rarr; <strong>Reopen Ticket</strong> to Phase 4 for root cause re-investigation.</li>
+          </ul>
         </div>
 
-        <div className="p-3.5 bg-surface-canvas rounded-xl text-xs space-y-1.5 border border-border-subtle">
-          <strong className="text-text-primary block text-[11px]">IATF Step D7 Verification Criteria:</strong>
-          <p className="text-text-secondary text-[11px] leading-relaxed">
-            Continuously monitor subsequent production runs over at least 30 days. Ensure defect rate (PPM) = 0 with zero recurrence of the defect symptom.
-          </p>
+        {/* Inherited CAPA Summary */}
+        <div className="p-3.5 bg-purple-50/60 border border-purple-200/80 rounded-xl text-xs space-y-2 text-purple-950">
+          <strong className="block font-bold text-purple-900">Active CAPA Implementation Under Verification:</strong>
+          <div className="space-y-1 text-[11px]">
+            <div>
+              <span className="text-purple-800 font-semibold">Owner / Due Date: </span>
+              <strong>{complaint.actionOwner || 'N/A'}</strong> (Due: {complaint.actionDueDate || 'N/A'})
+            </div>
+            {complaint.correctivePreventiveAction && (
+              <p className="bg-white/80 p-2 rounded-lg border border-purple-200 text-text-primary font-mono text-[10px] whitespace-pre-wrap">
+                {complaint.correctivePreventiveAction}
+              </p>
+            )}
+          </div>
         </div>
       </div>
 
@@ -99,93 +113,52 @@ export const Phase6Effectiveness: React.FC<Phase6EffectivenessProps> = ({
         <div className="flex items-center justify-between border-b border-border-subtle pb-3">
           <h4 className="text-xs font-bold text-text-primary uppercase tracking-wider flex items-center gap-2">
             <CheckCircle2 className="w-4 h-4 text-teal-600" />
-            30-Day Effectiveness Verification & Audit Sign-off
+            Verification Audit & PPM Results (30-Day Checkpoint)
           </h4>
-          <span className="text-[11px] font-semibold text-teal-700">
-            {effectivenessData.effectivenessStatus === 'EFFECTIVE'
-              ? 'Effectiveness Confirmed'
+          <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold border ${
+            effectivenessData.effectivenessStatus === 'EFFECTIVE'
+              ? 'bg-emerald-50 text-emerald-800 border-emerald-200'
               : effectivenessData.effectivenessStatus === 'NOT_EFFECTIVE'
-              ? 'Defect Recurring'
-              : 'Monitoring Active'}
+              ? 'bg-rose-50 text-rose-800 border-rose-200'
+              : 'bg-amber-50 text-amber-800 border-amber-200'
+          }`}>
+            {effectivenessData.effectivenessStatus}
           </span>
         </div>
 
-        {/* Effectiveness Status Selector (3-way) */}
-        <div>
-          <label className="block text-xs font-semibold text-text-secondary mb-1.5">
-            Effectiveness Evaluation Result (30-Day Audit Criterion) <span className="text-rose-500">*</span>:
-          </label>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
-            <button
-              type="button"
-              disabled={complaint.status === 'CLOSED'}
-              onClick={() => setEffectivenessData((prev) => ({ ...prev, effectivenessStatus: 'PENDING' }))}
-              className={`p-3 rounded-xl border text-left transition-all cursor-pointer ${
-                effectivenessData.effectivenessStatus === 'PENDING'
-                  ? 'bg-amber-50 border-amber-400 ring-2 ring-amber-500/20 shadow-2xs'
-                  : 'bg-surface-canvas border-border-subtle hover:bg-surface-subtle'
-              }`}
-            >
-              <div className="flex items-center gap-2 mb-1">
-                <span className="w-2.5 h-2.5 rounded-full bg-amber-500"></span>
-                <strong className="text-xs text-amber-900">PENDING</strong>
-              </div>
-              <p className="text-[10px] text-text-muted">
-                30-day observation period actively running. Batches under monitoring.
-              </p>
-            </button>
-
-            <button
-              type="button"
-              disabled={complaint.status === 'CLOSED'}
-              onClick={() => setEffectivenessData((prev) => ({ ...prev, effectivenessStatus: 'EFFECTIVE' }))}
-              className={`p-3 rounded-xl border text-left transition-all cursor-pointer ${
-                effectivenessData.effectivenessStatus === 'EFFECTIVE'
-                  ? 'bg-emerald-50 border-emerald-400 ring-2 ring-emerald-500/20 shadow-2xs'
-                  : 'bg-surface-canvas border-border-subtle hover:bg-surface-subtle'
-              }`}
-            >
-              <div className="flex items-center gap-2 mb-1">
-                <span className="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
-                <strong className="text-xs text-emerald-900">EFFECTIVE</strong>
-              </div>
-              <p className="text-[10px] text-text-muted">
-                Zero defect recurrence over 30 days. Standard criteria achieved.
-              </p>
-            </button>
-
-            <button
-              type="button"
-              disabled={complaint.status === 'CLOSED'}
-              onClick={() => setEffectivenessData((prev) => ({ ...prev, effectivenessStatus: 'NOT_EFFECTIVE' }))}
-              className={`p-3 rounded-xl border text-left transition-all cursor-pointer ${
-                effectivenessData.effectivenessStatus === 'NOT_EFFECTIVE'
-                  ? 'bg-rose-50 border-rose-400 ring-2 ring-rose-500/20 shadow-2xs'
-                  : 'bg-surface-canvas border-border-subtle hover:bg-surface-subtle'
-              }`}
-            >
-              <div className="flex items-center gap-2 mb-1">
-                <span className="w-2.5 h-2.5 rounded-full bg-rose-500"></span>
-                <strong className="text-xs text-rose-900">NOT EFFECTIVE</strong>
-              </div>
-              <p className="text-[10px] text-text-muted">
-                Defect recurred or persisted. Requires reopening investigation.
-              </p>
-            </button>
-          </div>
-        </div>
-
-        {/* Verification Details: Auditor & Date */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
           <div>
             <label className="block text-xs font-semibold text-text-secondary mb-1">
-              Verification Audit Date:
+              Effectiveness Status <span className="text-rose-500">*</span>:
+            </label>
+            <select
+              disabled={complaint.status === 'CLOSED'}
+              value={effectivenessData.effectivenessStatus}
+              onChange={(e) =>
+                setEffectivenessData((prev) => ({
+                  ...prev,
+                  effectivenessStatus: e.target.value as any,
+                }))
+              }
+              className="w-full px-3 py-2 text-xs bg-surface-canvas border border-border-subtle rounded-xl text-text-primary font-semibold focus:ring-2 focus:ring-teal-500/20 focus:border-teal-600 disabled:opacity-60 disabled:cursor-not-allowed"
+            >
+              <option value="PENDING">🟡 PENDING (Monitoring In Progress)</option>
+              <option value="EFFECTIVE">🟢 EFFECTIVE (Zero Recurrence - Approved)</option>
+              <option value="NOT_EFFECTIVE">🔴 NOT EFFECTIVE (Defect Recurring)</option>
+            </select>
+          </div>
+
+          <div>
+            <label className="block text-xs font-semibold text-text-secondary mb-1">
+              Verified Date:
             </label>
             <input
               type="date"
               disabled={complaint.status === 'CLOSED'}
               value={effectivenessData.effectivenessVerifiedDate}
-              onChange={(e) => setEffectivenessData((prev) => ({ ...prev, effectivenessVerifiedDate: e.target.value }))}
+              onChange={(e) =>
+                setEffectivenessData((prev) => ({ ...prev, effectivenessVerifiedDate: e.target.value }))
+              }
               className="w-full px-3 py-2 text-xs bg-surface-canvas border border-border-subtle rounded-xl text-text-primary disabled:opacity-60 disabled:cursor-not-allowed"
             />
           </div>
@@ -198,7 +171,9 @@ export const Phase6Effectiveness: React.FC<Phase6EffectivenessProps> = ({
               type="text"
               disabled={complaint.status === 'CLOSED'}
               value={effectivenessData.effectivenessVerifiedBy}
-              onChange={(e) => setEffectivenessData((prev) => ({ ...prev, effectivenessVerifiedBy: e.target.value }))}
+              onChange={(e) =>
+                setEffectivenessData((prev) => ({ ...prev, effectivenessVerifiedBy: e.target.value }))
+              }
               placeholder="e.g., CQE Lead / Customer Quality Auditor"
               className="w-full px-3 py-2 text-xs bg-surface-canvas border border-border-subtle rounded-xl text-text-primary disabled:opacity-60 disabled:cursor-not-allowed"
             />
@@ -213,7 +188,9 @@ export const Phase6Effectiveness: React.FC<Phase6EffectivenessProps> = ({
             rows={3}
             disabled={complaint.status === 'CLOSED'}
             value={effectivenessData.effectivenessRemarks}
-            onChange={(e) => setEffectivenessData((prev) => ({ ...prev, effectivenessRemarks: e.target.value }))}
+            onChange={(e) =>
+              setEffectivenessData((prev) => ({ ...prev, effectivenessRemarks: e.target.value }))
+            }
             placeholder="e.g., Checked 4 consecutive production lots (Batch #101, #102, #103, #104), sample size 315 pcs each: 0 defects detected. Customer confirmation email received on 14/09..."
             className="w-full px-3 py-2 text-xs bg-surface-canvas border border-border-subtle rounded-xl text-text-primary disabled:opacity-60 disabled:cursor-not-allowed font-sans"
           />
@@ -226,8 +203,8 @@ export const Phase6Effectiveness: React.FC<Phase6EffectivenessProps> = ({
           <input
             type="text"
             disabled={complaint.status === 'CLOSED'}
-            value={capaData.evidenceDocumentation}
-            onChange={(e) => setCapaData((prev: any) => ({ ...prev, evidenceDocumentation: e.target.value }))}
+            value={evidenceDocumentation}
+            onChange={(e) => setEvidenceDocumentation(e.target.value)}
             placeholder="e.g., OQC Inspection Report #OQC-2026-088; Link: https://sharepoint/.../report.pdf"
             className="w-full px-3 py-2 text-xs bg-surface-canvas border border-border-subtle rounded-xl text-text-primary disabled:opacity-60 disabled:cursor-not-allowed font-sans"
           />
@@ -265,14 +242,16 @@ export const Phase6Effectiveness: React.FC<Phase6EffectivenessProps> = ({
               <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
               <span>Case is closed and archived in read-only mode.</span>
             </div>
-            <button
-              type="button"
-              onClick={() => setShowReopenModal(true)}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-semibold text-amber-800 bg-white border border-amber-300 rounded-lg hover:bg-amber-50 cursor-pointer shadow-2xs shrink-0"
-            >
-              <RotateCcw className="w-3.5 h-3.5 text-amber-600" />
-              Request Ticket Reopen
-            </button>
+            {onReopenCase && (
+              <button
+                type="button"
+                onClick={() => onReopenCase()}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-semibold text-amber-800 bg-white border border-amber-300 rounded-lg hover:bg-amber-50 cursor-pointer shadow-2xs shrink-0"
+              >
+                <RotateCcw className="w-3.5 h-3.5 text-amber-600" />
+                Request Ticket Reopen
+              </button>
+            )}
           </div>
         ) : (
           <div className="flex flex-col sm:flex-row items-center gap-3 pt-2 border-t border-border-subtle">
@@ -288,7 +267,7 @@ export const Phase6Effectiveness: React.FC<Phase6EffectivenessProps> = ({
                         effectivenessVerifiedDate: effectivenessData.effectivenessVerifiedDate || undefined,
                         effectivenessVerifiedBy: effectivenessData.effectivenessVerifiedBy || undefined,
                         effectivenessRemarks: effectivenessData.effectivenessRemarks || undefined,
-                        actionStatus: `NOT_EFFECTIVE | [Evidence: ${capaData.evidenceDocumentation || 'Audit log'}]`,
+                        actionStatus: `NOT_EFFECTIVE | [Evidence: ${evidenceDocumentation || 'Audit log'}]`,
                         status: 'EFFECTIVENESS_VERIFYING',
                       },
                       'Effectiveness audit recorded as NOT EFFECTIVE.'
@@ -300,17 +279,16 @@ export const Phase6Effectiveness: React.FC<Phase6EffectivenessProps> = ({
                   Save Record (Not Effective)
                 </button>
 
-                <button
-                  type="button"
-                  onClick={() => {
-                    setReopenTargetStatus('ROOT_CAUSE_ANALYZED');
-                    setShowReopenModal(true);
-                  }}
-                  className="w-full sm:w-auto flex-1 inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-rose-600 hover:bg-rose-700 text-white text-xs font-semibold rounded-xl shadow-xs transition-all active:scale-98 cursor-pointer"
-                >
-                  <RotateCcw className="w-4 h-4" />
-                  Reopen Case for Root Cause Re-evaluation &rarr;
-                </button>
+                {onReopenCase && (
+                  <button
+                    type="button"
+                    onClick={() => onReopenCase('ROOT_CAUSE_ANALYZED')}
+                    className="w-full sm:w-auto flex-1 inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-rose-600 hover:bg-rose-700 text-white text-xs font-semibold rounded-xl shadow-xs transition-all active:scale-98 cursor-pointer"
+                  >
+                    <RotateCcw className="w-4 h-4" />
+                    Reopen Case for Root Cause Re-evaluation &rarr;
+                  </button>
+                )}
               </>
             ) : (
               <>
@@ -326,7 +304,7 @@ export const Phase6Effectiveness: React.FC<Phase6EffectivenessProps> = ({
                         effectivenessRemarks: effectivenessData.effectivenessRemarks || undefined,
                         actionStatus: [
                           effectivenessData.effectivenessStatus,
-                          capaData.evidenceDocumentation ? `[Evidence: ${capaData.evidenceDocumentation}]` : '',
+                          evidenceDocumentation ? `[Evidence: ${evidenceDocumentation}]` : '',
                         ].filter(Boolean).join(' | '),
                         status: 'EFFECTIVENESS_VERIFYING',
                       },
@@ -351,7 +329,7 @@ export const Phase6Effectiveness: React.FC<Phase6EffectivenessProps> = ({
                         effectivenessRemarks: effectivenessData.effectivenessRemarks || undefined,
                         actionStatus: [
                           'VERIFIED_OK',
-                          capaData.evidenceDocumentation ? `[Evidence: ${capaData.evidenceDocumentation.trim()}]` : '',
+                          evidenceDocumentation ? `[Evidence: ${evidenceDocumentation.trim()}]` : '',
                         ].filter(Boolean).join(' | '),
                         status: 'EFFECTIVENESS_VERIFYING',
                       },

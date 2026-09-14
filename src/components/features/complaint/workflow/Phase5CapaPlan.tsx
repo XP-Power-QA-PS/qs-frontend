@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Sparkles,
   CheckCircle2,
@@ -8,47 +8,74 @@ import {
 } from 'lucide-react';
 import type { ComplaintDetail, ComplaintUpdateRequest } from '@/types/complaint/complaint.types';
 
-interface Phase5CapaPlanProps {
+export interface Phase5CapaPlanProps {
   complaint: ComplaintDetail;
-  capaData: {
-    correctiveAction: string;
-    preventiveAction: string;
-    correctivePreventiveAction: string;
-    actionOwner: string;
-    actionDueDate: string;
-    capaCompletionDate: string;
-    actionStatus: string;
-    evidenceDocumentation: string;
-  };
-  setCapaData: React.Dispatch<
-    React.SetStateAction<{
-      correctiveAction: string;
-      preventiveAction: string;
-      correctivePreventiveAction: string;
-      actionOwner: string;
-      actionDueDate: string;
-      capaCompletionDate: string;
-      actionStatus: string;
-      evidenceDocumentation: string;
-    }>
-  >;
   isUpdating: boolean;
   handleUpdatePhase: (
     data: ComplaintUpdateRequest,
     successMsg: string,
     nextPhase?: 2 | 3 | 4 | 5 | 6 | 7
   ) => Promise<void>;
-  setShowReopenModal: (show: boolean) => void;
+  onReopenCase?: () => void;
 }
 
 export const Phase5CapaPlan: React.FC<Phase5CapaPlanProps> = ({
   complaint,
-  capaData,
-  setCapaData,
   isUpdating,
   handleUpdatePhase,
-  setShowReopenModal,
+  onReopenCase,
 }) => {
+  const parseInitialCapa = () => {
+    let cAction = complaint.correctiveAction || '';
+    let pAction = complaint.preventiveAction || '';
+    if (!cAction && !pAction && complaint.correctivePreventiveAction) {
+      const raw = complaint.correctivePreventiveAction;
+      if (raw.includes('[Corrective') || raw.includes('[Preventive') || raw.includes('[Khắc phục') || raw.includes('[Phòng ngừa')) {
+        const parts = raw.split(/\[(?:Preventive|Phòng ngừa)[^\]]*\]:/);
+        if (parts[0]) {
+          cAction = parts[0].replace(/\[(?:Corrective|Khắc phục)[^\]]*\]:/, '').trim();
+        }
+        if (parts[1]) {
+          pAction = parts[1].trim();
+        }
+      } else {
+        cAction = raw;
+      }
+    }
+
+    let parsedActionStatus = complaint.actionStatus || 'OPEN';
+    let parsedEvidence = '';
+    if (complaint.actionStatus && (complaint.actionStatus.includes('[Evidence:') || complaint.actionStatus.includes('[Minh chứng:'))) {
+      const match = complaint.actionStatus.match(/^(.*?)\s*\|\s*\[(?:Evidence|Minh chứng):\s*(.*?)\]$/);
+      if (match) {
+        parsedActionStatus = match[1].trim();
+        parsedEvidence = match[2].trim();
+      } else {
+        const parts = complaint.actionStatus.split(/\|\s*\[(?:Evidence|Minh chứng):\s*/);
+        parsedActionStatus = parts[0].trim();
+        if (parts[1]) {
+          parsedEvidence = parts[1].replace(/\]$/, '').trim();
+        }
+      }
+    }
+
+    return {
+      correctivePreventiveAction: complaint.correctivePreventiveAction || '',
+      correctiveAction: cAction,
+      preventiveAction: pAction,
+      actionOwner: complaint.actionOwner || '',
+      actionDueDate: complaint.actionDueDate || '',
+      actionStatus: parsedActionStatus,
+      capaCompletionDate: complaint.capaCompletionDate || '',
+      evidenceDocumentation: parsedEvidence,
+    };
+  };
+
+  const [capaData, setCapaData] = useState(parseInitialCapa);
+
+  useEffect(() => {
+    setCapaData(parseInitialCapa());
+  }, [complaint]);
   return (
     <>
       {/* Left Column: Context */}
@@ -287,7 +314,7 @@ export const Phase5CapaPlan: React.FC<Phase5CapaPlanProps> = ({
             </div>
             <button
               type="button"
-              onClick={() => setShowReopenModal(true)}
+              onClick={() => onReopenCase?.()}
               className="inline-flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-semibold text-amber-800 bg-white border border-amber-300 rounded-lg hover:bg-amber-50 cursor-pointer shadow-2xs shrink-0"
             >
               <RotateCcw className="w-3.5 h-3.5 text-amber-600" />

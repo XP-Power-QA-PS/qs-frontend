@@ -10,9 +10,17 @@ import {
 } from 'lucide-react';
 import type { ComplaintDetail } from '@/types/complaint/complaint.types';
 
+const defaultParsePictureUrls = (urls?: string): string[] => {
+  if (!urls) return [];
+  return urls
+    .split(/[\n,;]+/)
+    .map((u) => u.trim())
+    .filter((u) => u.startsWith('http://') || u.startsWith('https://') || u.startsWith('data:image/'));
+};
+
 interface ComplaintInfoTabProps {
   complaint: ComplaintDetail;
-  parsePictureUrls: (urls?: string) => string[];
+  parsePictureUrls?: (urls?: string) => string[];
   onOpenEditPictures: () => void;
   onPreviewImage: (url: string) => void;
   onNavigateToActions: () => void;
@@ -20,7 +28,7 @@ interface ComplaintInfoTabProps {
 
 export const ComplaintInfoTab: React.FC<ComplaintInfoTabProps> = ({
   complaint,
-  parsePictureUrls,
+  parsePictureUrls = defaultParsePictureUrls,
   onOpenEditPictures,
   onPreviewImage,
   onNavigateToActions,

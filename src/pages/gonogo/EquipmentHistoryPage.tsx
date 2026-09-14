@@ -13,6 +13,7 @@ export const EquipmentHistoryPage: React.FC = () => {
 
   const equipmentCode = searchParams.get('code') || 'Unknown Code';
   const equipmentName = searchParams.get('name') || 'Unknown Name';
+  const serialNumber = searchParams.get('sn') || '';
   const floorId = searchParams.get('floorId');
   const floorName = searchParams.get('floorName');
 
@@ -55,7 +56,7 @@ export const EquipmentHistoryPage: React.FC = () => {
   };
 
   const handleRowClick = (record: EquipmentTestRecord) => {
-    navigate('/equipments/' + equipmentId + '/records/' + record.id + '/daily?code=' + encodeURIComponent(equipmentCode) + '&name=' + encodeURIComponent(equipmentName) + '&month=' + record.testMonth + '&year=' + record.testYear + (floorId ? '&floorId=' + floorId : '') + (floorName ? '&floorName=' + encodeURIComponent(floorName) : ''));
+    navigate('/equipments/' + equipmentId + '/records/' + record.id + '/daily?code=' + encodeURIComponent(equipmentCode) + '&name=' + encodeURIComponent(equipmentName) + (serialNumber ? '&sn=' + encodeURIComponent(serialNumber) : '') + '&month=' + record.testMonth + '&year=' + record.testYear + (floorId ? '&floorId=' + floorId : '') + (floorName ? '&floorName=' + encodeURIComponent(floorName) : ''));
   };
 
   const now = new Date();
@@ -68,9 +69,9 @@ export const EquipmentHistoryPage: React.FC = () => {
 
       {/* Header Section */}
       <div className="mb-3 sm:mb-4 flex flex-col gap-3 border-b border-border-subtle pb-3 sm:pb-4">
-        <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div>
-            <div className="flex items-center space-x-3 mb-2">
+            <div className="flex items-center space-x-3 mb-1.5">
               <div className="p-2 bg-primary/10 rounded-xl border border-primary/20 text-primary shrink-0">
                 <span className="material-symbols-outlined text-[24px]">precision_manufacturing</span>
               </div>
@@ -83,6 +84,11 @@ export const EquipmentHistoryPage: React.FC = () => {
               <span className="px-2.5 py-1 bg-primary/10 text-primary font-technical-data font-semibold text-[12px] rounded-lg border border-primary/20">
                 {equipmentCode}
               </span>
+              {serialNumber && (
+                <span className="px-2.5 py-1 bg-surface-subtle text-text-secondary font-technical-data text-[12px] rounded-lg border border-border-subtle">
+                  SN: {serialNumber}
+                </span>
+              )}
             </div>
           </div>
 
@@ -94,6 +100,7 @@ export const EquipmentHistoryPage: React.FC = () => {
                 const query = new URLSearchParams({
                   code: equipmentCode,
                   name: equipmentName,
+                  ...(serialNumber ? { sn: serialNumber } : {}),
                   ...(floorId ? { floorId } : {}),
                   ...(floorName ? { floorName } : {}),
                 });

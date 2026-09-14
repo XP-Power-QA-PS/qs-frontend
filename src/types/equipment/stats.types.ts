@@ -68,6 +68,7 @@ export interface EquipmentStatsDTO {
   equipmentId: string;
   equipmentCode: string;
   equipmentName: string;
+  serialNumber?: string;
   floorName: string;
   summary: GoNoGoSummaryDTO;
   monthlyTrend: MonthlyStatsDTO[];
