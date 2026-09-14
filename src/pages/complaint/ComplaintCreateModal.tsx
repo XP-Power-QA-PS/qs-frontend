@@ -30,10 +30,13 @@ export const ComplaintCreateModal: React.FC<ComplaintCreateModalProps> = ({
     quantity: 1,
     customerFinding: '',
     serialNumbers: '',
-    area: 'Production Line',
+    area: '',
     internalExternal: 'EXTERNAL',
     buildingStage: 'MP',
+    originOfComplaint: 'Customer',
+    salesforceCapa: '',
     pictureUrls: '',
+    priority: 'MEDIUM',
   });
 
   if (!isOpen) return null;
@@ -74,7 +77,7 @@ export const ComplaintCreateModal: React.FC<ComplaintCreateModalProps> = ({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-xs animate-in fade-in duration-150">
-      <div className="bg-white border border-border-subtle rounded-2xl shadow-xl w-full max-w-2xl overflow-hidden max-h-[90vh] flex flex-col">
+      <div className="bg-white border border-border-subtle rounded-2xl shadow-xl w-full max-w-3xl overflow-hidden max-h-[90vh] flex flex-col">
         {/* Header */}
         <div className="px-6 py-4 border-b border-border-subtle flex items-center justify-between bg-surface-canvas">
           <div className="flex items-center gap-2.5">
@@ -92,7 +95,7 @@ export const ComplaintCreateModal: React.FC<ComplaintCreateModalProps> = ({
           </div>
           <button
             onClick={onClose}
-            className="p-1.5 rounded-lg text-text-muted hover:text-text-primary hover:bg-surface-subtle transition-colors"
+            className="p-1.5 rounded-lg text-text-muted hover:text-text-primary hover:bg-surface-subtle transition-colors cursor-pointer"
           >
             <X className="w-5 h-5" />
           </button>
@@ -131,14 +134,14 @@ export const ComplaintCreateModal: React.FC<ComplaintCreateModalProps> = ({
               <button
                 type="button"
                 onClick={onClose}
-                className="px-4 py-2 text-xs font-semibold text-text-secondary bg-surface-subtle hover:bg-border-subtle rounded-lg transition-colors"
+                className="px-4 py-2 text-xs font-semibold text-text-secondary bg-surface-subtle hover:bg-border-subtle rounded-lg transition-colors cursor-pointer"
               >
                 Dismiss (Later)
               </button>
               <button
                 type="button"
                 onClick={handleGoToMeeting}
-                className="inline-flex items-center gap-2 px-5 py-2.5 text-xs font-semibold text-white bg-primary hover:bg-primary-container rounded-lg shadow-sm transition-all"
+                className="inline-flex items-center gap-2 px-5 py-2.5 text-xs font-semibold text-white bg-primary hover:bg-primary-container rounded-lg shadow-sm transition-all cursor-pointer"
               >
                 <Calendar className="w-4 h-4" />
                 Schedule Preliminary Review Now
@@ -148,7 +151,7 @@ export const ComplaintCreateModal: React.FC<ComplaintCreateModalProps> = ({
           </div>
         ) : (
           /* Intake Form */
-          <form onSubmit={handleSubmit} className="p-6 overflow-y-auto space-y-4">
+          <form onSubmit={handleSubmit} className="p-6 overflow-y-auto space-y-4 text-xs">
             {errorMessage && (
               <div className="p-3.5 rounded-xl bg-rose-50 border border-rose-200 text-rose-800 text-xs flex items-start gap-2.5">
                 <AlertTriangle className="w-4 h-4 text-rose-600 shrink-0 mt-0.5" />
@@ -159,9 +162,10 @@ export const ComplaintCreateModal: React.FC<ComplaintCreateModalProps> = ({
               </div>
             )}
 
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            {/* Row 1: Timeline & Classification (Excel Col 7, 9, 8, 2) */}
+            <div className="grid grid-cols-1 sm:grid-cols-4 gap-3 p-3 bg-surface-canvas/60 rounded-xl border border-border-subtle/80">
               <div>
-                <label className="block text-xs font-semibold text-text-secondary mb-1">
+                <label className="block text-[11px] font-semibold text-text-secondary mb-1">
                   Received Date <span className="text-rose-500">*</span>
                 </label>
                 <input
@@ -171,10 +175,64 @@ export const ComplaintCreateModal: React.FC<ComplaintCreateModalProps> = ({
                   onChange={handleChange}
                   onClick={(e) => e.currentTarget.showPicker?.()}
                   required
-                  className="w-full px-3 py-2 text-xs bg-surface-canvas border border-border-subtle rounded-lg text-text-primary cursor-pointer hover:border-primary/60 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                  className="w-full px-2.5 py-1.5 text-xs bg-white border border-border-subtle rounded-lg text-text-primary cursor-pointer hover:border-primary/60 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
                 />
               </div>
 
+              <div>
+                <label className="block text-[11px] font-semibold text-text-secondary mb-1">
+                  Internal / External
+                </label>
+                <select
+                  name="internalExternal"
+                  value={formData.internalExternal}
+                  onChange={handleChange}
+                  className="w-full px-2.5 py-1.5 text-xs bg-white border border-border-subtle rounded-lg text-text-primary font-semibold focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                >
+                  <option value="EXTERNAL">External (Khách hàng)</option>
+                  <option value="INTERNAL">Internal (Nội bộ)</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-[11px] font-semibold text-text-secondary mb-1">
+                  Origin of Complaint
+                </label>
+                <select
+                  name="originOfComplaint"
+                  value={formData.originOfComplaint}
+                  onChange={handleChange}
+                  className="w-full px-2.5 py-1.5 text-xs bg-white border border-border-subtle rounded-lg text-text-primary focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                >
+                  <option value="Customer">Customer (Khách hàng)</option>
+                  <option value="Market / Field">Market / Field (Thị trường)</option>
+                  <option value="Internal OQC">Internal OQC (Kiểm tra nội bộ)</option>
+                  <option value="Supplier">Supplier (Nhà cung ứng)</option>
+                  <option value="Third-Party Audit">Third-Party Audit (Kiểm toán)</option>
+                  <option value="Other">Other (Khác)</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-[11px] font-semibold text-text-secondary mb-1">
+                  Building Stage
+                </label>
+                <select
+                  name="buildingStage"
+                  value={formData.buildingStage}
+                  onChange={handleChange}
+                  className="w-full px-2.5 py-1.5 text-xs bg-white border border-border-subtle rounded-lg text-text-primary focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                >
+                  <option value="MP">MP (Mass Production)</option>
+                  <option value="Pilot">Pilot / Ramp-up</option>
+                  <option value="NPI">NPI (New Product Intro)</option>
+                  <option value="Proto">Prototype / EVT / DVT</option>
+                </select>
+              </div>
+            </div>
+
+            {/* Row 2: Customer & Product (Excel Col 12, 13, 10) */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
               <div>
                 <label className="block text-xs font-semibold text-text-secondary mb-1">
                   Customer Name <span className="text-rose-500">*</span>
@@ -201,11 +259,26 @@ export const ComplaintCreateModal: React.FC<ComplaintCreateModalProps> = ({
                   onChange={handleChange}
                   placeholder="e.g., MDL-9000, ABC-100..."
                   required
-                  className="w-full px-3 py-2 text-xs bg-surface-canvas border border-border-subtle rounded-lg text-text-primary focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                  className="w-full px-3 py-2 text-xs bg-surface-canvas border border-border-subtle rounded-lg text-text-primary focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary font-mono"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-text-secondary mb-1">
+                  Salesforce CAPA (Ref No.)
+                </label>
+                <input
+                  type="text"
+                  name="salesforceCapa"
+                  value={formData.salesforceCapa || ''}
+                  onChange={handleChange}
+                  placeholder="e.g., SF-CAPA-2026-091..."
+                  className="w-full px-3 py-2 text-xs bg-surface-canvas border border-border-subtle rounded-lg text-text-primary focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary font-mono"
                 />
               </div>
             </div>
 
+            {/* Row 3: Defect Specifics (Excel Col 15, 16, 17) */}
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
               <div>
                 <label className="block text-xs font-semibold text-text-secondary mb-1">
@@ -217,12 +290,13 @@ export const ComplaintCreateModal: React.FC<ComplaintCreateModalProps> = ({
                   onChange={handleChange}
                   className="w-full px-3 py-2 text-xs bg-surface-canvas border border-border-subtle rounded-lg text-text-primary focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
                 >
-                  <option value="Mechanical">Mechanical</option>
-                  <option value="Electrical">Electrical</option>
-                  <option value="Cosmetic">Cosmetic</option>
-                  <option value="Functional">Functional</option>
-                  <option value="Packaging">Packaging</option>
+                  <option value="Mechanical">Mechanical (Cơ khí / Lắp ráp)</option>
+                  <option value="Electrical">Electrical (Điện tử / Mạch)</option>
+                  <option value="Cosmetic">Cosmetic (Ngoại quan / Trầy xước)</option>
+                  <option value="Functional">Functional (Tính năng / Hiệu năng)</option>
+                  <option value="Packaging">Packaging (Đóng gói / Tem nhãn)</option>
                   <option value="Firmware">Firmware / Software</option>
+                  <option value="Other">Other (Khác)</option>
                 </select>
               </div>
 
@@ -242,7 +316,7 @@ export const ComplaintCreateModal: React.FC<ComplaintCreateModalProps> = ({
 
               <div>
                 <label className="block text-xs font-semibold text-text-secondary mb-1">
-                  Defect Quantity (Qty EA)
+                  Defect Quantity (Q'ty EA)
                 </label>
                 <input
                   type="number"
@@ -255,16 +329,17 @@ export const ComplaintCreateModal: React.FC<ComplaintCreateModalProps> = ({
               </div>
             </div>
 
+            {/* Row 4: Findings & Description (Excel Col 12, 14) */}
             <div>
               <label className="block text-xs font-semibold text-text-secondary mb-1">
-                Customer Finding
+                Customer Finding / Feedback
               </label>
               <input
                 type="text"
                 name="customerFinding"
                 value={formData.customerFinding}
                 onChange={handleChange}
-                placeholder="e.g., Customer noticed vibration during high-speed rotation..."
+                placeholder="e.g., Customer noticed vibration during high-speed rotation test at inbound hub..."
                 className="w-full px-3 py-2 text-xs bg-surface-canvas border border-border-subtle rounded-lg text-text-primary focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
               />
             </div>
@@ -279,29 +354,30 @@ export const ComplaintCreateModal: React.FC<ComplaintCreateModalProps> = ({
                 value={formData.issueDescription}
                 onChange={handleChange}
                 required
-                placeholder="Describe failure symptoms, occurrence conditions, customer observations..."
-                className="w-full px-3 py-2 text-xs bg-surface-canvas border border-border-subtle rounded-lg text-text-primary focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                placeholder="Describe failure symptoms, occurrence conditions, customer observations, impact..."
+                className="w-full px-3 py-2 text-xs bg-surface-canvas border border-border-subtle rounded-lg text-text-primary focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary font-sans"
               />
             </div>
 
+            {/* Row 5: Area & SN (Excel Col 12, 19) */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
                 <label className="block text-xs font-semibold text-text-secondary mb-1">
-                  Originating Area
+                  Area
                 </label>
                 <input
                   type="text"
                   name="area"
                   value={formData.area}
                   onChange={handleChange}
-                  placeholder="e.g., SMT Line 2, Final Assembly, Warehouse..."
+                  placeholder="e.g., SMT Line 2, Final Assembly, Packing..."
                   className="w-full px-3 py-2 text-xs bg-surface-canvas border border-border-subtle rounded-lg text-text-primary focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
                 />
               </div>
 
               <div>
                 <label className="block text-xs font-semibold text-text-secondary mb-1">
-                  Serial Numbers (SN)
+                  SN (Serial Number)
                 </label>
                 <input
                   type="text"
@@ -309,11 +385,12 @@ export const ComplaintCreateModal: React.FC<ComplaintCreateModalProps> = ({
                   value={formData.serialNumbers}
                   onChange={handleChange}
                   placeholder="e.g., SN001, SN002, LOT-202609A..."
-                  className="w-full px-3 py-2 text-xs bg-surface-canvas border border-border-subtle rounded-lg text-text-primary focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                  className="w-full px-3 py-2 text-xs bg-surface-canvas border border-border-subtle rounded-lg text-text-primary focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary font-mono"
                 />
               </div>
             </div>
 
+            {/* Row 6: Defect Pictures (Excel Col 19) */}
             <div>
               <div className="flex items-center justify-between mb-1">
                 <label className="block text-xs font-semibold text-text-secondary">
@@ -365,14 +442,14 @@ export const ComplaintCreateModal: React.FC<ComplaintCreateModalProps> = ({
               <button
                 type="button"
                 onClick={onClose}
-                className="px-4 py-2 text-xs font-semibold text-text-secondary bg-surface-subtle hover:bg-border-subtle rounded-lg transition-colors"
+                className="px-4 py-2 text-xs font-semibold text-text-secondary bg-surface-subtle hover:bg-border-subtle rounded-lg transition-colors cursor-pointer"
               >
                 Cancel
               </button>
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="px-5 py-2 text-xs font-semibold text-white bg-primary hover:bg-primary-container rounded-lg shadow-sm transition-all disabled:opacity-50"
+                className="px-5 py-2 text-xs font-semibold text-white bg-primary hover:bg-primary-container rounded-lg shadow-sm transition-all disabled:opacity-50 cursor-pointer"
               >
                 {isSubmitting ? 'Saving...' : 'Save Record (Generate Tracking Code)'}
               </button>
