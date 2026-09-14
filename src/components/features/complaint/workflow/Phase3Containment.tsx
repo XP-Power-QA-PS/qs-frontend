@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   ShieldAlert,
   Copy,
@@ -9,53 +9,49 @@ import {
 } from 'lucide-react';
 import type { ComplaintDetail, ComplaintMeeting, ComplaintUpdateRequest } from '@/types/complaint/complaint.types';
 
-interface Phase3ContainmentProps {
+export interface Phase3ContainmentProps {
   complaint: ComplaintDetail;
-  containmentData: {
-    containmentAction: string;
-    containmentDueDate: string;
-    containmentOwner: string;
-    containmentCompletionDate: string;
-    containmentStatus: string;
-    inHouseQty: string;
-    inHouseRedTagged: boolean;
-    customerQty: string;
-    customerNotified: boolean;
-    cleanPoint: string;
-  };
-  setContainmentData: React.Dispatch<
-    React.SetStateAction<{
-      containmentAction: string;
-      containmentDueDate: string;
-      containmentOwner: string;
-      containmentCompletionDate: string;
-      containmentStatus: string;
-      inHouseQty: string;
-      inHouseRedTagged: boolean;
-      customerQty: string;
-      customerNotified: boolean;
-      cleanPoint: string;
-    }>
-  >;
   isUpdating: boolean;
   handleUpdatePhase: (
     data: ComplaintUpdateRequest,
     successMsg: string,
     nextPhase?: 2 | 3 | 4 | 5 | 6 | 7
   ) => Promise<void>;
-  setShowReopenModal: (show: boolean) => void;
   latestConcludedMeeting?: ComplaintMeeting;
+  onReopenCase?: () => void;
 }
 
 export const Phase3Containment: React.FC<Phase3ContainmentProps> = ({
   complaint,
-  containmentData,
-  setContainmentData,
   isUpdating,
   handleUpdatePhase,
-  setShowReopenModal,
   latestConcludedMeeting,
+  onReopenCase,
 }) => {
+  const [containmentData, setContainmentData] = useState({
+    containmentAction: complaint.containmentAction || '',
+    containmentDueDate: complaint.containmentDueDate || '',
+    containmentOwner: complaint.containmentOwner || '',
+    containmentCompletionDate: complaint.containmentCompletionDate || '',
+    containmentStatus: complaint.containmentStatus || 'IN_PROGRESS',
+    inHouseQty: complaint.quantity ? String(complaint.quantity) : '',
+    inHouseRedTagged: true,
+    customerQty: '',
+    customerNotified: false,
+    cleanPoint: '',
+  });
+
+  useEffect(() => {
+    setContainmentData((prev) => ({
+      ...prev,
+      containmentAction: complaint.containmentAction || '',
+      containmentDueDate: complaint.containmentDueDate || '',
+      containmentOwner: complaint.containmentOwner || '',
+      containmentCompletionDate: complaint.containmentCompletionDate || '',
+      containmentStatus: complaint.containmentStatus || 'IN_PROGRESS',
+      inHouseQty: prev.inHouseQty || (complaint.quantity ? String(complaint.quantity) : ''),
+    }));
+  }, [complaint]);
   return (
     <>
       {/* Left Column: Context & Prior Meeting Evidence */}
@@ -297,7 +293,7 @@ export const Phase3Containment: React.FC<Phase3ContainmentProps> = ({
             </div>
             <button
               type="button"
-              onClick={() => setShowReopenModal(true)}
+              onClick={() => onReopenCase?.()}
               className="inline-flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-semibold text-amber-800 bg-white border border-amber-300 rounded-lg hover:bg-amber-50 cursor-pointer shadow-2xs shrink-0"
             >
               <RotateCcw className="w-3.5 h-3.5 text-amber-600" />

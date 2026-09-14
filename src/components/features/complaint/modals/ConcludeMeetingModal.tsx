@@ -1,24 +1,14 @@
-import React from 'react';
-import { FileSignature, X, Check } from 'lucide-react';
-import type { ComplaintMeeting } from '@/types/complaint/complaint.types';
+import React, { useState, useEffect } from 'react';
+import { FileSignature, X, Check, AlertCircle } from 'lucide-react';
+import { complaintService } from '@/services/complaint/complaintService';
+import type { ComplaintDetail, ComplaintMeeting } from '@/types/complaint/complaint.types';
 
-interface ConcludeMeetingModalProps {
+export interface ConcludeMeetingModalProps {
+  complaintId: number | string;
   meeting: ComplaintMeeting | null;
-  formData: {
-    conclusion: string;
-    minutes: string;
-    agreedContainment: string;
-    transitionToContainment: boolean;
-  };
-  isSubmitting: boolean;
+  initialContainmentAction?: string;
   onClose: () => void;
-  onChange: React.Dispatch<React.SetStateAction<{
-    conclusion: string;
-    minutes: string;
-    agreedContainment: string;
-    transitionToContainment: boolean;
-  }>>;
-  onSubmit: (e: React.FormEvent) => void;
+  onSuccess: (updatedComplaint: ComplaintDetail) => void;
 }
 
 const QUICK_CONCLUSIONS = [
@@ -29,14 +19,55 @@ const QUICK_CONCLUSIONS = [
 ];
 
 export const ConcludeMeetingModal: React.FC<ConcludeMeetingModalProps> = ({
+  complaintId,
   meeting,
-  formData,
-  isSubmitting,
+  initialContainmentAction,
   onClose,
-  onChange,
-  onSubmit,
+  onSuccess,
 }) => {
+  const [conclusion, setConclusion] = useState('');
+  const [minutes, setMinutes] = useState('');
+  const [agreedContainment, setAgreedContainment] = useState('');
+  const [transitionToContainment, setTransitionToContainment] = useState(true);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (meeting) {
+      setConclusion(meeting.conclusion || 'VALID Complaint - Urgent containment required within 48h');
+      setMinutes(meeting.minutes || '');
+      setAgreedContainment(meeting.agreedContainment || initialContainmentAction || '');
+      setTransitionToContainment(true);
+      setErrorMessage(null);
+    }
+  }, [meeting, initialContainmentAction]);
+
   if (!meeting) return null;
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!conclusion.trim()) {
+      setErrorMessage('Please enter or select a meeting conclusion.');
+      return;
+    }
+
+    setIsSubmitting(true);
+    setErrorMessage(null);
+    try {
+      const updated = await complaintService.concludeMeetingForComplaint(complaintId, meeting.id, {
+        conclusion: conclusion.trim(),
+        minutes: minutes.trim(),
+        agreedContainment: agreedContainment.trim(),
+        transitionToContainment,
+      });
+      onSuccess(updated);
+      onClose();
+    } catch (err: any) {
+      setErrorMessage(err.message || 'Error logging meeting minutes. Please try again.');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-xs animate-in fade-in duration-200">
@@ -64,7 +95,14 @@ export const ConcludeMeetingModal: React.FC<ConcludeMeetingModalProps> = ({
           </button>
         </div>
 
-        <form onSubmit={onSubmit} className="p-6 space-y-4 text-xs">
+        <form onSubmit={handleSubmit} className="p-6 space-y-4 text-xs">
+          {errorMessage && (
+            <div className="flex items-center gap-2 p-3 bg-rose-50 border border-rose-200 rounded-xl text-rose-700 text-xs animate-in fade-in">
+              <AlertCircle className="w-4 h-4 shrink-0" />
+              <span>{errorMessage}</span>
+            </div>
+          )}
+
           {/* Conclusion with Quick Chips */}
           <div className="space-y-1.5">
             <label className="block font-semibold text-text-secondary">
@@ -75,9 +113,9 @@ export const ConcludeMeetingModal: React.FC<ConcludeMeetingModalProps> = ({
                 <button
                   type="button"
                   key={chip}
-                  onClick={() => onChange((prev) => ({ ...prev, conclusion: chip }))}
+                  onClick={() => setConclusion(chip)}
                   className={`px-2.5 py-1 rounded-lg text-[11px] border transition-all cursor-pointer text-left ${
-                    formData.conclusion === chip
+                    conclusion === chip
                       ? 'bg-emerald-50 border-emerald-300 text-emerald-900 font-semibold'
                       : 'bg-surface-canvas border-border-subtle text-text-muted hover:text-text-primary'
                   }`}
@@ -89,8 +127,8 @@ export const ConcludeMeetingModal: React.FC<ConcludeMeetingModalProps> = ({
             <input
               type="text"
               required
-              value={formData.conclusion}
-              onChange={(e) => onChange((prev) => ({ ...prev, conclusion: e.target.value }))}
+              value={conclusion}
+              onChange={(e) => setConclusion(e.target.value)}
               placeholder="Enter or select meeting conclusion..."
               className="w-full px-3 py-2 bg-surface-canvas border border-border-subtle rounded-xl text-text-primary focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-600"
             />
@@ -103,8 +141,8 @@ export const ConcludeMeetingModal: React.FC<ConcludeMeetingModalProps> = ({
             </label>
             <textarea
               rows={3}
-              value={formData.minutes}
-              onChange={(e) => onChange((prev) => ({ ...prev, minutes: e.target.value }))}
+              value={minutes}
+              onChange={(e) => setMinutes(e.target.value)}
               placeholder="Record attendees, discussion highlights, agreed technical directions, and decisions..."
               className="w-full px-3 py-2 bg-surface-canvas border border-border-subtle rounded-xl text-text-primary focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-600 font-sans"
             />
@@ -117,8 +155,8 @@ export const ConcludeMeetingModal: React.FC<ConcludeMeetingModalProps> = ({
             </label>
             <textarea
               rows={2}
-              value={formData.agreedContainment}
-              onChange={(e) => onChange((prev) => ({ ...prev, agreedContainment: e.target.value }))}
+              value={agreedContainment}
+              onChange={(e) => setAgreedContainment(e.target.value)}
               placeholder="e.g., Quarantine 500 parts in Warehouse A; halt line #2 to verify reflow thermal profile..."
               className="w-full px-3 py-2 bg-surface-canvas border border-border-subtle rounded-xl text-text-primary focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-600 font-sans"
             />
@@ -128,8 +166,8 @@ export const ConcludeMeetingModal: React.FC<ConcludeMeetingModalProps> = ({
           <label className="flex items-center gap-2 p-3 bg-emerald-50/60 border border-emerald-200/80 rounded-xl cursor-pointer">
             <input
               type="checkbox"
-              checked={formData.transitionToContainment}
-              onChange={(e) => onChange((prev) => ({ ...prev, transitionToContainment: e.target.checked }))}
+              checked={transitionToContainment}
+              onChange={(e) => setTransitionToContainment(e.target.checked)}
               className="rounded text-emerald-600 focus:ring-emerald-500 w-4 h-4"
             />
             <span className="text-[11px] text-emerald-950 font-medium leading-relaxed">

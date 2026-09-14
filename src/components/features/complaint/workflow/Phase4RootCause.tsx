@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Search,
   CheckCircle2,
@@ -8,43 +8,41 @@ import {
 } from 'lucide-react';
 import type { ComplaintDetail, ComplaintUpdateRequest } from '@/types/complaint/complaint.types';
 
-interface Phase4RootCauseProps {
+export interface Phase4RootCauseProps {
   complaint: ComplaintDetail;
-  rootCauseData: {
-    rootCause: string;
-    rootCauseCategory: string;
-    rootCauseOwner: string;
-    rootCauseCompletionDate: string;
-    occurrenceCause: string;
-    escapeCause: string;
-  };
-  setRootCauseData: React.Dispatch<
-    React.SetStateAction<{
-      rootCause: string;
-      rootCauseCategory: string;
-      rootCauseOwner: string;
-      rootCauseCompletionDate: string;
-      occurrenceCause: string;
-      escapeCause: string;
-    }>
-  >;
   isUpdating: boolean;
   handleUpdatePhase: (
     data: ComplaintUpdateRequest,
     successMsg: string,
     nextPhase?: 2 | 3 | 4 | 5 | 6 | 7
   ) => Promise<void>;
-  setShowReopenModal: (show: boolean) => void;
+  onReopenCase?: () => void;
 }
 
 export const Phase4RootCause: React.FC<Phase4RootCauseProps> = ({
   complaint,
-  rootCauseData,
-  setRootCauseData,
   isUpdating,
   handleUpdatePhase,
-  setShowReopenModal,
+  onReopenCase,
 }) => {
+  const [rootCauseData, setRootCauseData] = useState({
+    rootCause: complaint.rootCause || '',
+    rootCauseCategory: complaint.rootCauseCategory || 'Method',
+    rootCauseOwner: complaint.rootCauseOwner || '',
+    rootCauseCompletionDate: complaint.rootCauseCompletionDate || '',
+    occurrenceCause: '',
+    escapeCause: '',
+  });
+
+  useEffect(() => {
+    setRootCauseData((prev) => ({
+      ...prev,
+      rootCause: complaint.rootCause || '',
+      rootCauseCategory: complaint.rootCauseCategory || 'Method',
+      rootCauseOwner: complaint.rootCauseOwner || '',
+      rootCauseCompletionDate: complaint.rootCauseCompletionDate || '',
+    }));
+  }, [complaint]);
   return (
     <>
       {/* Left Column: Context */}
@@ -232,7 +230,7 @@ export const Phase4RootCause: React.FC<Phase4RootCauseProps> = ({
             </div>
             <button
               type="button"
-              onClick={() => setShowReopenModal(true)}
+              onClick={() => onReopenCase?.()}
               className="inline-flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-semibold text-amber-800 bg-white border border-amber-300 rounded-lg hover:bg-amber-50 cursor-pointer shadow-2xs shrink-0"
             >
               <RotateCcw className="w-3.5 h-3.5 text-amber-600" />

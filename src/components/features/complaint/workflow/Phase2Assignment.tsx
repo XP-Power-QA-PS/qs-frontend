@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   CheckSquare,
@@ -13,22 +13,8 @@ import {
 } from 'lucide-react';
 import type { ComplaintDetail, ComplaintMeeting, ComplaintUpdateRequest } from '@/types/complaint/complaint.types';
 
-interface Phase2AssignmentProps {
+export interface Phase2AssignmentProps {
   complaint: ComplaintDetail;
-  assignmentData: {
-    assignedTeam: string;
-    assignedPerson: string;
-    priority: string;
-    assignmentDeadline: string;
-  };
-  setAssignmentData: React.Dispatch<
-    React.SetStateAction<{
-      assignedTeam: string;
-      assignedPerson: string;
-      priority: string;
-      assignmentDeadline: string;
-    }>
-  >;
   isUpdating: boolean;
   handleUpdatePhase: (data: ComplaintUpdateRequest, successMsg: string) => Promise<void>;
   setActiveTab: (tab: 'info' | 'meetings' | 'action') => void;
@@ -38,8 +24,6 @@ interface Phase2AssignmentProps {
 
 export const Phase2Assignment: React.FC<Phase2AssignmentProps> = ({
   complaint,
-  assignmentData,
-  setAssignmentData,
   isUpdating,
   handleUpdatePhase,
   setActiveTab,
@@ -47,6 +31,22 @@ export const Phase2Assignment: React.FC<Phase2AssignmentProps> = ({
   latestConcludedMeeting,
 }) => {
   const navigate = useNavigate();
+
+  const [assignmentData, setAssignmentData] = useState({
+    assignedTeam: complaint.assignedTeam || '',
+    assignedPerson: complaint.assignedPerson || '',
+    priority: complaint.priority || 'MEDIUM',
+    assignmentDeadline: complaint.assignmentDeadline || '',
+  });
+
+  useEffect(() => {
+    setAssignmentData({
+      assignedTeam: complaint.assignedTeam || '',
+      assignedPerson: complaint.assignedPerson || '',
+      priority: complaint.priority || 'MEDIUM',
+      assignmentDeadline: complaint.assignmentDeadline || '',
+    });
+  }, [complaint]);
 
   return (
     <>

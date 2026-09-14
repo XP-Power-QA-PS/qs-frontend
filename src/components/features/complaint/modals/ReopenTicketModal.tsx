@@ -1,31 +1,71 @@
-import React from 'react';
-import { RotateCcw, X } from 'lucide-react';
+import React, { useState } from 'react';
+import { RotateCcw, X, AlertCircle } from 'lucide-react';
+import { complaintService } from '@/services/complaint/complaintService';
 import type { ComplaintDetail } from '@/types/complaint/complaint.types';
 
-interface ReopenTicketModalProps {
+export interface ReopenTicketModalProps {
   isOpen: boolean;
   complaint: ComplaintDetail | null;
-  reopenTargetStatus: string;
-  reopenReason: string;
-  isSubmitting: boolean;
   onClose: () => void;
-  onTargetStatusChange: (status: string) => void;
-  onReasonChange: (reason: string) => void;
-  onSubmit: (e: React.FormEvent) => void;
+  onSuccess: (updatedComplaint: ComplaintDetail, newPhase: 2 | 3 | 4 | 5 | 6 | 7) => void;
 }
+
+const getPhaseForStatus = (status: string): 2 | 3 | 4 | 5 | 6 | 7 => {
+  switch (status) {
+    case 'RECEIVED':
+      return 2;
+    case 'MEETING_SCHEDULED':
+    case 'CONTAINMENT_COMMITTED':
+      return 3;
+    case 'ROOT_CAUSE_ANALYZED':
+      return 4;
+    case 'CAPA_COMMITTED':
+      return 5;
+    case 'EFFECTIVENESS_VERIFYING':
+      return 6;
+    case 'CLOSED':
+      return 7;
+    default:
+      return 4;
+  }
+};
 
 export const ReopenTicketModal: React.FC<ReopenTicketModalProps> = ({
   isOpen,
   complaint,
-  reopenTargetStatus,
-  reopenReason,
-  isSubmitting,
   onClose,
-  onTargetStatusChange,
-  onReasonChange,
-  onSubmit,
+  onSuccess,
 }) => {
+  const [reopenTargetStatus, setReopenTargetStatus] = useState<string>('ROOT_CAUSE_ANALYZED');
+  const [reopenReason, setReopenReason] = useState<string>('');
+  const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
   if (!isOpen || !complaint) return null;
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!reopenReason.trim()) {
+      setErrorMessage('Please enter reason for reopening the case.');
+      return;
+    }
+
+    setIsSubmitting(true);
+    setErrorMessage(null);
+    try {
+      const updated = await complaintService.updateComplaint(complaint.id, {
+        status: reopenTargetStatus as any,
+        remarks: `[REOPENED ON ${new Date().toLocaleDateString('en-US')}]: ${reopenReason.trim()}\n\n${complaint.remarks || ''}`,
+      });
+      onSuccess(updated, getPhaseForStatus(reopenTargetStatus));
+      setReopenReason('');
+      onClose();
+    } catch (err: any) {
+      setErrorMessage(err.message || 'Error reopening case. Please try again.');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-xs animate-in fade-in duration-200">
@@ -53,7 +93,14 @@ export const ReopenTicketModal: React.FC<ReopenTicketModalProps> = ({
           </button>
         </div>
 
-        <form onSubmit={onSubmit} className="p-6 space-y-4 text-xs">
+        <form onSubmit={handleSubmit} className="p-6 space-y-4 text-xs">
+          {errorMessage && (
+            <div className="flex items-center gap-2 p-3 bg-rose-50 border border-rose-200 rounded-xl text-rose-700 text-xs animate-in fade-in">
+              <AlertCircle className="w-4 h-4 shrink-0" />
+              <span>{errorMessage}</span>
+            </div>
+          )}
+
           <div className="p-3 bg-amber-50 border border-amber-200/80 rounded-xl text-amber-900 text-[11px] leading-relaxed">
             <strong>Important Audit Notice:</strong> Reopening a closed case resets the closure date, returns the workflow to your selected stage for further CFT investigation, and records the reopening justification into the audit trail per IATF 16949 standards.
           </div>
@@ -64,7 +111,7 @@ export const ReopenTicketModal: React.FC<ReopenTicketModalProps> = ({
             </label>
             <select
               value={reopenTargetStatus}
-              onChange={(e) => onTargetStatusChange(e.target.value)}
+              onChange={(e) => setReopenTargetStatus(e.target.value)}
               className="w-full px-3 py-2 bg-surface-canvas border border-border-subtle rounded-xl text-text-primary text-xs"
             >
               <option value="ROOT_CAUSE_ANALYZED">Phase 4: Re-investigate Root Cause (5-Why)</option>
@@ -82,7 +129,7 @@ export const ReopenTicketModal: React.FC<ReopenTicketModalProps> = ({
               rows={3}
               required
               value={reopenReason}
-              onChange={(e) => onReasonChange(e.target.value)}
+              onChange={(e) => setReopenReason(e.target.value)}
               placeholder="e.g., Customer reported defect recurrence in new batch; 30-day verification PPM exceeded allowable threshold..."
               className="w-full px-3 py-2 bg-surface-canvas border border-border-subtle rounded-xl text-text-primary text-xs focus:ring-2 focus:ring-amber-500/20 focus:border-amber-600 font-sans"
             />

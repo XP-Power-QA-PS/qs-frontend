@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Save,
   CheckCircle2,
@@ -7,38 +7,38 @@ import {
 } from 'lucide-react';
 import type { ComplaintDetail, ComplaintUpdateRequest } from '@/types/complaint/complaint.types';
 
-interface Phase7ClosureProps {
+export interface Phase7ClosureProps {
   complaint: ComplaintDetail;
-  closureData: {
-    closureDate: string;
-    finalStatus: string;
-    finalEvidence: string;
-    remarks: string;
-  };
-  setClosureData: React.Dispatch<
-    React.SetStateAction<{
-      closureDate: string;
-      finalStatus: string;
-      finalEvidence: string;
-      remarks: string;
-    }>
-  >;
   isUpdating: boolean;
   handleUpdatePhase: (
     data: ComplaintUpdateRequest,
     successMsg: string
   ) => Promise<void>;
-  setShowReopenModal: (show: boolean) => void;
+  onReopenCase?: () => void;
 }
 
 export const Phase7Closure: React.FC<Phase7ClosureProps> = ({
   complaint,
-  closureData,
-  setClosureData,
   isUpdating,
   handleUpdatePhase,
-  setShowReopenModal,
+  onReopenCase,
 }) => {
+  const [closureData, setClosureData] = useState({
+    closureDate: complaint.closureDate || new Date().toISOString().slice(0, 10),
+    finalStatus: complaint.finalStatus || 'ACCEPTED',
+    finalEvidence: complaint.finalEvidence || '',
+    remarks: complaint.remarks || '',
+  });
+
+  useEffect(() => {
+    setClosureData({
+      closureDate: complaint.closureDate || new Date().toISOString().slice(0, 10),
+      finalStatus: complaint.finalStatus || 'ACCEPTED',
+      finalEvidence: complaint.finalEvidence || '',
+      remarks: complaint.remarks || '',
+    });
+  }, [complaint]);
+
   return (
     <>
       {/* Left Column: Context */}
@@ -60,23 +60,26 @@ export const Phase7Closure: React.FC<Phase7ClosureProps> = ({
           </span>
         </div>
 
-        {/* Milestone Audit Trail */}
         <div className="p-3.5 bg-surface-canvas rounded-xl text-xs space-y-2 border border-border-subtle">
-          <strong className="text-text-primary block text-[11px] uppercase tracking-wider">
-            Complaint Resolution Journey Summary:
-          </strong>
-          <div className="space-y-1.5 text-[11px]">
-            <div className="flex justify-between py-0.5 border-b border-border-subtle">
-              <span className="text-text-muted">Received Date:</span>
-              <strong>{complaint.receivedDate}</strong>
-            </div>
-            <div className="flex justify-between py-0.5 border-b border-border-subtle">
-              <span className="text-text-muted">CFT Meetings:</span>
-              <strong className="text-emerald-700">{complaint.meetings?.length || 0} meeting(s) held</strong>
-            </div>
+          <strong className="text-text-primary block">IATF 16949 Sign-off Criteria (Step D8):</strong>
+          <p className="text-text-secondary leading-relaxed text-[11px]">
+            Final closure requires formal CFT quality endorsement confirming:
+          </p>
+          <ul className="list-disc pl-4 text-text-secondary text-[11px] space-y-1">
+            <li>Interim containment actions safely decommissioned.</li>
+            <li>Permanent corrective actions fully standardized (SOP / WI updated).</li>
+            <li>Lesson learned shared with cross-functional manufacturing lines.</li>
+            <li>Customer formal sign-off / acceptance received.</li>
+          </ul>
+        </div>
+
+        {/* 8D Traceability Chain Summary */}
+        <div className="p-3.5 bg-emerald-50/60 border border-emerald-200/80 rounded-xl text-xs space-y-2 text-emerald-950">
+          <strong className="block font-bold text-emerald-900">8D Gate Traceability Summary:</strong>
+          <div className="space-y-1 text-[11px]">
             <div className="flex justify-between py-0.5 border-b border-border-subtle">
               <span className="text-text-muted">Containment (D3):</span>
-              <strong className="text-emerald-700">{complaint.containmentAction ? 'Completed' : 'Pending'}</strong>
+              <strong className="text-emerald-700">{complaint.containmentStatus || 'Complete'}</strong>
             </div>
             <div className="flex justify-between py-0.5 border-b border-border-subtle">
               <span className="text-text-muted">Root Cause (D4):</span>
@@ -168,16 +171,18 @@ export const Phase7Closure: React.FC<Phase7ClosureProps> = ({
               </p>
             </div>
 
-            <div className="flex flex-col sm:flex-row items-center gap-3 pt-2">
-              <button
-                type="button"
-                onClick={() => setShowReopenModal(true)}
-                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-white border border-amber-300 hover:bg-amber-50 text-amber-800 text-xs font-semibold rounded-xl shadow-2xs transition-all cursor-pointer"
-              >
-                <RotateCcw className="w-4 h-4 text-amber-600" />
-                Request Ticket Reopen
-              </button>
-            </div>
+            {onReopenCase && (
+              <div className="flex flex-col sm:flex-row items-center gap-3 pt-2">
+                <button
+                  type="button"
+                  onClick={() => onReopenCase()}
+                  className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-white border border-amber-300 hover:bg-amber-50 text-amber-800 text-xs font-semibold rounded-xl shadow-2xs transition-all cursor-pointer"
+                >
+                  <RotateCcw className="w-4 h-4 text-amber-600" />
+                  Request Ticket Reopen
+                </button>
+              </div>
+            )}
           </div>
         ) : (
           <>
