@@ -21,7 +21,7 @@ export const EmailLivePreview: React.FC<EmailLivePreviewProps> = ({ request }) =
             <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 inline-block" />
           </div>
           <span className="text-xs font-semibold text-slate-300 ml-2 flex items-center gap-1.5">
-            <Mail className="w-3.5 h-3.5 text-sky-400" /> Xem Trước Email Thực Tế (Live Preview)
+            <Mail className="w-3.5 h-3.5 text-sky-400" /> Live Email Preview
           </span>
         </div>
         <span className="text-[11px] text-slate-400">Template: meeting-invitation.html</span>
@@ -30,14 +30,14 @@ export const EmailLivePreview: React.FC<EmailLivePreviewProps> = ({ request }) =
       {/* Email Meta Bar */}
       <div className="bg-slate-50 border-b border-border-subtle p-3.5 text-xs space-y-1.5 font-sans">
         <div className="flex gap-2">
-          <span className="text-text-muted w-14 shrink-0 font-medium">Tiêu đề:</span>
+          <span className="text-text-muted w-14 shrink-0 font-medium">Subject:</span>
           <span className="font-semibold text-text-primary">
-            [QS-ALERT] Thư mời họp đánh giá sơ bộ: Khiếu nại #{request.trackingNo || '2026-09-XXXX'}
+            [QS-ALERT] Preliminary Review Meeting Invitation: Complaint #{request.trackingNo || '2026-09-XXXX'}
             {request.model ? ` - ${request.model}` : ''}
           </span>
         </div>
         <div className="flex gap-2">
-          <span className="text-text-muted w-14 shrink-0 font-medium">Đến (TO):</span>
+          <span className="text-text-muted w-14 shrink-0 font-medium">To:</span>
           <div className="text-text-primary flex flex-wrap gap-1">
             {toList.length > 0 ? (
               toList.map((r) => (
@@ -49,7 +49,7 @@ export const EmailLivePreview: React.FC<EmailLivePreviewProps> = ({ request }) =
                 </span>
               ))
             ) : (
-              <span className="text-rose-500 italic">Chưa chọn người nhận chính (TO)</span>
+              <span className="text-rose-500 italic">No primary recipient (TO) selected</span>
             )}
           </div>
         </div>
@@ -70,7 +70,7 @@ export const EmailLivePreview: React.FC<EmailLivePreviewProps> = ({ request }) =
         )}
         <div className="flex gap-2 items-center text-slate-600 pt-1">
           <Paperclip className="w-3.5 h-3.5 text-slate-500" />
-          <span>File đính kèm:</span>
+          <span>Attachment:</span>
           <span className="font-mono bg-white px-2 py-0.5 border border-border-subtle rounded text-[11px] text-primary font-bold">
             meeting-invite.ics (iCalendar)
           </span>
