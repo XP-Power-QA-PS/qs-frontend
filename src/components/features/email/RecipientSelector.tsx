@@ -91,12 +91,12 @@ export const RecipientSelector: React.FC<RecipientSelectorProps> = ({
     // Basic email check
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
-      alert('Vui lòng nhập định dạng email hợp lệ (VD: user@example.com)');
+      alert('Please enter a valid email address (e.g. user@example.com)');
       return;
     }
 
     if (recipients.some((r) => r.email.toLowerCase() === email.toLowerCase())) {
-      alert('Email này đã có trong danh sách nhận thư.');
+      alert('This email is already in the recipient list.');
       return;
     }
 
@@ -104,7 +104,7 @@ export const RecipientSelector: React.FC<RecipientSelectorProps> = ({
       userId: null,
       name: manualName.trim() || email.split('@')[0],
       email: email,
-      department: 'Khách ngoài',
+      department: 'External',
       recipientType: manualType,
     };
 
@@ -141,7 +141,7 @@ export const RecipientSelector: React.FC<RecipientSelectorProps> = ({
       {/* Search Internal Users + Dropdown */}
       <div className="relative" ref={dropdownRef}>
         <label className="block text-xs font-semibold text-text-secondary uppercase tracking-wider mb-1.5">
-          1. Tìm & Chọn Nhân Viên Nội Bộ (Internal CFT Members)
+          1. Find & Select Internal CFT Members
         </label>
         <div className="relative">
           <Search className="w-4 h-4 text-text-muted absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
@@ -150,12 +150,12 @@ export const RecipientSelector: React.FC<RecipientSelectorProps> = ({
             value={keyword}
             onChange={(e) => setKeyword(e.target.value)}
             onFocus={() => keyword.trim() && setShowDropdown(true)}
-            placeholder="Gõ tên, username hoặc email nội bộ (VD: admin, Nguyen Van A...)..."
+            placeholder="Type name, username or internal email (e.g. admin, John Doe)..."
             className="w-full pl-9 pr-4 py-2 text-sm bg-surface-canvas border border-border-subtle rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-text-primary placeholder:text-text-muted"
           />
           {isSearching && (
             <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-text-muted">
-              Đang tìm...
+              Searching...
             </span>
           )}
         </div>
@@ -189,11 +189,11 @@ export const RecipientSelector: React.FC<RecipientSelectorProps> = ({
                   </div>
                   {isAdded ? (
                     <span className="text-xs text-emerald-600 font-medium flex items-center gap-1">
-                      <UserCheck className="w-3.5 h-3.5" /> Đã chọn
+                      <UserCheck className="w-3.5 h-3.5" /> Selected
                     </span>
                   ) : (
                     <span className="text-xs text-primary font-medium flex items-center gap-1 hover:underline">
-                      <UserPlus className="w-3.5 h-3.5" /> Thêm
+                      <UserPlus className="w-3.5 h-3.5" /> Add
                     </span>
                   )}
                 </div>
@@ -206,14 +206,14 @@ export const RecipientSelector: React.FC<RecipientSelectorProps> = ({
       {/* Manual / External Email Input */}
       <div>
         <label className="block text-xs font-semibold text-text-secondary uppercase tracking-wider mb-1.5">
-          2. Hoặc Nhập Email Bất Kỳ (Email Cá Nhân Để Test / Email Khách Hàng)
+          2. Or Enter Any Email (External / Test Recipient)
         </label>
         <div className="flex flex-col sm:flex-row gap-2">
           <input
             type="text"
             value={manualName}
             onChange={(e) => setManualName(e.target.value)}
-            placeholder="Tên người nhận (Tùy chọn)"
+            placeholder="Recipient name (Optional)"
             className="sm:w-1/3 px-3 py-2 text-sm bg-surface-canvas border border-border-subtle rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary text-text-primary placeholder:text-text-muted"
           />
           <input
@@ -226,7 +226,7 @@ export const RecipientSelector: React.FC<RecipientSelectorProps> = ({
                 handleAddManual();
               }
             }}
-            placeholder="Nhập địa chỉ email (VD: test@gmail.com) rồi nhấn Enter..."
+            placeholder="Enter email address (e.g. test@example.com) and press Enter..."
             className="flex-1 px-3 py-2 text-sm bg-surface-canvas border border-border-subtle rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary text-text-primary placeholder:text-text-muted"
           />
           <div className="flex gap-2">
@@ -235,8 +235,8 @@ export const RecipientSelector: React.FC<RecipientSelectorProps> = ({
               onChange={(e) => setManualType(e.target.value as 'TO' | 'CC')}
               className="px-3 py-2 text-sm bg-surface-canvas border border-border-subtle rounded-lg text-text-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
             >
-              <option value="TO">TO (Chính)</option>
-              <option value="CC">CC (Theo dõi)</option>
+              <option value="TO">TO (Primary)</option>
+              <option value="CC">CC (Copy)</option>
             </select>
             <button
               type="button"
@@ -244,7 +244,7 @@ export const RecipientSelector: React.FC<RecipientSelectorProps> = ({
               disabled={!manualEmail.trim()}
               className="px-4 py-2 bg-slate-800 hover:bg-slate-900 active:bg-black text-white text-sm font-medium rounded-lg transition-colors disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer whitespace-nowrap"
             >
-              + Thêm
+              + Add
             </button>
           </div>
         </div>
@@ -254,7 +254,7 @@ export const RecipientSelector: React.FC<RecipientSelectorProps> = ({
       <div className="pt-2 border-t border-border-subtle">
         <div className="flex items-center justify-between mb-2.5">
           <div className="text-xs font-semibold text-text-secondary flex items-center gap-2">
-            <span>DANH SÁCH NGƯỜI NHẬN ({recipients.length}):</span>
+            <span>RECIPIENT LIST ({recipients.length}):</span>
             <span className="px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 text-[11px] font-bold border border-blue-200">
               {toCount} TO
             </span>
@@ -268,14 +268,14 @@ export const RecipientSelector: React.FC<RecipientSelectorProps> = ({
               onClick={() => onChange([])}
               className="text-xs text-rose-600 hover:underline cursor-pointer"
             >
-              Xóa tất cả
+              Clear all
             </button>
           )}
         </div>
 
         {recipients.length === 0 ? (
           <div className="p-4 rounded-lg bg-amber-50/70 border border-amber-200 text-amber-800 text-xs text-center">
-            ⚠️ Chưa có người nhận nào được chọn. Hãy thêm ít nhất 1 email (TO) để có thể gửi thư mời.
+            ⚠️ No recipients selected. Please add at least 1 recipient (TO) to send the meeting invitation.
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-60 overflow-y-auto p-1">
@@ -295,7 +295,7 @@ export const RecipientSelector: React.FC<RecipientSelectorProps> = ({
                       className={`w-6 h-6 rounded-full flex items-center justify-center shrink-0 ${
                         r.userId ? 'bg-primary text-white' : 'bg-amber-600 text-white'
                       }`}
-                      title={r.userId ? 'Thành viên nội bộ' : 'Email bên ngoài'}
+                      title={r.userId ? 'Internal Member' : 'External Email'}
                     >
                       {r.userId ? <Users className="w-3.5 h-3.5" /> : <Globe className="w-3.5 h-3.5" />}
                     </div>
@@ -316,7 +316,7 @@ export const RecipientSelector: React.FC<RecipientSelectorProps> = ({
                     <button
                       type="button"
                       onClick={() => handleToggleType(r.email)}
-                      title="Bấm để đổi giữa TO và CC"
+                      title="Click to toggle between TO and CC"
                       className={`px-2 py-0.5 rounded text-[10px] font-bold cursor-pointer transition-colors flex items-center gap-1 ${
                         isTO
                           ? 'bg-primary text-white hover:bg-primary/90'
@@ -330,7 +330,7 @@ export const RecipientSelector: React.FC<RecipientSelectorProps> = ({
                       type="button"
                       onClick={() => handleRemove(r.email)}
                       className="p-1 text-slate-400 hover:text-rose-600 rounded transition-colors cursor-pointer"
-                      title="Xóa người nhận"
+                      title="Remove recipient"
                     >
                       <X className="w-3.5 h-3.5" />
                     </button>

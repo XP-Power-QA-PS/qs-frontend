@@ -15,7 +15,6 @@ import type { MeetingEmailRequest, EmailRecipient, EmailSendResult } from '@/typ
 import { emailService } from '@/services/email';
 import { complaintService } from '@/services/complaint/complaintService';
 import type { ComplaintDetail, ComplaintSummary } from '@/types/complaint/complaint.types';
-import { QuickSmtpTestCard } from '@/components/features/email/QuickSmtpTestCard';
 import { RecipientSelector } from '@/components/features/email/RecipientSelector';
 import { EmailLivePreview } from '@/components/features/email/EmailLivePreview';
 
@@ -240,9 +239,6 @@ export const MeetingInvitePage: React.FC = () => {
           <p className="text-xs font-semibold">Loading complaint case data #{complaintId}...</p>
         </div>
       )}
-
-      {/* Quick SMTP Test Widget */}
-      <QuickSmtpTestCard />
 
       {/* Success Notification Banner */}
       {sendResult && (
