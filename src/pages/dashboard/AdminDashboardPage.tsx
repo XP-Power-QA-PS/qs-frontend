@@ -12,6 +12,7 @@ import {
   ArrowRight,
   CheckCircle2,
   XCircle,
+  Layers,
 } from 'lucide-react';
 import { adminService } from '@/services/admin';
 import { authService } from '@/services/auth';
@@ -29,6 +30,7 @@ export const AdminDashboardPage: React.FC = () => {
 
   const [users, setUsers] = useState<User[]>([]);
   const [roles, setRoles] = useState<Role[]>([]);
+  const [floorCount, setFloorCount] = useState<number>(0);
   const [deletedCount, setDeletedCount] = useState<number>(0);
   const [totalUsers, setTotalUsers] = useState<number>(0);
   const [loading, setLoading] = useState(true);
@@ -37,10 +39,11 @@ export const AdminDashboardPage: React.FC = () => {
     const fetchAdminOverview = async () => {
       setLoading(true);
       try {
-        const [usersRes, rolesRes, deletedRes] = await Promise.allSettled([
+        const [usersRes, rolesRes, deletedRes, floorsRes] = await Promise.allSettled([
           adminService.getUsers(0, 5),
           adminService.getRoles(0, 10),
           adminService.getDeletedUsers(0, 10),
+          adminService.getFloors(),
         ]);
 
         if (usersRes.status === 'fulfilled') {
@@ -52,6 +55,9 @@ export const AdminDashboardPage: React.FC = () => {
         }
         if (deletedRes.status === 'fulfilled') {
           setDeletedCount(deletedRes.value.page?.totalElements ?? (deletedRes.value as any).totalElements ?? (deletedRes.value.content || []).length);
+        }
+        if (floorsRes.status === 'fulfilled') {
+          setFloorCount(floorsRes.value.length);
         }
       } catch (err: any) {
         toast.error('Failed to load administration overview');
@@ -110,7 +116,7 @@ export const AdminDashboardPage: React.FC = () => {
         ) : (
           <>
             {/* ── KPI Stat Cards ────────────────────────────────────────────── */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 sm:gap-4">
               <div
                 onClick={() => navigate('/admin/users')}
                 className="bg-surface-card p-4 sm:p-5 rounded-xl border border-border-subtle shadow-xs hover:shadow-md hover:border-primary transition-all cursor-pointer group"
@@ -123,7 +129,7 @@ export const AdminDashboardPage: React.FC = () => {
                 </div>
                 <p className="text-2xl sm:text-3xl font-bold font-technical-data text-text-primary">{totalUsers}</p>
                 <p className="text-xs text-text-secondary mt-1 flex items-center gap-1">
-                  <span>Manage operator accounts</span>
+                  <span>Manage accounts</span>
                   <ArrowRight className="w-3 h-3 text-text-muted group-hover:translate-x-0.5 transition-transform" />
                 </p>
               </div>
@@ -136,7 +142,7 @@ export const AdminDashboardPage: React.FC = () => {
                   </div>
                 </div>
                 <p className="text-2xl sm:text-3xl font-bold font-technical-data text-emerald-600">{activeUsersCount}</p>
-                <p className="text-xs text-text-secondary mt-1">Ready for floor assignments</p>
+                <p className="text-xs text-text-secondary mt-1">Ready for operations</p>
               </div>
 
               <div
@@ -151,7 +157,24 @@ export const AdminDashboardPage: React.FC = () => {
                 </div>
                 <p className="text-2xl sm:text-3xl font-bold font-technical-data text-text-primary">{roles.length}</p>
                 <p className="text-xs text-text-secondary mt-1 flex items-center gap-1">
-                  <span>Configure permissions</span>
+                  <span>Permissions</span>
+                  <ArrowRight className="w-3 h-3 text-text-muted group-hover:translate-x-0.5 transition-transform" />
+                </p>
+              </div>
+
+              <div
+                onClick={() => navigate('/admin/floors')}
+                className="bg-surface-card p-4 sm:p-5 rounded-xl border border-border-subtle shadow-xs hover:shadow-md hover:border-sky-400 transition-all cursor-pointer group"
+              >
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-xs font-semibold uppercase tracking-wider text-text-muted">Floor Zones</span>
+                  <div className="p-2 rounded-lg bg-sky-50 text-sky-600 border border-sky-100 group-hover:bg-sky-100 transition-colors">
+                    <Layers className="w-4 h-4" />
+                  </div>
+                </div>
+                <p className="text-2xl sm:text-3xl font-bold font-technical-data text-text-primary">{floorCount}</p>
+                <p className="text-xs text-text-secondary mt-1 flex items-center gap-1">
+                  <span>Manage floors</span>
                   <ArrowRight className="w-3 h-3 text-text-muted group-hover:translate-x-0.5 transition-transform" />
                 </p>
               </div>
@@ -167,7 +190,7 @@ export const AdminDashboardPage: React.FC = () => {
                   </div>
                 </div>
                 <p className="text-2xl sm:text-3xl font-bold font-technical-data text-rose-600">{deletedCount}</p>
-                <p className="text-xs text-text-secondary mt-1">Pending permanent removal</p>
+                <p className="text-xs text-text-secondary mt-1">Pending removal</p>
               </div>
             </div>
 
@@ -209,6 +232,23 @@ export const AdminDashboardPage: React.FC = () => {
                     </h3>
                     <p className="text-xs text-text-secondary mt-0.5">
                       Manage system roles, granular API permissions and feature flags.
+                    </p>
+                  </div>
+                </div>
+
+                <div
+                  onClick={() => navigate('/admin/floors')}
+                  className="p-4 bg-surface-card rounded-xl border border-border-subtle shadow-xs hover:shadow-md hover:border-sky-400 cursor-pointer transition-all flex items-start gap-3.5 group"
+                >
+                  <div className="p-2.5 rounded-xl bg-sky-50 text-sky-600 group-hover:bg-sky-600 group-hover:text-white transition-colors shrink-0">
+                    <Layers className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <h3 className="text-sm sm:text-base font-bold text-text-primary group-hover:text-sky-600 transition-colors">
+                      Floor Management
+                    </h3>
+                    <p className="text-xs text-text-secondary mt-0.5">
+                      Add new floors, rename zones, and organize factory equipment locations.
                     </p>
                   </div>
                 </div>

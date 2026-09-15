@@ -1,5 +1,5 @@
 import { apiClient } from '@/config/api';
-import type { User, Role, PageResponse } from '@/types/admin';
+import type { User, Role, PageResponse, FloorItem, CreateFloorRequest, UpdateFloorRequest } from '@/types/admin';
 
 const BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api';
 
@@ -65,6 +65,30 @@ export const adminService = {
 
   permanentlyDeleteUser: async (id: string): Promise<void> => {
     return apiClient(`${BASE_URL}/admin/users/${id}/permanent`, {
+      method: 'DELETE'
+    });
+  },
+
+  getFloors: async (): Promise<FloorItem[]> => {
+    return apiClient(`${BASE_URL}/admin/floors`);
+  },
+
+  createFloor: async (data: CreateFloorRequest): Promise<FloorItem> => {
+    return apiClient(`${BASE_URL}/admin/floors`, {
+      method: 'POST',
+      body: JSON.stringify(data)
+    });
+  },
+
+  updateFloor: async (id: string, data: UpdateFloorRequest): Promise<FloorItem> => {
+    return apiClient(`${BASE_URL}/admin/floors/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(data)
+    });
+  },
+
+  deleteFloor: async (id: string): Promise<void> => {
+    return apiClient(`${BASE_URL}/admin/floors/${id}`, {
       method: 'DELETE'
     });
   }

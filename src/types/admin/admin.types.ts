@@ -28,3 +28,24 @@ export interface PageResponse<T> {
   content: T[];
   page: PageMetadata;
 }
+
+export interface FloorItem {
+  id: string;
+  name: string;
+  description?: string;
+  equipmentCount: number;
+  createdAt?: string;
+  createdBy?: string;
+  updatedAt?: string;
+  updatedBy?: string;
+}
+
+export interface CreateFloorRequest {
+  name: string;
+  description?: string;
+}
+
+export interface UpdateFloorRequest {
+  name: string;
+  description?: string;
+}

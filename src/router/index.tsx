@@ -4,6 +4,7 @@ import { UserDashboardPage } from '@/pages/dashboard/UserDashboardPage';
 import { AdminDashboardPage } from '@/pages/dashboard/AdminDashboardPage';
 import { UserManagementPage } from '@/pages/admin/UserManagementPage';
 import { RoleManagementPage } from '@/pages/admin/RoleManagementPage';
+import { FloorManagementPage } from '@/pages/admin/FloorManagementPage';
 import { ProtectedRoute } from './ProtectedRoute';
 import { AdminRoute } from './AdminRoute';
 import { AdminLayout } from '@/components/layout/AdminLayout';
@@ -69,6 +70,13 @@ export const router = createBrowserRouter([
                 element: <RoleManagementPage />,
                 handle: {
                   crumb: () => ({ label: 'Role Management', path: '/admin/roles' }),
+                } satisfies BreadcrumbHandle,
+              },
+              {
+                path: '/admin/floors',
+                element: <FloorManagementPage />,
+                handle: {
+                  crumb: () => ({ label: 'Floor Management', path: '/admin/floors' }),
                 } satisfies BreadcrumbHandle,
               },
             ],

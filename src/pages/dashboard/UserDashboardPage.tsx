@@ -194,8 +194,8 @@ export const UserDashboardPage: React.FC = () => {
       accent: 'primary',
       items: floors.map((floor) => ({
         id: `floor-${floor.id}`,
-        title: `Check ${floor.name}`,
-        description: `Equipment test flow for ${floor.name}`,
+        title: `${floor.name}`,
+        description: `Equipment test flow for GO/NOGO`,
         icon: MonitorCheck,
         path: `/equipments?floorId=${floor.id}&floorName=${encodeURIComponent(floor.name)}`,
       })),

@@ -12,6 +12,7 @@ import {
   ChevronLeft,
   Mail,
   FileSpreadsheet,
+  Layers,
 } from 'lucide-react';
 
 interface SidebarProps {
@@ -29,7 +30,9 @@ export const Sidebar: React.FC<SidebarProps> = ({
 }) => {
   const location = useLocation();
   const isManagementRoute =
-    location.pathname.startsWith('/admin/users') || location.pathname.startsWith('/admin/roles');
+    location.pathname.startsWith('/admin/users') ||
+    location.pathname.startsWith('/admin/roles') ||
+    location.pathname.startsWith('/admin/floors');
   const isStatsRoute = location.pathname.startsWith('/stats');
 
   const [isStatsOpen, setIsStatsOpen] = useState<boolean>(() => {
@@ -105,6 +108,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   const managementSubItems = [
     { name: 'Manage Users', path: '/admin/users', icon: Users },
     { name: 'Manage Roles', path: '/admin/roles', icon: ShieldCheck },
+    { name: 'Manage Floors', path: '/admin/floors', icon: Layers },
   ];
   return (
     <>
