@@ -6,6 +6,7 @@ import {
   RotateCcw,
 } from 'lucide-react';
 import type { ComplaintDetail, ComplaintUpdateRequest } from '@/types/complaint/complaint.types';
+import { FileUpload } from '@/components/common/FileUpload';
 
 export interface Phase7ClosureProps {
   complaint: ComplaintDetail;
@@ -23,6 +24,7 @@ export const Phase7Closure: React.FC<Phase7ClosureProps> = ({
   handleUpdatePhase,
   onReopenCase,
 }) => {
+  const [finalEvidenceTmpKey, setFinalEvidenceTmpKey] = useState<string | null>(null);
   const [closureData, setClosureData] = useState({
     closureDate: complaint.closureDate || new Date().toISOString().slice(0, 10),
     finalStatus: complaint.finalStatus || 'ACCEPTED',
@@ -213,15 +215,30 @@ export const Phase7Closure: React.FC<Phase7ClosureProps> = ({
               </div>
             </div>
 
-            <div>
-              <label className="block text-xs font-semibold text-text-secondary mb-1">
-                Final Evidence Documentation (Customer Sign-off Email, Report Link, Audit ID):
+            <div className="space-y-2">
+              <label className="block text-xs font-semibold text-text-secondary">
+                Final Evidence Documentation (Bằng chứng nghiệm thu / Ký duyệt hoàn tất):
               </label>
+              <FileUpload
+                label=""
+                accept="image/*,application/pdf"
+                maxSizeMb={20}
+                category="complaint"
+                onUploadSuccess={({ tmpKey, file }) => {
+                  setFinalEvidenceTmpKey(tmpKey || null);
+                  setClosureData((prev) => ({
+                    ...prev,
+                    finalEvidence: prev.finalEvidence
+                      ? `${prev.finalEvidence}; [File: ${file.name}]`
+                      : `[File: ${file.name}]`,
+                  }));
+                }}
+              />
               <input
                 type="text"
                 value={closureData.finalEvidence}
                 onChange={(e) => setClosureData((prev) => ({ ...prev, finalEvidence: e.target.value }))}
-                placeholder="e.g., Customer formal acceptance email ref #CUST-ACCEPT-2026; https://sharepoint/.../report.pdf"
+                placeholder="Hoặc dán URL/ghi chú bằng chứng: https://... hoặc mã ref #CUST-ACCEPT..."
                 className="w-full px-3 py-2 text-xs bg-surface-canvas border border-border-subtle rounded-xl text-text-primary font-sans"
               />
             </div>
@@ -248,6 +265,7 @@ export const Phase7Closure: React.FC<Phase7ClosureProps> = ({
                     closureDate: closureData.closureDate,
                     finalStatus: closureData.finalStatus || 'ACCEPTED',
                     finalEvidence: closureData.finalEvidence || undefined,
+                    finalEvidenceTmpKey: finalEvidenceTmpKey || undefined,
                     remarks: closureData.remarks,
                     status: 'CLOSED',
                   },
@@ -259,6 +277,7 @@ export const Phase7Closure: React.FC<Phase7ClosureProps> = ({
               <Save className="w-4 h-4" />
               Approve & Formally Close Complaint Case (Phase 7)
             </button>
+
           </>
         )}
       </div>
