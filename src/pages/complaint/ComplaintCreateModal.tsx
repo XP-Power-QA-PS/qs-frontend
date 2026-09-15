@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
-import { X, AlertTriangle, Calendar, CheckCircle2, ArrowRight } from 'lucide-react';
+import React, { useState, useRef } from 'react';
+import { X, AlertTriangle, Calendar, CheckCircle2, ArrowRight, UploadCloud, Loader2, Image as ImageIcon } from 'lucide-react';
 import { complaintService } from '@/services/complaint/complaintService';
+import { storageService } from '@/services/storage';
 import type { ComplaintCreateRequest, ComplaintDetail } from '@/types/complaint/complaint.types';
 import { useNavigate } from 'react-router-dom';
 
@@ -39,7 +40,70 @@ export const ComplaintCreateModal: React.FC<ComplaintCreateModalProps> = ({
     priority: 'MEDIUM',
   });
 
+  interface UploadingPicture {
+    id: string;
+    file: File;
+    previewUrl: string;
+    tmpKey?: string;
+    isUploading: boolean;
+    progress: number;
+    error?: string;
+  }
+  const [uploadedPictures, setUploadedPictures] = useState<UploadingPicture[]>([]);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
   if (!isOpen) return null;
+
+  const handlePictureFilesSelect = async (files: FileList | null) => {
+    if (!files || files.length === 0) return;
+    const fileArray = Array.from(files);
+    for (const file of fileArray) {
+      if (!file.type.startsWith('image/')) continue;
+      const id = Math.random().toString(36).substring(2, 9);
+      const previewUrl = URL.createObjectURL(file);
+
+      const newPic: UploadingPicture = {
+        id,
+        file,
+        previewUrl,
+        isUploading: true,
+        progress: 0,
+      };
+
+      setUploadedPictures((prev) => [...prev, newPic]);
+
+      try {
+        const presigned = await storageService.getPresignedUploadUrl({
+          fileName: file.name,
+          contentType: file.type || 'image/jpeg',
+          fileSize: file.size,
+          category: 'complaint',
+        });
+
+        await storageService.uploadToMinio(presigned.uploadUrl, file, (percent) => {
+          setUploadedPictures((prev) =>
+            prev.map((p) => (p.id === id ? { ...p, progress: percent } : p))
+          );
+        });
+
+        setUploadedPictures((prev) =>
+          prev.map((p) =>
+            p.id === id ? { ...p, isUploading: false, tmpKey: presigned.tmpKey } : p
+          )
+        );
+      } catch (err: any) {
+        setUploadedPictures((prev) =>
+          prev.map((p) =>
+            p.id === id ? { ...p, isUploading: false, error: err.message || 'Upload failed' } : p
+          )
+        );
+      }
+    }
+  };
+
+  const handleRemoveUploadedPicture = (id: string) => {
+    setUploadedPictures((prev) => prev.filter((p) => p.id !== id));
+  };
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
@@ -54,9 +118,21 @@ export const ComplaintCreateModal: React.FC<ComplaintCreateModalProps> = ({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMessage(null);
+
+    const isAnyUploading = uploadedPictures.some((p) => p.isUploading);
+    if (isAnyUploading) {
+      setErrorMessage('Vui lòng đợi các hình ảnh tải lên máy chủ MinIO hoàn tất trước khi lưu.');
+      return;
+    }
+
     setIsSubmitting(true);
     try {
-      const result = await complaintService.createComplaint(formData);
+      const tmpKeys = uploadedPictures.filter((p) => p.tmpKey).map((p) => p.tmpKey!);
+      const payload: ComplaintCreateRequest = {
+        ...formData,
+        pictureTmpKeys: tmpKeys.length > 0 ? tmpKeys : undefined,
+      };
+      const result = await complaintService.createComplaint(payload);
       setCreatedComplaint(result);
       onSuccess(result);
     } catch (err: any) {
@@ -65,6 +141,7 @@ export const ComplaintCreateModal: React.FC<ComplaintCreateModalProps> = ({
       setIsSubmitting(false);
     }
   };
+
 
   const handleGoToMeeting = () => {
     if (createdComplaint) {
@@ -390,52 +467,99 @@ export const ComplaintCreateModal: React.FC<ComplaintCreateModalProps> = ({
               </div>
             </div>
 
-            {/* Row 6: Defect Pictures (Excel Col 19) */}
-            <div>
-              <div className="flex items-center justify-between mb-1">
-                <label className="block text-xs font-semibold text-text-secondary">
-                  Picture URLs / Defect Evidence
+            {/* Row 6: Defect Pictures & Upload */}
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <label className="block text-xs font-semibold text-text-secondary flex items-center gap-1.5">
+                  <ImageIcon className="w-3.5 h-3.5 text-primary" />
+                  Defect Pictures & Evidence (Hình ảnh lỗi)
                 </label>
-                <span className="text-[10px] text-text-muted font-normal">
-                  Separate multiple URLs with commas or newlines
+                <span className="text-[10px] text-text-muted">
+                  Tải trực tiếp lên MinIO hoặc dán liên kết ảnh
                 </span>
               </div>
-              <textarea
-                name="pictureUrls"
-                rows={2}
-                value={formData.pictureUrls || ''}
-                onChange={handleChange}
-                placeholder="e.g., https://intranet/defect1.jpg, https://intranet/defect2.jpg..."
-                className="w-full px-3 py-2 text-xs bg-surface-canvas border border-border-subtle rounded-lg text-text-primary focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary font-mono text-[11px]"
-              />
-              {/* Image Previews if URLs are provided */}
-              {formData.pictureUrls && (
-                <div className="flex flex-wrap gap-2 mt-2 pt-2 border-t border-border-subtle/60">
-                  {formData.pictureUrls
-                    .split(/[\n,]/)
-                    .map((url) => url.trim())
-                    .filter((url) => url.length > 0)
-                    .map((url, idx) => (
+
+              {/* MinIO Upload Area */}
+              <div
+                onClick={() => fileInputRef.current?.click()}
+                className="border-2 border-dashed border-border-subtle hover:border-primary/50 bg-surface-canvas/50 hover:bg-surface-canvas rounded-xl p-4 text-center cursor-pointer transition-colors space-y-1.5"
+              >
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  multiple
+                  accept="image/*"
+                  className="hidden"
+                  onChange={(e) => handlePictureFilesSelect(e.target.files)}
+                />
+                <div className="flex items-center justify-center gap-2 text-primary">
+                  <UploadCloud className="w-5 h-5" />
+                  <span className="text-xs font-semibold">Nhấp để tải lên nhiều ảnh lỗi (MinIO)</span>
+                </div>
+                <p className="text-[11px] text-text-muted">Hỗ trợ PNG, JPG, JPEG, WEBP (Tối đa 20MB/ảnh)</p>
+              </div>
+
+              {/* Uploaded Pictures Thumbnails with progress */}
+              {uploadedPictures.length > 0 && (
+                <div className="space-y-2">
+                  <span className="text-[11px] font-semibold text-text-secondary block">
+                    Ảnh đã chọn ({uploadedPictures.length}):
+                  </span>
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+                    {uploadedPictures.map((pic) => (
                       <div
-                        key={idx}
-                        className="relative w-14 h-14 rounded-lg overflow-hidden border border-border-subtle bg-surface-canvas shadow-2xs group"
+                        key={pic.id}
+                        className="relative rounded-lg overflow-hidden border border-border-subtle bg-surface-canvas shadow-2xs group aspect-video"
                       >
-                        <img
-                          src={url}
-                          alt={`Defect ${idx + 1}`}
-                          onError={(e) => {
-                            (e.target as HTMLImageElement).src = 'https://placehold.co/100x100?text=Preview+Error';
-                          }}
-                          className="w-full h-full object-cover"
-                        />
-                        <span className="absolute bottom-0 inset-x-0 bg-black/60 text-white text-[9px] text-center font-mono py-0.5">
-                          #{idx + 1}
+                        <img src={pic.previewUrl} alt="Preview" className="w-full h-full object-cover" />
+
+                        {pic.isUploading ? (
+                          <div className="absolute inset-0 bg-black/60 flex flex-col items-center justify-center text-white p-2">
+                            <Loader2 className="w-4 h-4 animate-spin mb-1 text-primary" />
+                            <span className="text-[10px] font-mono">{pic.progress}%</span>
+                          </div>
+                        ) : pic.error ? (
+                          <div className="absolute inset-0 bg-rose-900/80 flex items-center justify-center text-white p-1 text-[9px] text-center">
+                            {pic.error}
+                          </div>
+                        ) : (
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleRemoveUploadedPicture(pic.id);
+                            }}
+                            className="absolute top-1 right-1 p-1 bg-black/60 hover:bg-rose-600 text-white rounded-full transition-colors opacity-0 group-hover:opacity-100 cursor-pointer"
+                            title="Xóa ảnh"
+                          >
+                            <X className="w-3 h-3" />
+                          </button>
+                        )}
+                        <span className="absolute bottom-0 inset-x-0 bg-black/60 text-white text-[9px] truncate px-1 font-mono">
+                          {pic.file.name}
                         </span>
                       </div>
                     ))}
+                  </div>
                 </div>
               )}
+
+              {/* External URLs Textarea */}
+              <div className="pt-2 border-t border-border-subtle/60">
+                <label className="block text-[11px] font-medium text-text-muted mb-1">
+                  Hoặc dán URL liên kết ngoài (nếu có):
+                </label>
+                <textarea
+                  name="pictureUrls"
+                  rows={2}
+                  value={formData.pictureUrls || ''}
+                  onChange={handleChange}
+                  placeholder="e.g., https://example.com/defect1.jpg, https://example.com/defect2.jpg..."
+                  className="w-full px-3 py-1.5 text-xs bg-surface-canvas border border-border-subtle rounded-lg text-text-primary focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary font-mono text-[11px]"
+                />
+              </div>
             </div>
+
 
             {/* Footer */}
             <div className="pt-4 border-t border-border-subtle flex items-center justify-end gap-2.5">

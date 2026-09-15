@@ -33,6 +33,7 @@ export interface ComplaintCreateRequest {
   quantity?: number;
   serialNumbers?: string;
   pictureUrls?: string;
+  pictureTmpKeys?: string[];
 
   // Phase 2: Initial Assignment & Priority (optional on intake)
   assignedTeam?: string;
@@ -248,6 +249,7 @@ export interface ComplaintUpdateRequest {
   quantity?: number;
   serialNumbers?: string;
   pictureUrls?: string;
+  pictureTmpKeys?: string[];
 
   // Phase 2: Assignment
   assignedTeam?: string;
@@ -287,6 +289,7 @@ export interface ComplaintUpdateRequest {
   closureDate?: string;
   finalStatus?: string;
   finalEvidence?: string;
+  finalEvidenceTmpKey?: string;
   remarks?: string;
 
   // Lifecycle Status
