@@ -1,10 +1,20 @@
 import React, { useState, useEffect } from 'react';
-import { Edit, Search, Plus } from 'lucide-react';
+import { Edit, Trash2, Search, Plus, Lock } from 'lucide-react';
 import { adminService } from '@/services/admin';
 import type { Role } from '@/types/admin';
 import toast from 'react-hot-toast';
 import { useViewMode } from '@/context/ViewModeContext';
 import { ViewModeToggle } from '@/components/common/ViewModeToggle';
+import {
+  TableContainer,
+  Table,
+  TableHeader,
+  TableHead,
+  TableBody,
+  TableRow,
+  TableCell,
+  TableEmptyRow,
+} from '@/components/common/table';
 
 export const RoleManagementPage: React.FC = () => {
   const [roles, setRoles] = useState<Role[]>([]);
@@ -56,7 +66,7 @@ export const RoleManagementPage: React.FC = () => {
 
   const openEdit = (role: Role) => {
     setEditingRole(role);
-    setForm({ name: role.name, description: role.description });
+    setForm({ name: role.name.replace('ROLE_', ''), description: role.description || '' });
     setIsEditOpen(true);
   };
 
@@ -66,9 +76,10 @@ export const RoleManagementPage: React.FC = () => {
   const handleEditSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!editingRole) return;
+    const isSystemRole = editingRole.name === 'ROLE_ADMIN' || editingRole.name === 'ROLE_USER';
     try {
       await adminService.updateRole(editingRole.id, {
-        name: form.name,
+        name: isSystemRole ? editingRole.name : form.name,
         description: form.description
       });
       toast.success('Role updated successfully');
@@ -77,6 +88,23 @@ export const RoleManagementPage: React.FC = () => {
       loadRoles();
     } catch (error: any) {
       toast.error('Failed to update role: ' + (error.message || 'Unknown error'));
+    }
+  };
+
+  const handleDelete = async (id: string | number, roleName: string) => {
+    if (roleName === 'ROLE_ADMIN' || roleName === 'ROLE_USER') {
+      toast.error('Cannot delete system-protected roles');
+      return;
+    }
+    if (!window.confirm(`Are you sure you want to delete role "${roleName.replace('ROLE_', '')}"?`)) {
+      return;
+    }
+    try {
+      await adminService.deleteRole(id);
+      toast.success('Role deleted successfully');
+      loadRoles();
+    } catch (error: any) {
+      toast.error('Failed to delete role: ' + (error.message || 'Unknown error'));
     }
   };
 
@@ -166,14 +194,31 @@ export const RoleManagementPage: React.FC = () => {
                       {isSystemRole ? 'System Protected' : 'Custom Role'}
                     </span>
                     <div className="flex items-center gap-1.5">
-                      {!isSystemRole && (
+                      <button
+                        type="button"
+                        onClick={() => openEdit(role)}
+                        className="p-1.5 text-text-muted hover:text-primary hover:bg-surface-canvas rounded-lg transition-colors min-h-[34px] min-w-[34px] flex items-center justify-center cursor-pointer"
+                        title="Edit Role"
+                      >
+                        <Edit className="w-4 h-4" />
+                      </button>
+                      {isSystemRole ? (
                         <button
                           type="button"
-                          onClick={() => openEdit(role)}
-                          className="p-2 text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors min-h-[38px] min-w-[38px] flex items-center justify-center"
-                          title="Edit Role"
+                          disabled
+                          className="p-1.5 text-text-muted/30 cursor-not-allowed rounded-lg min-h-[34px] min-w-[34px] flex items-center justify-center"
+                          title="System roles cannot be deleted"
                         >
-                          <Edit className="w-4 h-4" />
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      ) : (
+                        <button
+                          type="button"
+                          onClick={() => handleDelete(role.id, role.name)}
+                          className="p-1.5 text-text-muted hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors min-h-[34px] min-w-[34px] flex items-center justify-center cursor-pointer"
+                          title="Delete Role"
+                        >
+                          <Trash2 className="w-4 h-4" />
                         </button>
                       )}
                     </div>
@@ -213,75 +258,94 @@ export const RoleManagementPage: React.FC = () => {
         </div>
       ) : (
         /* Table View with Horizontal Scrolling */
-        <div className="bg-white rounded-xl shadow-xs border border-gray-100 overflow-hidden max-w-full w-full">
-          <div className="overflow-x-auto max-w-full w-full">
-            <table className="w-full text-left border-collapse min-w-[600px]">
-              <thead>
-                <tr className="bg-gray-50/50 border-b border-gray-100">
-                  <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider w-24">ID</th>
-                  <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider w-1/3">ROLE NAME</th>
-                  <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">DESCRIPTION</th>
-                  <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider text-right">ACTIONS</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-100">
-                {filteredRoles.map((role) => (
-                  <tr key={role.id} className="hover:bg-gray-50/50 transition-colors">
-                    <td className="px-6 py-4 text-sm text-gray-500 font-medium">#{role.id}</td>
-                    <td className="px-6 py-4">
-                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-blue-50 text-blue-700 border border-blue-100">
+        <TableContainer>
+          <Table className="min-w-[600px]">
+            <TableHeader>
+              <TableRow>
+                <TableHead className="w-24">ID</TableHead>
+                <TableHead className="w-1/3">ROLE NAME</TableHead>
+                <TableHead>DESCRIPTION</TableHead>
+                <TableHead align="right">ACTIONS</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {filteredRoles.length === 0 ? (
+                <TableEmptyRow colSpan={4} message="No roles found." />
+              ) : (
+                filteredRoles.map((role) => (
+                  <TableRow key={role.id}>
+                    <TableCell className="font-medium text-text-secondary">#{role.id}</TableCell>
+                    <TableCell>
+                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-primary/10 text-primary border border-primary/20">
                         {role.name.replace('ROLE_', '')}
                       </span>
-                    </td>
-                    <td className="px-6 py-4 text-sm text-gray-600">{role.description || '-'}</td>
-                    <td className="px-6 py-4 text-right">
-                      <div className="flex items-center justify-end gap-2">
-                        {role.name !== 'ROLE_ADMIN' && role.name !== 'ROLE_USER' && (
+                    </TableCell>
+                    <TableCell className="text-text-secondary">{role.description || '-'}</TableCell>
+                    <TableCell align="right">
+                      <div className="flex items-center justify-end gap-1.5">
+                        <button
+                          type="button"
+                          onClick={() => openEdit(role)}
+                          className="p-1.5 text-text-muted hover:text-primary hover:bg-surface-canvas rounded-lg transition-colors cursor-pointer"
+                          title="Edit role"
+                        >
+                          <Edit className="h-4 w-4" />
+                        </button>
+                        {role.name === 'ROLE_ADMIN' || role.name === 'ROLE_USER' ? (
                           <button
                             type="button"
-                            onClick={() => openEdit(role)}
-                            className="p-1 text-gray-400 hover:text-blue-600 rounded"
-                            title="Edit role"
+                            disabled
+                            className="p-1.5 text-text-muted/30 cursor-not-allowed rounded-lg"
+                            title="System roles cannot be deleted"
                           >
-                            <Edit className="h-4 w-4" />
+                            <Trash2 className="h-4 w-4" />
+                          </button>
+                        ) : (
+                          <button
+                            type="button"
+                            onClick={() => handleDelete(role.id, role.name)}
+                            className="p-1.5 text-text-muted hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors cursor-pointer"
+                            title="Delete role"
+                          >
+                            <Trash2 className="h-4 w-4" />
                           </button>
                         )}
                       </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                    </TableCell>
+                  </TableRow>
+                ))
+              )}
+            </TableBody>
+          </Table>
 
           {/* Pagination Footer */}
           {!loading && roles.length > 0 && (
-            <div className="px-4 sm:px-6 py-3.5 border-t border-gray-100 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs sm:text-sm">
-              <span className="text-gray-500 text-center sm:text-left">
-                Showing <span className="font-semibold text-gray-900">{page * size + 1}</span> to <span className="font-semibold text-gray-900">{Math.min((page + 1) * size, totalElements)}</span> of <span className="font-semibold text-gray-900">{totalElements}</span> results
+            <div className="px-4 sm:px-6 py-3.5 border-t border-border-subtle flex flex-col sm:flex-row items-center justify-between gap-3 text-xs sm:text-sm bg-white">
+              <span className="text-text-secondary text-center sm:text-left">
+                Showing <span className="font-semibold text-text-primary">{page * size + 1}</span> to <span className="font-semibold text-text-primary">{Math.min((page + 1) * size, totalElements)}</span> of <span className="font-semibold text-text-primary">{totalElements}</span> results
               </span>
               <div className="flex items-center gap-2">
                 <button
                   onClick={() => setPage(p => Math.max(0, p - 1))}
                   disabled={page === 0}
-                  className="px-3 py-1.5 border border-gray-200 rounded-lg text-sm disabled:opacity-50 hover:bg-gray-50 transition-colors min-h-[36px]"
+                  className="px-3 py-1.5 border border-border-subtle rounded-xl text-xs font-medium text-text-secondary hover:bg-surface-canvas disabled:opacity-40 transition-colors min-h-[34px] cursor-pointer"
                 >
                   Previous
                 </button>
-                <span className="px-2 font-medium text-gray-700">
+                <span className="px-2 font-medium text-text-secondary text-xs">
                   Page {page + 1} of {Math.max(1, totalPages)}
                 </span>
                 <button
                   onClick={() => setPage(p => Math.min(totalPages - 1, p + 1))}
                   disabled={page >= totalPages - 1}
-                  className="px-3 py-1.5 border border-gray-200 rounded-lg text-sm disabled:opacity-50 hover:bg-gray-50 transition-colors min-h-[36px]"
+                  className="px-3 py-1.5 border border-border-subtle rounded-xl text-xs font-medium text-text-secondary hover:bg-surface-canvas disabled:opacity-40 transition-colors min-h-[34px] cursor-pointer"
                 >
                   Next
                 </button>
               </div>
             </div>
           )}
-        </div>
+        </TableContainer>
       )}
 
       {/* Add Modal */}
@@ -335,15 +399,32 @@ export const RoleManagementPage: React.FC = () => {
       {isEditOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
           <div className="bg-white rounded-xl p-6 w-full max-w-md shadow-2xl">
-            <h2 className="text-xl font-bold mb-4 text-gray-900">Edit Role</h2>
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-xl font-bold text-gray-900">Edit Role</h2>
+              {editingRole && (editingRole.name === 'ROLE_ADMIN' || editingRole.name === 'ROLE_USER') && (
+                <span className="inline-flex items-center gap-1 text-xs font-semibold px-2.5 py-0.5 rounded-full bg-surface-subtle text-text-muted border border-border-subtle">
+                  <Lock className="w-3 h-3" /> System Role
+                </span>
+              )}
+            </div>
             <form onSubmit={handleEditSubmit} className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Role Name *</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Role Name *
+                  {editingRole && (editingRole.name === 'ROLE_ADMIN' || editingRole.name === 'ROLE_USER') && (
+                    <span className="text-xs text-text-muted font-normal ml-1">(System role cannot be renamed)</span>
+                  )}
+                </label>
                 <input
                   type="text"
                   required
+                  disabled={editingRole ? (editingRole.name === 'ROLE_ADMIN' || editingRole.name === 'ROLE_USER') : false}
                   placeholder="e.g. MANAGER"
-                  className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 uppercase text-gray-900 bg-white"
+                  className={`w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none uppercase text-gray-900 ${
+                    editingRole && (editingRole.name === 'ROLE_ADMIN' || editingRole.name === 'ROLE_USER')
+                      ? 'bg-gray-100 text-gray-500 cursor-not-allowed'
+                      : 'bg-white focus:ring-2 focus:ring-blue-500'
+                  }`}
                   value={form.name}
                   onChange={(e) => setForm({ ...form, name: e.target.value })}
                 />
@@ -362,13 +443,13 @@ export const RoleManagementPage: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => setIsEditOpen(false)}
-                  className="px-4 py-2 text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors font-medium text-sm"
+                  className="px-4 py-2 text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors font-medium text-sm cursor-pointer"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium text-sm"
+                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium text-sm cursor-pointer shadow-2xs"
                 >
                   Update Role
                 </button>

@@ -21,7 +21,7 @@ export const FloorToolbar: React.FC<FloorToolbarProps> = ({
         <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-text-muted pointer-events-none" />
         <input
           type="text"
-          placeholder="Tìm kiếm tầng lầu theo tên hoặc mô tả..."
+          placeholder="Search floors by name or description..."
           value={searchKeyword}
           onChange={(e) => onSearchChange(e.target.value)}
           className="w-full pl-9 pr-8 py-2 bg-surface-card border border-border-subtle rounded-xl text-xs sm:text-sm text-text-primary placeholder:text-text-muted focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
@@ -30,7 +30,7 @@ export const FloorToolbar: React.FC<FloorToolbarProps> = ({
           <button
             onClick={() => onSearchChange('')}
             className="absolute right-2.5 top-1/2 -translate-y-1/2 text-text-muted hover:text-text-primary p-0.5 rounded-full cursor-pointer"
-            title="Xóa tìm kiếm"
+            title="Clear search"
           >
             <X className="w-3.5 h-3.5" />
           </button>
@@ -39,7 +39,7 @@ export const FloorToolbar: React.FC<FloorToolbarProps> = ({
 
       <div className="flex items-center justify-between sm:justify-end gap-3">
         <span className="text-xs text-text-secondary">
-          Hiển thị: <strong>{filteredCount}</strong> / {totalCount} tầng lầu
+          Showing: <strong>{filteredCount}</strong> of {totalCount} floors
         </span>
         <ViewModeToggle />
       </div>

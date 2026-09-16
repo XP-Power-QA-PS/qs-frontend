@@ -49,12 +49,12 @@ export const FloorCardView: React.FC<FloorCardViewProps> = ({
                 }`}
               >
                 <Cpu className="w-3 h-3" />
-                <span>{floor.equipmentCount} thiết bị</span>
+                <span>{floor.equipmentCount} {floor.equipmentCount === 1 ? 'equipment' : 'equipments'}</span>
               </span>
             </div>
 
             <p className="text-xs sm:text-sm text-text-secondary line-clamp-2 min-h-[2.5rem]">
-              {floor.description || <span className="italic text-text-muted">Không có mô tả chi tiết</span>}
+              {floor.description || <span className="italic text-text-muted">No description provided</span>}
             </p>
 
             {floor.equipmentCount > 0 && (
@@ -63,7 +63,7 @@ export const FloorCardView: React.FC<FloorCardViewProps> = ({
                 onClick={() => onNavigateEquipment(floor.id, floor.name)}
                 className="mt-3 inline-flex items-center gap-1.5 text-xs font-semibold text-primary hover:text-primary-hover transition-colors cursor-pointer"
               >
-                <span>Xem danh sách thiết bị</span>
+                <span>View equipments</span>
                 <ArrowRight className="w-3.5 h-3.5" />
               </button>
             )}
@@ -71,7 +71,7 @@ export const FloorCardView: React.FC<FloorCardViewProps> = ({
 
           <div className="mt-5 pt-3.5 border-t border-border-subtle/80 flex items-center justify-between">
             <span className="text-[11px] text-text-muted">
-              Cập nhật: {formatDate(floor.updatedAt || floor.createdAt)}
+              Updated: {formatDate(floor.updatedAt || floor.createdAt)}
             </span>
 
             <div className="flex items-center gap-1">
@@ -79,7 +79,7 @@ export const FloorCardView: React.FC<FloorCardViewProps> = ({
                 type="button"
                 onClick={() => onEdit(floor)}
                 className="p-1.5 text-text-secondary hover:text-primary hover:bg-primary/10 rounded-lg transition-colors cursor-pointer"
-                title="Chỉnh sửa tên / mô tả"
+                title="Edit floor details"
               >
                 <Edit2 className="w-4 h-4" />
               </button>
@@ -87,7 +87,7 @@ export const FloorCardView: React.FC<FloorCardViewProps> = ({
                 type="button"
                 onClick={() => onDelete(floor)}
                 className="p-1.5 text-text-secondary hover:text-rose-600 hover:bg-rose-500/10 rounded-lg transition-colors cursor-pointer"
-                title={floor.equipmentCount > 0 ? 'Tầng lầu đang có thiết bị' : 'Xóa tầng lầu'}
+                title={floor.equipmentCount > 0 ? 'Cannot delete floor with associated equipment' : 'Delete floor'}
               >
                 <Trash2 className="w-4 h-4" />
               </button>

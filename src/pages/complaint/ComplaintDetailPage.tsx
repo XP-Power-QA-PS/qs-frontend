@@ -13,14 +13,13 @@ import {
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { complaintService } from '@/services/complaint/complaintService';
-import type { ComplaintDetail, ComplaintUpdateRequest, ComplaintMeeting } from '@/types/complaint/complaint.types';
+import type { ComplaintDetail, ComplaintUpdateRequest } from '@/types/complaint/complaint.types';
 
 // Modular Feature Components
 import { ComplaintInfoTab } from '@/components/features/complaint/tabs/ComplaintInfoTab';
 import { ComplaintActionBoard } from '@/components/features/complaint/tabs/ComplaintActionBoard';
 import { ComplaintMeetingsTab } from '@/components/features/complaint/tabs/ComplaintMeetingsTab';
 import { ComplaintClosureModal } from '@/components/features/complaint/modals/ComplaintClosureModal';
-import { ConcludeMeetingModal } from '@/components/features/complaint/modals/ConcludeMeetingModal';
 import { ReopenTicketModal } from '@/components/features/complaint/modals/ReopenTicketModal';
 import { ImageLightboxModal } from '@/components/features/complaint/modals/ImageLightboxModal';
 import { EditDefectPicturesModal } from '@/components/features/complaint/modals/EditDefectPicturesModal';
@@ -39,7 +38,6 @@ export const ComplaintDetailPage: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'info' | 'action' | 'meetings'>(initialTab);
 
   // Modals state
-  const [concludeModalMeeting, setConcludeModalMeeting] = useState<ComplaintMeeting | null>(null);
   const [previewImageUrl, setPreviewImageUrl] = useState<string | null>(null);
   const [showEditPictureModal, setShowEditPictureModal] = useState<boolean>(false);
   const [showClosureModal, setShowClosureModal] = useState<boolean>(false);
@@ -191,10 +189,10 @@ export const ComplaintDetailPage: React.FC = () => {
               }`}
             >
               <Calendar className="w-3.5 h-3.5" />
-              Review Meetings & Minutes
+              Review Meetings
               {complaint.meetings && complaint.meetings.length > 0 && (
                 <span className="px-2 py-0.5 rounded-full bg-primary/10 text-primary text-[10px] font-bold">
-                  {complaint.meetings.length} ({complaint.meetings.filter((m) => m.isConcluded).length} concluded)
+                  {complaint.meetings.length}
                 </span>
               )}
             </button>
@@ -279,11 +277,10 @@ export const ComplaintDetailPage: React.FC = () => {
         />
       )}
 
-      {/* Tab 3: Review Meetings & Minutes */}
+      {/* Tab 3: Review Meetings */}
       {activeTab === 'meetings' && (
         <ComplaintMeetingsTab
           complaint={complaint}
-          onOpenConcludeModal={(meeting) => setConcludeModalMeeting(meeting)}
         />
       )}
 
@@ -296,19 +293,6 @@ export const ComplaintDetailPage: React.FC = () => {
           onSuccess={(updated) => {
             setComplaint(updated);
             toast.success('Complaint case closed successfully!');
-          }}
-        />
-      )}
-
-      {concludeModalMeeting && (
-        <ConcludeMeetingModal
-          complaintId={complaint.id}
-          meeting={concludeModalMeeting}
-          initialContainmentAction={complaint.containmentAction}
-          onClose={() => setConcludeModalMeeting(null)}
-          onSuccess={(updated) => {
-            setComplaint(updated);
-            toast.success('Meeting conclusion and minutes recorded successfully!');
           }}
         />
       )}

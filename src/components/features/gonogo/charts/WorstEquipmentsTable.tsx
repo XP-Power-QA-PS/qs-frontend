@@ -1,6 +1,16 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import type { EquipmentRankDTO } from '@/types/equipment';
+import {
+  TableContainer,
+  Table,
+  TableHeader,
+  TableHead,
+  TableBody,
+  TableRow,
+  TableCell,
+  TableActionButton,
+} from '@/components/common/table';
 
 interface WorstEquipmentsTableProps {
   data: EquipmentRankDTO[];
@@ -32,43 +42,42 @@ export const WorstEquipmentsTable: React.FC<WorstEquipmentsTableProps> = ({ data
   }
 
   return (
-    <div className="overflow-x-auto">
-      <table className="w-full text-left border-collapse min-w-[560px]">
-        <thead className="bg-surface-subtle border-b border-border-subtle">
+    <TableContainer>
+      <Table minWidth="560px">
+        <TableHeader>
           <tr>
-            <th className="px-3 py-2.5 text-[10px] font-label-md text-text-muted uppercase tracking-wider w-8">#</th>
-            <th className="px-3 py-2.5 text-[10px] font-label-md text-text-muted uppercase tracking-wider">Equipment</th>
-            <th className="px-3 py-2.5 text-[10px] font-label-md text-text-muted uppercase tracking-wider">Floor</th>
-            <th className="px-3 py-2.5 text-[10px] font-label-md text-text-muted uppercase tracking-wider text-center">Fails</th>
-            <th className="px-3 py-2.5 text-[10px] font-label-md text-text-muted uppercase tracking-wider">Pass Rate</th>
-            <th className="px-3 py-2.5 text-[10px] font-label-md text-text-muted uppercase tracking-wider text-right">Action</th>
+            <TableHead align="center" className="w-10">#</TableHead>
+            <TableHead>Equipment</TableHead>
+            <TableHead>Floor</TableHead>
+            <TableHead align="center">Fails</TableHead>
+            <TableHead>Pass Rate</TableHead>
+            <TableHead align="right">Actions</TableHead>
           </tr>
-        </thead>
-        <tbody>
+        </TableHeader>
+        <TableBody>
           {data.map((eq, idx) => (
-            <tr
+            <TableRow
               key={eq.equipmentId}
-              className="group border-b border-border-subtle hover:bg-surface-subtle transition-colors cursor-pointer last:border-0"
               onClick={() =>
                 navigate(`/stats/equipment/${eq.equipmentId}?code=${encodeURIComponent(eq.equipmentCode)}&name=${encodeURIComponent(eq.equipmentName)}`)
               }
             >
-              <td className="px-3 py-3 text-xs text-text-muted font-technical-data">{idx + 1}</td>
-              <td className="px-3 py-3">
+              <TableCell align="center" className="font-bold text-text-primary">{idx + 1}</TableCell>
+              <TableCell>
                 <div className="flex flex-col">
                   <span className="text-xs font-semibold text-text-primary group-hover:text-primary transition-colors line-clamp-1">
                     {eq.equipmentName}
                   </span>
-                  <span className="text-[10px] font-technical-data text-text-muted mt-0.5">{eq.equipmentCode}</span>
+                  <span className="text-[11px] font-mono font-bold text-primary mt-0.5">{eq.equipmentCode}</span>
                 </div>
-              </td>
-              <td className="px-3 py-3 text-xs text-text-secondary">{eq.floorName}</td>
-              <td className="px-3 py-3 text-center">
-                <span className="inline-flex items-center justify-center w-8 h-6 rounded-lg bg-status-critical/10 text-status-critical text-xs font-bold">
+              </TableCell>
+              <TableCell className="text-text-secondary">{eq.floorName}</TableCell>
+              <TableCell align="center">
+                <span className="inline-flex items-center justify-center px-2 py-0.5 rounded-full bg-rose-50 text-rose-700 border border-rose-200 text-xs font-bold font-mono">
                   {eq.failCount}
                 </span>
-              </td>
-              <td className="px-3 py-3 min-w-[110px]">
+              </TableCell>
+              <TableCell className="min-w-[110px]">
                 <div className="flex items-center gap-2">
                   {/* Progress bar */}
                   <div className="flex-1 h-1.5 bg-surface-subtle rounded-full overflow-hidden">
@@ -81,16 +90,14 @@ export const WorstEquipmentsTable: React.FC<WorstEquipmentsTableProps> = ({ data
                     {eq.passRate}%
                   </span>
                 </div>
-              </td>
-              <td className="px-3 py-3 text-right">
-                <span className="material-symbols-outlined text-border-strong group-hover:text-primary transition-colors text-[20px]">
-                  arrow_forward
-                </span>
-              </td>
-            </tr>
+              </TableCell>
+              <TableCell align="right">
+                <TableActionButton label="View" />
+              </TableCell>
+            </TableRow>
           ))}
-        </tbody>
-      </table>
-    </div>
+        </TableBody>
+      </Table>
+    </TableContainer>
   );
 };

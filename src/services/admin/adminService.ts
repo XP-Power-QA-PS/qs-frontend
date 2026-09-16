@@ -47,6 +47,12 @@ export const adminService = {
     });
   },
 
+  deleteRole: async (id: string | number): Promise<void> => {
+    return apiClient(`${BASE_URL}/admin/roles/${id}`, {
+      method: 'DELETE'
+    });
+  },
+
   deleteUser: async (id: string): Promise<void> => {
     return apiClient(`${BASE_URL}/admin/users/${id}`, {
       method: 'DELETE'

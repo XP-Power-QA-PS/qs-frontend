@@ -13,6 +13,16 @@ import { complaintService } from '@/services/complaint/complaintService';
 import type { ComplaintSummary } from '@/types/complaint/complaint.types';
 import { COMPLAINT_STAGE_META } from '@/types/complaint/complaint.types';
 import { ComplaintCreateModal } from './ComplaintCreateModal';
+import {
+  TableContainer,
+  Table,
+  TableHeader,
+  TableHead,
+  TableBody,
+  TableRow,
+  TableCell,
+  TableEmptyRow,
+} from '@/components/common/table';
 
 
 export const ComplaintListPage: React.FC = () => {
@@ -192,49 +202,43 @@ export const ComplaintListPage: React.FC = () => {
       </div>
 
       {/* Data Table */}
-      <div className="bg-white border border-border-subtle rounded-2xl shadow-2xs overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse">
-            <thead>
-              <tr className="bg-surface-canvas border-b border-border-subtle text-[11px] font-bold text-text-secondary uppercase tracking-wider">
-                <th className="py-3 px-4">Tracking No</th>
-                <th className="py-3 px-4">Customer</th>
-                <th className="py-3 px-4">Model</th>
-                <th className="py-3 px-4">Defect</th>
-                <th className="py-3 px-4 text-center">Qty (EA)</th>
-                <th className="py-3 px-4">Received Date</th>
-                <th className="py-3 px-4 text-center">Ageing</th>
-                <th className="py-3 px-4">Status</th>
-                <th className="py-3 px-4 text-right">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-border-subtle text-xs">
-              {isLoading ? (
-                <tr>
-                  <td colSpan={9} className="py-12 text-center text-text-muted">
-                    <div className="inline-block animate-spin rounded-full h-5 w-5 border-2 border-primary border-t-transparent mr-2"></div>
-                    Loading complaint records...
-                  </td>
-                </tr>
-              ) : filteredComplaints.length === 0 ? (
-                <tr>
-                  <td colSpan={9} className="py-12 text-center text-text-muted">
-                    <div className="w-12 h-12 rounded-full bg-surface-subtle flex items-center justify-center mx-auto mb-2 text-text-muted">
-                      <AlertTriangle className="w-5 h-5" />
-                    </div>
-                    No complaints found for {selectedYear}. Click "New Complaint" to record an issue.
-                  </td>
-                </tr>
-              ) : (
-                filteredComplaints.map((c) => {
-                  const stageMeta = COMPLAINT_STAGE_META[c.status];
-                  return (
-                    <tr
-                      key={c.id}
-                      className="hover:bg-surface-canvas/80 transition-colors group cursor-pointer"
-                      onClick={() => navigate(`/complaints/${c.trackingNo || c.id}`, { state: { trackingNo: c.trackingNo } })}
-                    >
-                      <td className="py-3.5 px-4 font-mono font-bold text-primary">
+      <TableContainer>
+        <Table>
+          <TableHeader>
+            <tr>
+              <TableHead>Tracking No</TableHead>
+              <TableHead>Customer</TableHead>
+              <TableHead>Model</TableHead>
+              <TableHead>Defect</TableHead>
+              <TableHead align="center">Qty (EA)</TableHead>
+              <TableHead>Received Date</TableHead>
+              <TableHead align="center">Ageing</TableHead>
+              <TableHead>Status</TableHead>
+              <TableHead align="right">Actions</TableHead>
+            </tr>
+          </TableHeader>
+          <TableBody>
+            {isLoading ? (
+              <TableEmptyRow colSpan={9}>
+                <div className="inline-block animate-spin rounded-full h-5 w-5 border-2 border-primary border-t-transparent mr-2"></div>
+                Loading complaint records...
+              </TableEmptyRow>
+            ) : filteredComplaints.length === 0 ? (
+              <TableEmptyRow colSpan={9}>
+                <div className="w-12 h-12 rounded-full bg-surface-subtle flex items-center justify-center mx-auto mb-2 text-text-muted">
+                  <AlertTriangle className="w-5 h-5" />
+                </div>
+                No complaints found for {selectedYear}. Click "New Complaint" to record an issue.
+              </TableEmptyRow>
+            ) : (
+              filteredComplaints.map((c) => {
+                const stageMeta = COMPLAINT_STAGE_META[c.status];
+                return (
+                  <TableRow
+                    key={c.id}
+                    onClick={() => navigate(`/complaints/${c.trackingNo || c.id}`, { state: { trackingNo: c.trackingNo } })}
+                  >
+                      <TableCell className="font-mono font-bold text-primary">
                         <span className="hover:underline flex items-center gap-1">
                           {c.trackingNo}
                         </span>
@@ -245,14 +249,14 @@ export const ComplaintListPage: React.FC = () => {
                             </span>
                           </div>
                         )}
-                      </td>
-                      <td className="py-3.5 px-4 font-semibold text-text-primary">
+                      </TableCell>
+                      <TableCell className="font-semibold text-text-primary">
                         {c.customerName}
-                      </td>
-                      <td className="py-3.5 px-4 text-text-secondary font-medium">
+                      </TableCell>
+                      <TableCell className="text-text-secondary font-medium">
                         {c.model}
-                      </td>
-                      <td className="py-3.5 px-4 font-medium text-text-primary" title={c.issueDescription || c.defectName}>
+                      </TableCell>
+                      <TableCell className="font-medium text-text-primary" title={c.issueDescription || c.defectName}>
                         <span className="font-semibold text-text-primary block">
                           {c.defectName || c.defectCategory || 'N/A'}
                         </span>
@@ -261,14 +265,14 @@ export const ComplaintListPage: React.FC = () => {
                             {c.defectCategory}
                           </span>
                         )}
-                      </td>
-                      <td className="py-3.5 px-4 text-center font-bold text-text-primary">
+                      </TableCell>
+                      <TableCell align="center" className="font-bold text-text-primary">
                         {c.quantity || 1}
-                      </td>
-                      <td className="py-3.5 px-4 text-text-muted">
+                      </TableCell>
+                      <TableCell className="text-text-muted">
                         {c.receivedDate}
-                      </td>
-                      <td className="py-3.5 px-4 text-center">
+                      </TableCell>
+                      <TableCell align="center">
                         {c.status === 'CLOSED' ? (
                           <span className="text-[11px] font-semibold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-md">
                             {c.ageingClosed != null ? `${c.ageingClosed}d (Closed)` : 'Closed'}
@@ -284,16 +288,16 @@ export const ComplaintListPage: React.FC = () => {
                             {c.ageingOpen != null ? `${c.ageingOpen}d (Open)` : '-'}
                           </span>
                         )}
-                      </td>
-                      <td className="py-3.5 px-4">
+                      </TableCell>
+                      <TableCell>
                         <span
                           className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold border ${stageMeta.badgeClass}`}
                         >
                           <span className="w-1.5 h-1.5 rounded-full bg-current"></span>
                           {stageMeta.title}
                         </span>
-                      </td>
-                      <td className="py-3.5 px-4 text-right" onClick={(e) => e.stopPropagation()}>
+                      </TableCell>
+                      <TableCell align="right" onClick={(e) => e.stopPropagation()}>
                         <div className="flex items-center justify-end gap-1.5">
                           {c.status === 'RECEIVED' ? (
                             <button
@@ -322,15 +326,14 @@ export const ComplaintListPage: React.FC = () => {
                           )}
                           <ChevronRight className="w-4 h-4 text-text-muted group-hover:text-primary transition-colors ml-1" />
                         </div>
-                      </td>
-                    </tr>
-                  );
-                })
-              )}
-            </tbody>
-          </table>
-        </div>
-      </div>
+                      </TableCell>
+                  </TableRow>
+                );
+              })
+            )}
+          </TableBody>
+        </Table>
+      </TableContainer>
 
       {/* Create Intake Modal */}
       <ComplaintCreateModal
