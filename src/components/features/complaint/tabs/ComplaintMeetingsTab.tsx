@@ -51,31 +51,22 @@ export const ComplaintMeetingsTab: React.FC<ComplaintMeetingsTabProps> = ({
           <p className="text-xs text-text-muted max-w-md mx-auto">
             This complaint has no preliminary CFT review scheduled yet. Click below to dispatch email invitations and calendar .ics files to the team.
           </p>
-          <button
-            onClick={() => navigate(`/meeting-invite?complaintId=${complaint.id}`, { state: { complaint } })}
-            className="inline-flex items-center gap-2 px-4 py-2 bg-primary hover:bg-primary-container text-white text-xs font-semibold rounded-xl shadow-xs transition-all active:scale-98 cursor-pointer"
-          >
-            <Plus className="w-4 h-4" />
-            Schedule First Review Meeting Now
-          </button>
         </div>
       ) : (
         <div className="space-y-4">
           {complaint.meetings.map((m: ComplaintMeeting, index: number) => (
             <div
               key={m.id}
-              className={`bg-white border rounded-2xl p-5 shadow-2xs space-y-4 transition-all ${
-                m.isConcluded ? 'border-emerald-200 ring-1 ring-emerald-500/10' : 'border-border-subtle'
-              }`}
+              className={`bg-white border rounded-2xl p-5 shadow-2xs space-y-4 transition-all ${m.isConcluded ? 'border-emerald-200 ring-1 ring-emerald-500/10' : 'border-border-subtle'
+                }`}
             >
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 border-b border-border-subtle pb-3">
                 <div className="flex items-center gap-3">
                   <div
-                    className={`w-9 h-9 rounded-xl flex items-center justify-center font-bold text-xs ${
-                      m.isConcluded
+                    className={`w-9 h-9 rounded-xl flex items-center justify-center font-bold text-xs ${m.isConcluded
                         ? 'bg-emerald-50 text-emerald-600'
                         : 'bg-amber-50 text-amber-600'
-                    }`}
+                      }`}
                   >
                     #{index + 1}
                   </div>

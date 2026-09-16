@@ -33,7 +33,7 @@ export const Header: React.FC<HeaderProps> = ({ onToggleSidebar, isSidebarCollap
         const result = handle.crumb({
           params: match.params,
           searchParams,
-          location: { pathname: location.pathname, search: location.search },
+          location: { pathname: location.pathname, search: location.search, state: location.state },
         });
 
         if (result) {
