@@ -89,10 +89,10 @@ export const FloorManagementPage: React.FC = () => {
     try {
       if (formModal.mode === 'add') {
         await adminService.createFloor(data);
-        toast.success('Đã thêm tầng lầu mới thành công');
+        toast.success('Floor created successfully');
       } else if (selectedFloor) {
         await adminService.updateFloor(selectedFloor.id, data);
-        toast.success('Đã cập nhật thông tin tầng lầu thành công');
+        toast.success('Floor updated successfully');
       }
       setFormModal({ isOpen: false, mode: 'add' });
       setSelectedFloor(null);
@@ -100,7 +100,7 @@ export const FloorManagementPage: React.FC = () => {
     } catch (error: any) {
       toast.error(
         error.message ||
-          (formModal.mode === 'add' ? 'Không thể tạo tầng lầu' : 'Không thể cập nhật tầng lầu')
+          (formModal.mode === 'add' ? 'Failed to create floor' : 'Failed to update floor')
       );
     } finally {
       setSubmitting(false);
@@ -111,19 +111,19 @@ export const FloorManagementPage: React.FC = () => {
   const handleDeleteSubmit = async () => {
     if (!selectedFloor) return;
     if (selectedFloor.equipmentCount > 0) {
-      toast.error('Không thể xóa tầng lầu đang có thiết bị');
+      toast.error('Cannot delete floor with associated equipment');
       return;
     }
 
     setSubmitting(true);
     try {
       await adminService.deleteFloor(selectedFloor.id);
-      toast.success(`Đã xóa tầng lầu "${selectedFloor.name}" thành công`);
+      toast.success(`Floor "${selectedFloor.name}" deleted successfully`);
       setIsDeleteOpen(false);
       setSelectedFloor(null);
       loadFloors();
     } catch (error: any) {
-      toast.error(error.message || 'Không thể xóa tầng lầu');
+      toast.error(error.message || 'Failed to delete floor');
     } finally {
       setSubmitting(false);
     }
@@ -136,9 +136,9 @@ export const FloorManagementPage: React.FC = () => {
   const formatDate = (isoStr?: string) => {
     if (!isoStr) return '—';
     try {
-      return new Date(isoStr).toLocaleDateString('vi-VN', {
+      return new Date(isoStr).toLocaleDateString('en-US', {
         year: 'numeric',
-        month: '2-digit',
+        month: 'short',
         day: '2-digit',
         hour: '2-digit',
         minute: '2-digit',
@@ -160,17 +160,17 @@ export const FloorManagementPage: React.FC = () => {
             <div>
               <div className="flex items-center gap-2 flex-wrap">
                 <h1 className="text-xl sm:text-2xl font-bold font-headline-xl text-text-primary">
-                  Quản Lý Tầng Lầu
+                  Floor Management
                 </h1>
                 <span className="px-2 py-0.5 text-xs font-semibold bg-primary/10 text-primary border border-primary/20 rounded-md">
-                  Floor Management
+                  {floors.length} Total
                 </span>
                 <span className="px-2 py-0.5 text-xs font-medium bg-emerald-500/10 text-emerald-600 border border-emerald-500/20 rounded-md">
                   ROLE_ADMIN
                 </span>
               </div>
               <p className="text-xs sm:text-sm text-text-secondary mt-0.5">
-                Quản lý các khu vực lầu, thêm tầng mới hoặc chỉnh sửa tên để đồng bộ với hệ thống kiểm tra thiết bị.
+                Manage floor areas, register new floors, and organize facility locations for equipment inspections.
               </p>
             </div>
           </div>
@@ -182,7 +182,7 @@ export const FloorManagementPage: React.FC = () => {
               onClick={loadFloors}
               disabled={loading}
               className="p-2 text-text-secondary hover:text-text-primary hover:bg-surface-subtle border border-border-subtle rounded-xl transition-colors cursor-pointer"
-              title="Tải lại danh sách"
+              title="Refresh list"
             >
               <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
             </button>
@@ -192,7 +192,7 @@ export const FloorManagementPage: React.FC = () => {
               className="inline-flex items-center gap-2 px-4 py-2 bg-primary hover:bg-primary-hover text-white rounded-xl text-xs sm:text-sm font-semibold shadow-xs transition-colors cursor-pointer"
             >
               <Plus className="w-4 h-4" />
-              <span>Thêm Tầng Lầu</span>
+              <span>Add Floor</span>
             </button>
           </div>
         </div>
@@ -213,7 +213,7 @@ export const FloorManagementPage: React.FC = () => {
       {loading && floors.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-16 text-center">
           <Loader2 className="w-8 h-8 text-primary animate-spin mb-3" />
-          <p className="text-sm font-medium text-text-secondary">Đang tải danh sách tầng lầu...</p>
+          <p className="text-sm font-medium text-text-secondary">Loading floor directory...</p>
         </div>
       ) : filteredFloors.length === 0 ? (
         <FloorEmptyState

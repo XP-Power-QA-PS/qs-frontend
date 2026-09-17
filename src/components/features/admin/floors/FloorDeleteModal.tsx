@@ -37,25 +37,25 @@ export const FloorDeleteModal: React.FC<FloorDeleteModalProps> = ({
             </div>
             <div>
               <h3 className="text-base font-bold text-text-primary">
-                {hasEquipments ? 'Không Thể Xóa Tầng Lầu' : 'Xác Nhận Xóa Tầng Lầu'}
+                {hasEquipments ? 'Cannot Delete Floor' : 'Confirm Delete Floor'}
               </h3>
               <p className="text-xs text-text-secondary">
-                Tầng lầu: <strong>{floor.name}</strong>
+                Floor: <strong>{floor.name}</strong>
               </p>
             </div>
           </div>
 
           {hasEquipments ? (
             <div className="bg-amber-500/10 border border-amber-500/20 rounded-xl p-3.5 text-xs text-amber-800 dark:text-amber-200 leading-relaxed mb-6">
-              Tầng lầu <strong>"{floor.name}"</strong> hiện đang có{' '}
-              <span className="font-bold underline">{floor.equipmentCount} thiết bị</span> hoạt động.
-              Hệ thống không cho phép xóa để tránh ảnh hưởng đến dữ liệu kiểm tra thiết bị.
-              Vui lòng di chuyển hoặc xóa các thiết bị này trước khi xóa tầng lầu.
+              Floor <strong>"{floor.name}"</strong> currently has{' '}
+              <span className="font-bold underline">{floor.equipmentCount} {floor.equipmentCount === 1 ? 'equipment' : 'equipments'}</span> linked to it.
+              The floor cannot be deleted to prevent orphaned inspection records.
+              Please reassign or remove these equipments before deleting this floor.
             </div>
           ) : (
             <p className="text-xs sm:text-sm text-text-secondary leading-relaxed mb-6">
-              Bạn có chắc chắn muốn xóa tầng lầu <strong>"{floor.name}"</strong>?
-              Hệ thống sẽ lưu trữ và ẩn tầng lầu này khỏi danh sách hoạt động.
+              Are you sure you want to delete floor <strong>"{floor.name}"</strong>?
+              This action will remove the floor from active equipment selection.
             </p>
           )}
 
@@ -66,7 +66,7 @@ export const FloorDeleteModal: React.FC<FloorDeleteModalProps> = ({
               disabled={submitting}
               className="px-4 py-2 text-xs sm:text-sm font-semibold text-text-secondary hover:text-text-primary hover:bg-surface-subtle rounded-xl border border-border-subtle transition-colors cursor-pointer"
             >
-              {hasEquipments ? 'Đã hiểu' : 'Hủy'}
+              {hasEquipments ? 'Understood' : 'Cancel'}
             </button>
             {!hasEquipments && (
               <button
@@ -76,7 +76,7 @@ export const FloorDeleteModal: React.FC<FloorDeleteModalProps> = ({
                 className="inline-flex items-center gap-1.5 px-4 py-2 text-xs sm:text-sm font-semibold bg-rose-600 hover:bg-rose-700 text-white rounded-xl shadow-xs transition-colors cursor-pointer disabled:opacity-50"
               >
                 {submitting && <Loader2 className="w-4 h-4 animate-spin" />}
-                <span>Xác Nhận Xóa</span>
+                <span>Delete Floor</span>
               </button>
             )}
           </div>

@@ -1,6 +1,16 @@
 import React, { useEffect, useState } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { equipmentService } from '@/services/equipment';
+import {
+  TableContainer,
+  Table,
+  TableHeader,
+  TableHead,
+  TableBody,
+  TableRow,
+  TableCell,
+  TableActionButton,
+} from '@/components/common/table';
 import type { Equipment } from '@/types/equipment';
 import toast from 'react-hot-toast';
 import { useViewMode } from '@/context/ViewModeContext';
@@ -144,48 +154,45 @@ export const EquipmentListPage: React.FC = () => {
         </div>
       ) : (
         /* Table View Mode with Horizontal Scrolling */
-        <div className="bg-surface-card rounded-xl shadow-xs border border-border-subtle overflow-hidden max-w-full w-full">
-          <div className="overflow-x-auto max-w-full w-full">
-            <table className="w-full text-left border-collapse min-w-[650px]">
-              <thead className="bg-surface-subtle border-b border-border-subtle">
-                <tr>
-                  <th className="px-4 sm:px-space-lg py-3 font-label-md text-text-muted uppercase tracking-wider w-[8%] text-xs">No.</th>
-                  <th className="px-4 sm:px-space-lg py-3 font-label-md text-text-muted uppercase tracking-wider w-[22%] text-xs">Equipment Code</th>
-                  <th className="px-4 sm:px-space-lg py-3 font-label-md text-text-muted uppercase tracking-wider w-[35%] text-xs">Equipment Name</th>
-                  <th className="px-4 sm:px-space-lg py-3 font-label-md text-text-muted uppercase tracking-wider w-[25%] text-xs">Serial Number</th>
-                  <th className="px-4 sm:px-space-lg py-3 font-label-md text-text-muted uppercase tracking-wider text-right w-[10%] text-xs">Action</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filteredEquipments.map((eq, idx) => (
-                  <tr
-                    key={eq.id}
-                    onClick={() => openHistoryPage(eq)}
-                    className="group border-b border-border-subtle hover:bg-surface-subtle transition-colors cursor-pointer last:border-0"
-                  >
-                    <td className="px-4 sm:px-space-lg py-4 font-body-md text-text-secondary">
-                      {idx + 1}
-                    </td>
-                    <td className="px-4 sm:px-space-lg py-4 font-technical-data font-semibold text-text-primary">
+        <TableContainer>
+          <Table minWidth="650px">
+            <TableHeader>
+              <tr>
+                <TableHead align="center" className="w-14">No.</TableHead>
+                <TableHead>Equipment Code</TableHead>
+                <TableHead>Equipment Name</TableHead>
+                <TableHead>Serial Number</TableHead>
+                <TableHead align="right">Actions</TableHead>
+              </tr>
+            </TableHeader>
+            <TableBody>
+              {filteredEquipments.map((eq, idx) => (
+                <TableRow
+                  key={eq.id}
+                  onClick={() => openHistoryPage(eq)}
+                >
+                  <TableCell align="center" className="font-bold text-text-primary">
+                    {idx + 1}
+                  </TableCell>
+                  <TableCell className="font-mono font-bold text-primary">
+                    <span className="hover:underline flex items-center gap-1">
                       {eq.equipmentCode}
-                    </td>
-                    <td className="px-4 sm:px-space-lg py-4 font-body-md text-text-secondary group-hover:text-primary transition-colors">
-                      {eq.equipmentName}
-                    </td>
-                    <td className="px-4 sm:px-space-lg py-4 font-technical-data text-xs text-text-secondary">
-                      {eq.serialNumber || '—'}
-                    </td>
-                    <td className="px-4 sm:px-space-lg py-4 text-right">
-                      <span className="material-symbols-outlined text-border-strong group-hover:text-primary transition-colors text-[24px]">
-                        arrow_forward
-                      </span>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
+                    </span>
+                  </TableCell>
+                  <TableCell className="font-semibold text-text-primary group-hover:text-primary transition-colors">
+                    {eq.equipmentName}
+                  </TableCell>
+                  <TableCell className="font-mono text-text-secondary">
+                    {eq.serialNumber || '—'}
+                  </TableCell>
+                  <TableCell align="right">
+                    <TableActionButton label="Test History" />
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </TableContainer>
       )}
     </div>
   );

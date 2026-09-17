@@ -11,7 +11,6 @@ export type ComplaintStatus =
 
 export type InternalExternal = 'INTERNAL' | 'EXTERNAL';
 
-export type Priority = 'LOW' | 'MEDIUM' | 'HIGH';
 
 export type EffectivenessStatus = 'PENDING' | 'EFFECTIVE' | 'NOT_EFFECTIVE';
 
@@ -33,11 +32,11 @@ export interface ComplaintCreateRequest {
   quantity?: number;
   serialNumbers?: string;
   pictureUrls?: string;
+  pictureTmpKeys?: string[];
 
-  // Phase 2: Initial Assignment & Priority (optional on intake)
+  // Phase 2: Initial Assignment (optional on intake)
   assignedTeam?: string;
   assignedPerson?: string;
-  priority?: Priority | string;
   assignmentDeadline?: string;
 }
 
@@ -89,7 +88,6 @@ export interface ComplaintSummary {
   // Assignment
   assignedTeam?: string;
   assignedPerson?: string;
-  priority?: Priority | string;
 
   status: ComplaintStatus;
   actionStatus?: string;
@@ -176,60 +174,54 @@ export const COMPLAINT_STAGE_META: Record<
     stage: number;
     title: string;
     description: string;
-    sla: string;
     badgeClass: string;
   }
 > = {
   RECEIVED: {
     stage: 1,
     title: 'New Intake',
-    description: 'Awaiting CQE to convene CFT & schedule preliminary review',
-    sla: 'Meeting SLA: 1 business day',
+    description: 'Complaint recorded; ready for Cross-Functional Team review meeting',
     badgeClass: 'bg-amber-50 text-amber-700 border-amber-200',
   },
   MEETING_SCHEDULED: {
     stage: 2,
     title: 'Meeting Scheduled',
-    description: 'CFT invitation dispatched; awaiting interim containment commit',
-    sla: 'Containment SLA: 2 business days (48h)',
+    description: 'Meeting invitation and calendar file (.ics) dispatched to attendees',
     badgeClass: 'bg-sky-50 text-sky-700 border-sky-200',
   },
   CONTAINMENT_COMMITTED: {
     stage: 3,
     title: 'Containment Committed',
-    description: 'Defect isolated; 5-Why root cause analysis in progress',
-    sla: 'Root Cause SLA: 5 business days',
+    description: 'Interim containment actions deployed to isolate defect',
     badgeClass: 'bg-indigo-50 text-indigo-700 border-indigo-200',
   },
   ROOT_CAUSE_ANALYZED: {
     stage: 4,
     title: 'Root Cause Identified',
-    description: 'Root cause verified; formulating permanent CAPA plan',
-    sla: 'CAPA SLA: 10 business days',
+    description: 'Root cause confirmed via 5-Why and Fishbone investigation',
     badgeClass: 'bg-purple-50 text-purple-700 border-purple-200',
   },
   CAPA_COMMITTED: {
     stage: 5,
     title: 'CAPA Committed',
-    description: 'Corrective actions deployed; monitoring 30-day effectiveness',
-    sla: 'Verification SLA: 30 days',
+    description: 'Permanent corrective and preventive action plan being implemented',
     badgeClass: 'bg-blue-50 text-blue-700 border-blue-200',
   },
   EFFECTIVENESS_VERIFYING: {
     stage: 6,
-    title: 'Effectiveness Verification',
-    description: 'Collecting evidence confirming zero defect recurrence',
-    sla: 'Closure SLA: 7 days post-verification',
+    title: 'Effectiveness Verifying',
+    description: 'Monitoring production and field data for zero recurrence',
     badgeClass: 'bg-teal-50 text-teal-700 border-teal-200',
   },
   CLOSED: {
     stage: 7,
     title: 'Case Closed',
-    description: 'All 8D stages verified, finalized and archived',
-    sla: 'Completed',
+    description: 'Complaint verified, signed off, and archived',
     badgeClass: 'bg-emerald-50 text-emerald-700 border-emerald-200',
   },
 };
+
+
 
 export interface ComplaintUpdateRequest {
   controlNo?: string;
@@ -240,6 +232,7 @@ export interface ComplaintUpdateRequest {
   salesforceCapa?: string;
   area?: string;
   customerName?: string;
+  receivedDate?: string;
   customerFinding?: string;
   model?: string;
   issueDescription?: string;
@@ -248,11 +241,11 @@ export interface ComplaintUpdateRequest {
   quantity?: number;
   serialNumbers?: string;
   pictureUrls?: string;
+  pictureTmpKeys?: string[];
 
   // Phase 2: Assignment
   assignedTeam?: string;
   assignedPerson?: string;
-  priority?: Priority | string;
   assignmentDeadline?: string;
 
   // Phase 3: Containment
@@ -287,6 +280,7 @@ export interface ComplaintUpdateRequest {
   closureDate?: string;
   finalStatus?: string;
   finalEvidence?: string;
+  finalEvidenceTmpKey?: string;
   remarks?: string;
 
   // Lifecycle Status
