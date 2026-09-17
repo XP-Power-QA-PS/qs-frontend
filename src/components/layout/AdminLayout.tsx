@@ -2,11 +2,7 @@ import React, { useState } from 'react';
 import { Outlet } from 'react-router-dom';
 import { Sidebar } from './Sidebar';
 import { Header } from './Header';
-import { authService } from '@/services/auth';
-
 export const AdminLayout: React.FC = () => {
-  const role = authService.getUserRole();
-  const isUser = role === 'ROLE_USER';
 
   // Desktop sidebar collapsed state (persisted in localStorage)
   const [isCollapsed, setIsCollapsed] = useState<boolean>(() => {
@@ -38,22 +34,18 @@ export const AdminLayout: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-[#f8f9fe] flex flex-col">
-      {!isUser && (
-        <Sidebar
-          isMobileOpen={isMobileOpen}
-          onMobileClose={() => setIsMobileOpen(false)}
-          isCollapsed={isCollapsed}
-          onToggleCollapse={handleToggleCollapse}
-        />
-      )}
+      <Sidebar
+        isMobileOpen={isMobileOpen}
+        onMobileClose={() => setIsMobileOpen(false)}
+        isCollapsed={isCollapsed}
+        onToggleCollapse={handleToggleCollapse}
+      />
 
       <div
         className={`${
-          !isUser
-            ? isCollapsed
-              ? 'md:ml-20 md:w-[calc(100%-5rem)]'
-              : 'md:ml-64 md:w-[calc(100%-16rem)]'
-            : 'w-full'
+          isCollapsed
+            ? 'md:ml-20 md:w-[calc(100%-5rem)]'
+            : 'md:ml-64 md:w-[calc(100%-16rem)]'
         } min-h-screen flex flex-col transition-all duration-300 min-w-0`}
       >
         <Header

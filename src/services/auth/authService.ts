@@ -78,23 +78,38 @@ export const authService = {
     return !!localStorage.getItem(AUTH_CONSTANTS.ACCESS_TOKEN_KEY) || !!localStorage.getItem(AUTH_CONSTANTS.REFRESH_TOKEN_KEY);
   },
 
-  getUserRole: (): string | null => {
+  getUserRoles: (): string[] => {
     const token = localStorage.getItem(AUTH_CONSTANTS.ACCESS_TOKEN_KEY);
-    if (!token) return null;
+    if (!token) return [];
     const decoded = parseJwt(token);
-    
     if (decoded?.roles && Array.isArray(decoded.roles)) {
-      if (decoded.roles.includes('ROLE_ADMIN')) return 'ROLE_ADMIN';
-      if (decoded.roles.includes('ROLE_USER')) return 'ROLE_USER';
-      return decoded.roles[0] || null;
+      return decoded.roles;
     }
-    
-    return decoded?.role || null;
+    if (decoded?.role) {
+      return [decoded.role];
+    }
+    return [];
+  },
+
+  getUserRole: (): string | null => {
+    const roles = authService.getUserRoles();
+    if (roles.includes('ROLE_ADMIN')) return 'ROLE_ADMIN';
+    if (roles.includes('ROLE_SUPERVISOR')) return 'ROLE_SUPERVISOR';
+    if (roles.includes('ROLE_QC_ENGINEER')) return 'ROLE_QC_ENGINEER';
+    if (roles.includes('ROLE_INSPECTOR')) return 'ROLE_INSPECTOR';
+    if (roles.includes('ROLE_OPERATOR')) return 'ROLE_OPERATOR';
+    if (roles.includes('ROLE_USER')) return 'ROLE_USER';
+    return roles[0] || null;
   },
 
   hasRole: (requiredRole: string): boolean => {
-    const role = authService.getUserRole();
-    return role === requiredRole;
+    const roles = authService.getUserRoles();
+    return roles.includes(requiredRole);
+  },
+
+  hasAnyRole: (requiredRoles: string[]): boolean => {
+    const roles = authService.getUserRoles();
+    return requiredRoles.some((r) => roles.includes(r));
   }
 };
 

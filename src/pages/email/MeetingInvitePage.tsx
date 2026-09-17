@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useSearchParams, useLocation, Link } from 'react-router-dom';
+import { useSearchParams, useLocation, Link, Navigate } from 'react-router-dom';
 import {
   CalendarDays,
   Send,
@@ -17,6 +17,7 @@ import { complaintService } from '@/services/complaint/complaintService';
 import type { ComplaintDetail, ComplaintSummary } from '@/types/complaint/complaint.types';
 import { RecipientSelector } from '@/components/features/email/RecipientSelector';
 import { EmailLivePreview } from '@/components/features/email/EmailLivePreview';
+import { authService } from '@/services/auth';
 
 // Get local date string YYYY-MM-DD
 const getTodayDateString = (): string => {
@@ -28,6 +29,11 @@ const getTodayDateString = (): string => {
 };
 
 export const MeetingInvitePage: React.FC = () => {
+  const canAccess = authService.hasAnyRole(['ROLE_ADMIN', 'ROLE_SUPERVISOR', 'ROLE_QC_ENGINEER']);
+  if (!canAccess) {
+    return <Navigate to="/dashboard" replace />;
+  }
+
   const [searchParams] = useSearchParams();
   const location = useLocation();
   const complaintId = searchParams.get('complaintId');
