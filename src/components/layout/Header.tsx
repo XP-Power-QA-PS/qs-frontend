@@ -8,12 +8,21 @@ interface HeaderProps {
   isSidebarCollapsed?: boolean;
 }
 
+const ROLE_TITLES: Record<string, string> = {
+  ROLE_ADMIN: 'System Administrator',
+  ROLE_SUPERVISOR: 'Production Supervisor',
+  ROLE_QC_ENGINEER: 'Quality Engineer',
+  ROLE_INSPECTOR: 'Quality Inspector',
+  ROLE_OPERATOR: 'Line Operator',
+  ROLE_USER: 'Field Technician',
+};
+
 export const Header: React.FC<HeaderProps> = ({ onToggleSidebar, isSidebarCollapsed }) => {
   const navigate = useNavigate();
   const location = useLocation();
   const matches = useMatches();
-  const role = authService.getUserRole();
-  const isUser = role === 'ROLE_USER';
+  const primaryRole = authService.getUserRole() || 'ROLE_USER';
+  const roleTitle = ROLE_TITLES[primaryRole] || 'System User';
   const [isProfileOpen, setIsProfileOpen] = useState(false);
 
   const handleLogout = async () => {
@@ -54,16 +63,6 @@ export const Header: React.FC<HeaderProps> = ({ onToggleSidebar, isSidebarCollap
 
   const renderUserLeftSection = () => {
     const items = getBreadcrumbItems();
-
-    if (isUser && location.pathname === '/dashboard') {
-      return (
-        <div className="flex items-center space-x-2.5 cursor-pointer" onClick={() => navigate('/dashboard')}>
-          <img alt="XP Power Logo" className="h-7 sm:h-8 w-auto object-contain" src="/logo-xppower.png" />
-          <span className="hidden sm:inline-block h-4 w-px bg-border-strong"></span>
-          <span className="hidden sm:inline-block font-label-sm text-text-muted uppercase tracking-widest text-[11px]">Global Portal</span>
-        </div>
-      );
-    }
 
     const currentItem = items[items.length - 1];
     const prevItem = items.length > 1 ? items[items.length - 2] : items[0];
@@ -112,18 +111,16 @@ export const Header: React.FC<HeaderProps> = ({ onToggleSidebar, isSidebarCollap
       <div className="flex items-center justify-between max-w-[96rem] mx-auto w-full">
         {/* Left Section */}
         <div className="flex items-center gap-2">
-          {!isUser && (
-            <button
-              onClick={onToggleSidebar}
-              className="p-2 -ml-1 text-text-secondary hover:text-primary hover:bg-surface-subtle rounded-lg transition-colors min-h-[44px] min-w-[44px] flex items-center justify-center cursor-pointer"
-              aria-label="Toggle Navigation Menu"
-              title={isSidebarCollapsed ? 'Expand Sidebar' : 'Collapse Sidebar'}
-            >
-              <span className="material-symbols-outlined text-[22px]">
-                {isSidebarCollapsed ? 'menu' : 'menu_open'}
-              </span>
-            </button>
-          )}
+          <button
+            onClick={onToggleSidebar}
+            className="p-2 -ml-1 text-text-secondary hover:text-primary hover:bg-surface-subtle rounded-lg transition-colors min-h-[44px] min-w-[44px] flex items-center justify-center cursor-pointer"
+            aria-label="Toggle Navigation Menu"
+            title={isSidebarCollapsed ? 'Expand Sidebar' : 'Collapse Sidebar'}
+          >
+            <span className="material-symbols-outlined text-[22px]">
+              {isSidebarCollapsed ? 'menu' : 'menu_open'}
+            </span>
+          </button>
           {renderUserLeftSection()}
         </div>
 
@@ -144,7 +141,7 @@ export const Header: React.FC<HeaderProps> = ({ onToggleSidebar, isSidebarCollap
             >
               <div className="relative">
                 <img
-                  src={'https://ui-avatars.com/api/?name=' + (isUser ? 'User' : 'Admin') + '&background=006194&color=fff&font-size=0.33'}
+                  src={'https://ui-avatars.com/api/?name=' + encodeURIComponent(roleTitle) + '&background=006194&color=fff&font-size=0.33'}
                   alt="User avatar"
                   className="w-8 h-8 rounded-full border border-border-subtle shadow-xs"
                 />
@@ -152,7 +149,7 @@ export const Header: React.FC<HeaderProps> = ({ onToggleSidebar, isSidebarCollap
               </div>
               <div className="hidden sm:flex flex-col items-start">
                 <span className="text-[12px] font-semibold text-text-primary leading-tight">
-                  {isUser ? 'Field Technician' : 'System Administrator'}
+                  {roleTitle}
                 </span>
                 <span className="text-[10px] font-technical-data text-text-muted leading-tight">
                   Active Session
@@ -172,8 +169,8 @@ export const Header: React.FC<HeaderProps> = ({ onToggleSidebar, isSidebarCollap
                 />
                 <div className="absolute right-0 mt-2 w-56 bg-surface-card rounded-xl border border-border-subtle shadow-xl p-2 z-50 animate-in fade-in zoom-in-95 duration-150">
                   <div className="px-3 py-2 border-b border-border-subtle mb-1">
-                    <p className="text-xs font-semibold text-text-primary">{isUser ? 'Field Technician' : 'System Administrator'}</p>
-                    <p className="text-[11px] text-text-muted">{isUser ? 'ROLE_USER' : 'ROLE_ADMIN'}</p>
+                    <p className="text-xs font-semibold text-text-primary">{roleTitle}</p>
+                    <p className="text-[11px] text-text-muted font-mono">{primaryRole}</p>
                   </div>
                   <button
                     onClick={() => {

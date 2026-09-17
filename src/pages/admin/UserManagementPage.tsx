@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Edit, Trash2, Search, Plus, ChevronDown, Check } from 'lucide-react';
+import { Edit, Trash2, Search, Plus, ChevronDown, Check, KeyRound } from 'lucide-react';
 import { adminService } from '@/services/admin';
 import type { User } from '@/types/admin';
 import {
@@ -14,6 +14,33 @@ import {
 import toast from 'react-hot-toast';
 import { useViewMode } from '@/context/ViewModeContext';
 import { ViewModeToggle } from '@/components/common/ViewModeToggle';
+
+export interface RoleOption {
+  value: string;
+  label: string;
+  badgeClass: string;
+  requiresEmail: boolean;
+  description: string;
+}
+
+export const ROLE_OPTIONS: RoleOption[] = [
+  { value: 'ROLE_OPERATOR', label: 'Operator (Công nhân)', badgeClass: 'bg-slate-100 text-slate-700 border-slate-200', requiresEmail: false, description: 'Thao tác chuyền, nhập Go/No-Go (Không bắt buộc email)' },
+  { value: 'ROLE_INSPECTOR', label: 'QC Inspector (Kiểm định viên)', badgeClass: 'bg-cyan-50 text-cyan-700 border-cyan-200', requiresEmail: true, description: 'Kiểm tra chất lượng linh kiện, ký xác nhận lô (Cần email)' },
+  { value: 'ROLE_QC_ENGINEER', label: 'QC Engineer (Kỹ sư chất lượng)', badgeClass: 'bg-blue-50 text-blue-700 border-blue-200', requiresEmail: true, description: 'Xử lý lỗi kỹ thuật, phân tích dữ liệu & khiếu nại (Cần email)' },
+  { value: 'ROLE_SUPERVISOR', label: 'Supervisor (Tổ trưởng / Giám sát)', badgeClass: 'bg-amber-50 text-amber-700 border-amber-200', requiresEmail: true, description: 'Giám sát ca sản xuất, duyệt bỏ qua lỗi (Cần email)' },
+  { value: 'ROLE_ADMIN', label: 'Administrator (Quản trị viên)', badgeClass: 'bg-purple-50 text-purple-700 border-purple-200', requiresEmail: true, description: 'Quản trị hệ thống toàn quyền (Cần email)' },
+  { value: 'ROLE_USER', label: 'General User (Người dùng thường)', badgeClass: 'bg-gray-100 text-gray-700 border-gray-200', requiresEmail: true, description: 'Tài khoản tiêu chuẩn (Cần email)' }
+];
+
+export const getRoleOption = (role: string): RoleOption => {
+  return ROLE_OPTIONS.find(r => r.value === role) || {
+    value: role,
+    label: role.replace('ROLE_', ''),
+    badgeClass: 'bg-primary/10 text-primary border-primary/20',
+    requiresEmail: true,
+    description: ''
+  };
+};
 
 export const UserManagementPage: React.FC = () => {
   const [users, setUsers] = useState<User[]>([]);
@@ -33,7 +60,7 @@ export const UserManagementPage: React.FC = () => {
   const [isAddOpen, setIsAddOpen] = useState(false);
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [editingUser, setEditingUser] = useState<User | null>(null);
-  const [form, setForm] = useState({ username: '', email: '', password: '', role: 'ROLE_USER', status: 'Active' });
+  const [form, setForm] = useState({ username: '', email: '', password: '', role: 'ROLE_OPERATOR', status: 'Active' });
 
   const loadUsers = async () => {
     setLoading(true);
@@ -61,19 +88,24 @@ export const UserManagementPage: React.FC = () => {
 
   const handleAddSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    const roleOpt = getRoleOption(form.role);
+    if (roleOpt.requiresEmail && (!form.email || !form.email.trim())) {
+      toast.error(`Vai trò ${roleOpt.label} bắt buộc phải có địa chỉ Email!`);
+      return;
+    }
     try {
       await adminService.createUser({
-        username: form.username,
-        email: form.email,
-        password: form.password,
+        username: form.username.trim(),
+        email: form.email.trim() || undefined,
+        password: form.password || undefined,
         roles: [form.role]
       });
-      toast.success('User added successfully');
+      toast.success('Thêm tài khoản thành công');
       setIsAddOpen(false);
-      setForm({ username: '', email: '', password: '', role: 'ROLE_USER', status: 'Active' });
+      setForm({ username: '', email: '', password: '', role: 'ROLE_OPERATOR', status: 'Active' });
       loadUsers();
     } catch (error: any) {
-      toast.error('Failed to add user: ' + (error.message || 'Unknown error'));
+      toast.error('Không thể thêm tài khoản: ' + (error.message || 'Unknown error'));
     }
   };
 
@@ -93,9 +125,9 @@ export const UserManagementPage: React.FC = () => {
     setEditingUser(user);
     setForm({
       username: user.username,
-      email: user.email,
+      email: user.email || '',
       password: '',
-      role: user.roles && user.roles.length > 0 ? user.roles[0] : 'ROLE_USER',
+      role: user.roles && user.roles.length > 0 ? user.roles[0] : 'ROLE_OPERATOR',
       status: user.enabled ? 'Active' : 'Inactive'
     });
     setIsEditOpen(true);
@@ -104,21 +136,42 @@ export const UserManagementPage: React.FC = () => {
   const handleEditSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!editingUser) return;
+    const roleOpt = getRoleOption(form.role);
+    if (roleOpt.requiresEmail && (!form.email || !form.email.trim())) {
+      toast.error(`Vai trò ${roleOpt.label} bắt buộc phải có địa chỉ Email!`);
+      return;
+    }
     try {
-      // NOTE: Assume adminService.updateUser is implemented
       await adminService.updateUser(editingUser.id, {
-        username: form.username,
-        email: form.email,
+        username: form.username.trim(),
+        email: form.email.trim() || '',
         roles: [form.role],
         isEnabled: form.status === 'Active',
         ...(form.password ? { password: form.password } : {})
       });
-      toast.success('User updated successfully');
+      toast.success('Cập nhật tài khoản thành công');
       setIsEditOpen(false);
       setEditingUser(null);
       loadUsers();
     } catch (error: any) {
-      toast.error('Failed to update user: ' + (error.message || 'Unknown error'));
+      toast.error('Không thể cập nhật tài khoản: ' + (error.message || 'Unknown error'));
+    }
+  };
+
+  const handleResetPasswordToDefault = async (user: User) => {
+    if (!window.confirm(`Bạn có chắc muốn đặt lại mật khẩu của tài khoản "@${user.username}" về mặc định (123456)?`)) {
+      return;
+    }
+    try {
+      await adminService.updateUser(user.id, {
+        email: user.email || '',
+        password: '123456',
+        isEnabled: user.enabled,
+        roles: user.roles
+      });
+      toast.success(`Đã reset mật khẩu của @${user.username} về mặc định "123456"`);
+    } catch (error: any) {
+      toast.error('Không thể đặt lại mật khẩu: ' + (error.message || 'Unknown error'));
     }
   };
 
@@ -300,8 +353,28 @@ export const UserManagementPage: React.FC = () => {
                   </div>
 
                   <div className="space-y-1.5 text-xs text-gray-600 mb-3">
-                    <p className="truncate"><strong>Email:</strong> {user.email || 'N/A'}</p>
-                    <p><strong>Roles:</strong> {user.roles?.join(', ') || 'ROLE_USER'}</p>
+                    <p className="truncate">
+                      <strong>Email:</strong> {user.email ? (
+                        <span className="text-gray-900">{user.email}</span>
+                      ) : (
+                        <span className="text-gray-400 italic">Chưa có email (Công nhân)</span>
+                      )}
+                    </p>
+                    <div className="flex items-center gap-1.5 flex-wrap">
+                      <strong className="text-gray-700">Roles:</strong>
+                      {user.roles && user.roles.length > 0 ? (
+                        user.roles.map(role => {
+                          const opt = getRoleOption(role);
+                          return (
+                            <span key={role} className={`inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-medium border ${opt.badgeClass}`}>
+                              {opt.label}
+                            </span>
+                          );
+                        })
+                      ) : (
+                        <span className="text-gray-400 text-xs">Chưa có vai trò</span>
+                      )}
+                    </div>
                     <p className="text-[11px] text-gray-400">Created: {user.createdAt ? new Date(user.createdAt).toLocaleDateString() : 'N/A'}</p>
                   </div>
                 </div>
@@ -310,6 +383,13 @@ export const UserManagementPage: React.FC = () => {
                 <div className="pt-3 border-t border-gray-100 flex items-center justify-end gap-2">
                   {currentTab === 'Active' ? (
                     <>
+                      <button
+                        onClick={() => handleResetPasswordToDefault(user)}
+                        className="p-2 text-gray-500 hover:text-amber-600 hover:bg-amber-50 rounded-lg transition-colors min-h-[38px] min-w-[38px] flex items-center justify-center"
+                        title="Reset mật khẩu về mặc định (123456)"
+                      >
+                        <KeyRound className="w-4 h-4" />
+                      </button>
                       <button
                         onClick={() => openEdit(user)}
                         className="p-2 text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors min-h-[38px] min-w-[38px] flex items-center justify-center"
@@ -377,10 +457,11 @@ export const UserManagementPage: React.FC = () => {
       ) : (
         /* Table View with Horizontal Scrolling */
         <TableContainer>
-          <Table minWidth="700px">
+          <Table minWidth="750px">
             <TableHeader>
               <TableRow>
-                <TableHead>User</TableHead>
+                <TableHead>Mã NV / ID</TableHead>
+                <TableHead>Họ & Tên</TableHead>
                 <TableHead>Email</TableHead>
                 <TableHead>Roles</TableHead>
                 <TableHead>Status</TableHead>
@@ -392,27 +473,43 @@ export const UserManagementPage: React.FC = () => {
               {users.map((user) => (
                 <TableRow key={user.id} clickable={false}>
                   <TableCell>
-                    <div className="flex items-center gap-3">
-                      <div className="w-9 h-9 rounded-full bg-primary/10 text-primary font-bold flex items-center justify-center shrink-0 border border-primary/20 text-xs">
+                    <span className="font-mono text-xs font-semibold px-2 py-1 bg-surface-subtle border border-border-subtle rounded-md text-primary inline-flex items-center gap-1">
+                      <span className="text-gray-400 text-[10px]">#</span>{user.username}
+                    </span>
+                  </TableCell>
+                  <TableCell>
+                    <div className="flex items-center gap-2.5">
+                      <div className="w-8 h-8 rounded-full bg-primary/10 text-primary font-bold flex items-center justify-center shrink-0 border border-primary/20 text-xs">
                         {getInitial(user)}
                       </div>
                       <div>
-                        <div className="font-semibold text-text-primary">{getName(user)}</div>
-                        <div className="text-xs text-text-muted">@{user.username}</div>
+                        <div className="font-semibold text-text-primary text-sm">{getName(user)}</div>
+                        <div className="text-[11px] text-text-muted">ID: {user.id}</div>
                       </div>
                     </div>
                   </TableCell>
-                  <TableCell className="text-text-secondary">{user.email || 'N/A'}</TableCell>
+                  <TableCell className="text-text-secondary text-xs">
+                    {user.email ? (
+                      user.email
+                    ) : (
+                      <span className="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-normal bg-gray-100 text-gray-500 italic">
+                        Không có email
+                      </span>
+                    )}
+                  </TableCell>
                   <TableCell>
                     <div className="flex flex-wrap gap-1">
                       {user.roles && user.roles.length > 0 ? (
-                        user.roles.map(role => (
-                          <span key={role} className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-primary/10 text-primary border border-primary/20">
-                            {role.replace('ROLE_', '')}
-                          </span>
-                        ))
+                        user.roles.map(role => {
+                          const opt = getRoleOption(role);
+                          return (
+                            <span key={role} className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium border ${opt.badgeClass}`}>
+                              {opt.label}
+                            </span>
+                          );
+                        })
                       ) : (
-                        <span className="text-text-muted text-xs">No role</span>
+                        <span className="text-text-muted text-xs">Chưa có vai trò</span>
                       )}
                     </div>
                   </TableCell>
@@ -433,6 +530,13 @@ export const UserManagementPage: React.FC = () => {
                     <div className="flex items-center justify-end gap-2">
                       {currentTab === 'Active' ? (
                         <>
+                          <button
+                            onClick={() => handleResetPasswordToDefault(user)}
+                            className="p-1.5 text-text-muted hover:text-amber-600 hover:bg-amber-50 rounded-lg transition-colors cursor-pointer"
+                            title="Reset mật khẩu về mặc định (123456)"
+                          >
+                            <KeyRound className="h-4 w-4" />
+                          </button>
                           <button
                             onClick={() => openEdit(user)}
                             className="p-1.5 text-text-muted hover:text-primary hover:bg-surface-canvas rounded-lg transition-colors cursor-pointer"
@@ -507,44 +611,56 @@ export const UserManagementPage: React.FC = () => {
       {isAddOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
           <div className="bg-white rounded-xl p-6 w-full max-w-md shadow-2xl">
-            <h2 className="text-xl font-bold mb-4 text-gray-900">Add New Account</h2>
+            <h2 className="text-xl font-bold mb-4 text-gray-900">Thêm Tài Khoản Mới</h2>
             <form onSubmit={handleAddSubmit} className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Username *</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Mã nhân viên / Username *</label>
                 <input
                   type="text"
                   required
+                  placeholder="Ví dụ: OP-10492 hoặc john.doe"
                   className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 bg-white"
                   value={form.username}
                   onChange={(e) => setForm({ ...form, username: e.target.value })}
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Email *</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Vai trò (Role) *</label>
+                <select
+                  className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 bg-white"
+                  value={form.role}
+                  onChange={(e) => setForm({ ...form, role: e.target.value })}
+                >
+                  {ROLE_OPTIONS.map((opt) => (
+                    <option key={opt.value} value={opt.value}>
+                      {opt.label}
+                    </option>
+                  ))}
+                </select>
+                <p className="text-xs text-gray-500 mt-1">{getRoleOption(form.role).description}</p>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  {getRoleOption(form.role).requiresEmail ? (
+                    <>Email <span className="text-red-500">* (Bắt buộc cho vai trò này)</span></>
+                  ) : (
+                    <>Email <span className="text-gray-400 font-normal">(Không bắt buộc với công nhân)</span></>
+                  )}
+                </label>
                 <input
                   type="email"
-                  required
+                  required={getRoleOption(form.role).requiresEmail}
+                  placeholder={getRoleOption(form.role).requiresEmail ? "name@xppower.com" : "Để trống nếu là công nhân trực tiếp"}
                   className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 bg-white"
                   value={form.email}
                   onChange={(e) => setForm({ ...form, email: e.target.value })}
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Role *</label>
-                <select
-                  className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 bg-white"
-                  value={form.role}
-                  onChange={(e) => setForm({ ...form, role: e.target.value })}
-                >
-                  <option value="ROLE_ADMIN">Admin</option>
-                  <option value="ROLE_USER">User</option>
-                </select>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Password</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Mật khẩu khởi tạo</label>
                 <input
                   type="password"
-                  placeholder="Leave empty for default '123456'"
+                  placeholder="Mặc định là '123456' nếu để trống"
                   className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 bg-white"
                   value={form.password}
                   onChange={(e) => setForm({ ...form, password: e.target.value })}
@@ -556,13 +672,13 @@ export const UserManagementPage: React.FC = () => {
                   onClick={() => setIsAddOpen(false)}
                   className="px-4 py-2 text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors font-medium text-sm"
                 >
-                  Cancel
+                  Hủy
                 </button>
                 <button
                   type="submit"
                   className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium text-sm"
                 >
-                  Create Account
+                  Tạo Tài Khoản
                 </button>
               </div>
             </form>
@@ -573,10 +689,10 @@ export const UserManagementPage: React.FC = () => {
       {isEditOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
           <div className="bg-white rounded-xl p-6 w-full max-w-md shadow-2xl">
-            <h2 className="text-xl font-bold mb-4 text-gray-900">Edit Account</h2>
+            <h2 className="text-xl font-bold mb-4 text-gray-900">Chỉnh Sửa Tài Khoản</h2>
             <form onSubmit={handleEditSubmit} className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Username *</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Mã nhân viên / Username *</label>
                 <input
                   type="text"
                   required
@@ -586,42 +702,62 @@ export const UserManagementPage: React.FC = () => {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Email *</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Vai trò (Role) *</label>
+                <select
+                  className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 bg-white"
+                  value={form.role}
+                  onChange={(e) => setForm({ ...form, role: e.target.value })}
+                >
+                  {ROLE_OPTIONS.map((opt) => (
+                    <option key={opt.value} value={opt.value}>
+                      {opt.label}
+                    </option>
+                  ))}
+                </select>
+                <p className="text-xs text-gray-500 mt-1">{getRoleOption(form.role).description}</p>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  {getRoleOption(form.role).requiresEmail ? (
+                    <>Email <span className="text-red-500">* (Bắt buộc cho vai trò này)</span></>
+                  ) : (
+                    <>Email <span className="text-gray-400 font-normal">(Không bắt buộc với công nhân)</span></>
+                  )}
+                </label>
                 <input
                   type="email"
-                  required
+                  required={getRoleOption(form.role).requiresEmail}
+                  placeholder={getRoleOption(form.role).requiresEmail ? "name@xppower.com" : "Để trống nếu là công nhân trực tiếp"}
                   className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 bg-white"
                   value={form.email}
                   onChange={(e) => setForm({ ...form, email: e.target.value })}
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Role *</label>
-                <select
-                  className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 bg-white"
-                  value={form.role}
-                  onChange={(e) => setForm({ ...form, role: e.target.value })}
-                >
-                  <option value="ROLE_ADMIN">Admin</option>
-                  <option value="ROLE_USER">User</option>
-                </select>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Status *</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Trạng thái (Status) *</label>
                 <select
                   className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 bg-white"
                   value={form.status}
                   onChange={(e) => setForm({ ...form, status: e.target.value })}
                 >
-                  <option value="Active">Active</option>
-                  <option value="Inactive">Inactive</option>
+                  <option value="Active">Active (Hoạt động)</option>
+                  <option value="Inactive">Inactive (Khóa)</option>
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Password</label>
+                <div className="flex items-center justify-between mb-1">
+                  <label className="block text-sm font-medium text-gray-700">Mật khẩu mới</label>
+                  <button
+                    type="button"
+                    onClick={() => setForm(f => ({ ...f, password: '123456' }))}
+                    className="text-xs text-blue-600 hover:text-blue-800 font-medium"
+                  >
+                    Gán mật khẩu mặc định (123456)
+                  </button>
+                </div>
                 <input
                   type="password"
-                  placeholder="Leave empty to keep current password"
+                  placeholder="Để trống nếu không muốn đổi mật khẩu"
                   className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 bg-white"
                   value={form.password}
                   onChange={(e) => setForm({ ...form, password: e.target.value })}
@@ -633,13 +769,13 @@ export const UserManagementPage: React.FC = () => {
                   onClick={() => setIsEditOpen(false)}
                   className="px-4 py-2 text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors font-medium text-sm"
                 >
-                  Cancel
+                  Hủy
                 </button>
                 <button
                   type="submit"
                   className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium text-sm"
                 >
-                  Update Account
+                  Cập Nhật Tài Khoản
                 </button>
               </div>
             </form>

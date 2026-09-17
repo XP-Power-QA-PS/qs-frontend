@@ -1,7 +1,7 @@
 export interface User {
   id: string;
   username: string;
-  email: string;
+  email?: string | null;
   roles: string[];
   enabled: boolean;
   firstName?: string;
@@ -48,4 +48,30 @@ export interface CreateFloorRequest {
 export interface UpdateFloorRequest {
   name: string;
   description?: string;
+}
+
+export interface PermissionItem {
+  id: string;
+  code: string;
+  module: string;
+  action: string;
+  name: string;
+  description?: string;
+}
+
+export interface PermissionModuleGroup {
+  moduleKey: string;
+  moduleName: string;
+  description: string;
+  permissions: PermissionItem[];
+}
+
+export interface PermissionMatrixData {
+  modules: PermissionModuleGroup[];
+  roles: Role[];
+  rolePermissions: Record<string, string[]>;
+}
+
+export interface UpdatePermissionMatrixPayload {
+  rolePermissions: Record<string, string[]>;
 }

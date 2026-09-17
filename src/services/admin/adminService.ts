@@ -1,5 +1,14 @@
 import { apiClient } from '@/config/api';
-import type { User, Role, PageResponse, FloorItem, CreateFloorRequest, UpdateFloorRequest } from '@/types/admin';
+import type { 
+  User, 
+  Role, 
+  PageResponse, 
+  FloorItem, 
+  CreateFloorRequest, 
+  UpdateFloorRequest,
+  PermissionMatrixData,
+  UpdatePermissionMatrixPayload 
+} from '@/types/admin';
 
 const BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api';
 
@@ -97,5 +106,16 @@ export const adminService = {
     return apiClient(`${BASE_URL}/admin/floors/${id}`, {
       method: 'DELETE'
     });
+  },
+
+  getPermissionMatrix: async (): Promise<PermissionMatrixData> => {
+    return apiClient(`${BASE_URL}/admin/permissions/matrix`);
+  },
+
+  updatePermissionMatrix: async (data: UpdatePermissionMatrixPayload): Promise<PermissionMatrixData> => {
+    return apiClient(`${BASE_URL}/admin/permissions/matrix`, {
+      method: 'PUT',
+      body: JSON.stringify(data)
+    });
   }
-}
+};

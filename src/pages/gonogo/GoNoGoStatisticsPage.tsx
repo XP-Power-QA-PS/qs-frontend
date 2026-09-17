@@ -47,8 +47,8 @@ type TrendMode = 'line-area' | 'stacked-bar';
 
 // ─── Main Page ────────────────────────────────────────────────────────────────
 export const GoNoGoStatisticsPage: React.FC = () => {
-  const role = authService.getUserRole();
-  if (role === 'ROLE_USER') {
+  const canAccess = authService.hasAnyRole(['ROLE_ADMIN', 'ROLE_SUPERVISOR', 'ROLE_QC_ENGINEER', 'ROLE_INSPECTOR']);
+  if (!canAccess) {
     return <Navigate to="/dashboard" replace />;
   }
 
