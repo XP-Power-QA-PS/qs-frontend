@@ -1,6 +1,17 @@
 import React, { useEffect, useState } from 'react';
 import { useSearchParams, useNavigate, useParams } from 'react-router-dom';
 import { equipmentService } from '@/services/equipment';
+import {
+  TableContainer,
+  Table,
+  TableHeader,
+  TableHead,
+  TableBody,
+  TableRow,
+  TableCell,
+  TableActionButton,
+  StatusPill,
+} from '@/components/common/table';
 import type { EquipmentTestRecord } from '@/types/equipment';
 import toast from 'react-hot-toast';
 import { useViewMode } from '@/context/ViewModeContext';
@@ -224,48 +235,47 @@ export const EquipmentHistoryPage: React.FC = () => {
         </div>
       ) : (
         /* Table View Mode */
-        <div className="bg-surface-card rounded-xl shadow-xs border border-border-subtle overflow-hidden max-w-full w-full">
-          <div className="overflow-x-auto max-w-full w-full">
-            <table className="w-full text-left border-collapse min-w-[500px]">
-              <thead className="bg-surface-subtle border-b border-border-subtle">
-                <tr>
-                  <th className="px-4 sm:px-space-lg py-3 font-label-md text-text-muted uppercase tracking-wider w-[40%] text-xs">Period</th>
-                  <th className="px-4 sm:px-space-lg py-3 font-label-md text-text-muted uppercase tracking-wider w-[40%] text-xs">Created At</th>
-                  <th className="px-4 sm:px-space-lg py-3 font-label-md text-text-muted uppercase tracking-wider text-right w-[20%] text-xs">Action</th>
-                </tr>
-              </thead>
-              <tbody>
-                {historyRecords.map((record) => (
-                  <tr
+        <TableContainer>
+          <Table minWidth="500px">
+            <TableHeader>
+              <tr>
+                <TableHead>Period</TableHead>
+                <TableHead>Created At</TableHead>
+                <TableHead align="center">Status</TableHead>
+                <TableHead align="right">Actions</TableHead>
+              </tr>
+            </TableHeader>
+            <TableBody>
+              {historyRecords.map((record) => {
+                const isCurrent = record.testMonth === currentMonth && record.testYear === currentYear;
+                return (
+                  <TableRow
                     key={record.id}
                     onClick={() => handleRowClick(record)}
-                    className="group border-b border-border-subtle hover:bg-surface-subtle transition-colors cursor-pointer last:border-0"
                   >
-                    <td className="px-4 sm:px-space-lg py-4">
-                      <div className="flex items-center space-x-3">
-                        <div className="w-10 h-10 rounded-lg bg-surface border border-border-subtle flex items-center justify-center text-text-secondary group-hover:text-primary group-hover:bg-primary/10 transition-colors">
-                          <span className="material-symbols-outlined text-[20px]">assignment</span>
-                        </div>
-                        <div>
-                          <div className="font-headline-sm font-semibold text-text-primary">Month {record.testMonth}</div>
-                          <div className="font-body-sm text-text-secondary text-xs mt-0.5">Year {record.testYear}</div>
-                        </div>
-                      </div>
-                    </td>
-                    <td className="px-4 sm:px-space-lg py-4 font-body-md text-text-secondary text-sm">
-                      {new Date(record.testedAt).toLocaleString()}
-                    </td>
-                    <td className="px-4 sm:px-space-lg py-4 text-right">
-                      <span className="material-symbols-outlined text-border-strong group-hover:text-primary transition-colors text-[24px]">
-                        arrow_forward
+                    <TableCell className="font-mono font-bold text-primary">
+                      <span className="hover:underline flex items-center gap-1.5">
+                        Month {record.testMonth} / {record.testYear}
                       </span>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
+                    </TableCell>
+                    <TableCell className="font-mono text-text-secondary">
+                      {new Date(record.testedAt).toLocaleString()}
+                    </TableCell>
+                    <TableCell align="center">
+                      <StatusPill
+                        variant={isCurrent ? 'emerald' : 'gray'}
+                        label={isCurrent ? 'Active' : 'Archived'}
+                      />
+                    </TableCell>
+                    <TableCell align="right">
+                      <TableActionButton label="Inspection Tests" />
+                    </TableCell>
+                  </TableRow>
+                );
+              })}
+            </TableBody>
+          </Table>
+        </TableContainer>
       )}
     </div>
   );

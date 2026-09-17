@@ -5,6 +5,14 @@ import type { EquipmentDailyTest, CreateTestAttemptRequest, TestStatus } from '@
 import toast from 'react-hot-toast';
 import { useViewMode } from '@/context/ViewModeContext';
 import { ViewModeToggle } from '@/components/common/ViewModeToggle';
+import {
+  Table,
+  TableHeader,
+  TableHead,
+  TableBody,
+  TableRow,
+  TableCell,
+} from '@/components/common/table';
 
 export const EquipmentTestDetailPage: React.FC = () => {
   const { equipmentId, recordId } = useParams();
@@ -646,81 +654,80 @@ export const EquipmentTestDetailPage: React.FC = () => {
                           ) : (
                             /* Horizontal Scrolling Table */
                             <div className="overflow-x-auto max-w-full w-full">
-                              <table className="w-full text-left border-collapse min-w-[650px]">
-                                <thead className="bg-surface-subtle border-b border-border-subtle">
+                              <Table minWidth="650px">
+                                <TableHeader>
                                   <tr>
-                                    <th className="px-4 py-2.5 font-label-md text-text-muted uppercase tracking-wider text-xs">Time</th>
-                                    <th className="px-4 py-2.5 font-label-md text-text-muted uppercase tracking-wider text-xs">Tester</th>
-                                    <th className="px-4 py-2.5 font-label-md text-text-muted uppercase tracking-wider text-center text-xs">Verified</th>
-                                    <th className="px-4 py-2.5 font-label-md text-text-muted uppercase tracking-wider text-center text-xs">Program</th>
-
-                                    <th className="px-4 py-2.5 font-label-md text-text-muted uppercase tracking-wider text-center text-xs">GO</th>
-                                    <th className="px-4 py-2.5 font-label-md text-text-muted uppercase tracking-wider text-center text-xs">NO GO</th>
-                                    <th className="px-4 py-2.5 font-label-md text-text-muted uppercase tracking-wider text-center border-l border-border-subtle text-xs">Result</th>
-                                    <th className="px-4 py-2.5 font-label-md text-text-muted uppercase tracking-wider text-xs">Remark</th>
+                                    <TableHead>Time</TableHead>
+                                    <TableHead>Tester</TableHead>
+                                    <TableHead align="center">Verified</TableHead>
+                                    <TableHead align="center">Program</TableHead>
+                                    <TableHead align="center">GO</TableHead>
+                                    <TableHead align="center">NO GO</TableHead>
+                                    <TableHead align="center" className="border-l border-border-subtle">Result</TableHead>
+                                    <TableHead>Remark</TableHead>
                                   </tr>
-                                </thead>
-                                <tbody>
+                                </TableHeader>
+                                <TableBody>
                                   {dt.attempts.map((attempt) => (
-                                    <tr
+                                    <TableRow
                                       key={attempt.id}
-                                      className="border-b border-border-subtle last:border-0 hover:bg-surface-subtle transition-colors"
+                                      clickable={false}
                                     >
-                                      <td className="px-4 py-3 font-technical-data text-[13px] text-text-secondary whitespace-nowrap">
+                                      <TableCell className="font-mono font-bold text-primary whitespace-nowrap">
                                         {new Date(attempt.attemptTime).toLocaleTimeString()}
-                                      </td>
-                                      <td className="px-4 py-3 font-body-sm text-text-primary font-medium whitespace-nowrap">
+                                      </TableCell>
+                                      <TableCell className="font-semibold text-text-primary whitespace-nowrap">
                                         {attempt.testerUsername}
-                                      </td>
-                                      <td className="px-4 py-3 text-center">
+                                      </TableCell>
+                                      <TableCell align="center">
                                         {attempt.machineVerified ? (
-                                          <span className="inline-flex items-center gap-0.5 px-2 py-0.5 rounded text-[11px] font-semibold bg-primary/10 text-primary border border-primary/20">
+                                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
                                             <span className="material-symbols-outlined text-[13px]">check_circle</span>
                                             <span>Yes</span>
                                           </span>
                                         ) : (
                                           <span className="text-[11px] text-text-muted">—</span>
                                         )}
-                                      </td>
-                                      <td className="px-4 py-3 text-center">
+                                      </TableCell>
+                                      <TableCell align="center">
                                         <span
-                                          className={`inline-flex items-center justify-center px-2 py-0.5 rounded text-[11px] font-bold ${
+                                          className={`inline-flex items-center justify-center px-2.5 py-0.5 rounded-full text-[11px] font-bold ${
                                             attempt.programStatus === 'PASS'
-                                              ? 'bg-status-nominal/15 text-status-nominal'
-                                              : 'bg-status-critical/15 text-status-critical'
+                                              ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                                              : 'bg-rose-50 text-rose-700 border border-rose-200'
                                           }`}
                                         >
                                           {attempt.programStatus}
                                         </span>
-                                      </td>
-                                      <td className="px-4 py-3 text-center">
+                                      </TableCell>
+                                      <TableCell align="center">
                                         <span
-                                          className={`inline-flex items-center justify-center px-2 py-0.5 rounded text-[11px] font-bold ${
+                                          className={`inline-flex items-center justify-center px-2.5 py-0.5 rounded-full text-[11px] font-bold ${
                                             attempt.goStatus === 'PASS'
-                                              ? 'bg-status-nominal/15 text-status-nominal'
-                                              : 'bg-status-critical/15 text-status-critical'
+                                              ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                                              : 'bg-rose-50 text-rose-700 border border-rose-200'
                                           }`}
                                         >
                                           {attempt.goStatus}
                                         </span>
-                                      </td>
-                                      <td className="px-4 py-3 text-center">
+                                      </TableCell>
+                                      <TableCell align="center">
                                         <span
-                                          className={`inline-flex items-center justify-center px-2 py-0.5 rounded text-[11px] font-bold ${
+                                          className={`inline-flex items-center justify-center px-2.5 py-0.5 rounded-full text-[11px] font-bold ${
                                             attempt.noGoStatus === 'PASS'
-                                              ? 'bg-status-nominal/15 text-status-nominal'
-                                              : 'bg-status-critical/15 text-status-critical'
+                                              ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                                              : 'bg-rose-50 text-rose-700 border border-rose-200'
                                           }`}
                                         >
                                           {attempt.noGoStatus}
                                         </span>
-                                      </td>
-                                      <td className="px-4 py-3 text-center border-l border-border-subtle">
+                                      </TableCell>
+                                      <TableCell align="center" className="border-l border-border-subtle">
                                         <span
-                                          className={`inline-flex items-center gap-1 px-2.5 py-1 rounded text-[12px] font-bold ${
+                                          className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[12px] font-bold ${
                                             attempt.resultStatus === 'PASS'
-                                              ? 'bg-status-nominal text-white shadow-2xs'
-                                              : 'bg-status-critical text-white shadow-2xs'
+                                              ? 'bg-emerald-600 text-white shadow-2xs'
+                                              : 'bg-rose-600 text-white shadow-2xs'
                                           }`}
                                         >
                                           <span className="material-symbols-outlined text-[14px]">
@@ -728,12 +735,12 @@ export const EquipmentTestDetailPage: React.FC = () => {
                                           </span>
                                           {attempt.resultStatus}
                                         </span>
-                                      </td>
-                                      <td className="px-4 py-3 font-body-sm text-text-secondary">{attempt.remark || '-'}</td>
-                                    </tr>
+                                      </TableCell>
+                                      <TableCell className="text-text-secondary">{attempt.remark || '-'}</TableCell>
+                                    </TableRow>
                                   ))}
-                                </tbody>
-                              </table>
+                                </TableBody>
+                              </Table>
                             </div>
                           )
                         ) : (

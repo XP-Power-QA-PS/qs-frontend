@@ -2,6 +2,15 @@ import React, { useState, useEffect } from 'react';
 import { Edit, Trash2, Search, Plus, ChevronDown, Check } from 'lucide-react';
 import { adminService } from '@/services/admin';
 import type { User } from '@/types/admin';
+import {
+  TableContainer,
+  Table,
+  TableHeader,
+  TableHead,
+  TableBody,
+  TableRow,
+  TableCell,
+} from '@/components/common/table';
 import toast from 'react-hot-toast';
 import { useViewMode } from '@/context/ViewModeContext';
 import { ViewModeToggle } from '@/components/common/ViewModeToggle';
@@ -367,104 +376,106 @@ export const UserManagementPage: React.FC = () => {
         </div>
       ) : (
         /* Table View with Horizontal Scrolling */
-        <div className="bg-white rounded-xl shadow-xs border border-gray-100 overflow-hidden max-w-full w-full">
-          <div className="overflow-x-auto max-w-full w-full">
-            <table className="w-full text-left border-collapse text-sm min-w-[700px]">
-              <thead className="bg-gray-50/50 border-b border-gray-100 text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                <tr>
-                  <th className="px-6 py-4">User</th>
-                  <th className="px-6 py-4">Email</th>
-                  <th className="px-6 py-4">Roles</th>
-                  <th className="px-6 py-4">Status</th>
-                  <th className="px-6 py-4">Created Date</th>
-                  <th className="px-6 py-4 text-right">Actions</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-100">
-                {users.map((user) => (
-                  <tr key={user.id} className="hover:bg-gray-50/50 transition-colors">
-                    <td className="px-6 py-4">
-                      <div className="flex items-center gap-3">
-                        <div className="w-9 h-9 rounded-full bg-blue-50 text-blue-600 font-bold flex items-center justify-center shrink-0 border border-blue-100">
-                          {getInitial(user)}
-                        </div>
-                        <div>
-                          <div className="font-semibold text-gray-900">{getName(user)}</div>
-                          <div className="text-xs text-gray-400">@{user.username}</div>
-                        </div>
+        <TableContainer>
+          <Table minWidth="700px">
+            <TableHeader>
+              <TableRow>
+                <TableHead>User</TableHead>
+                <TableHead>Email</TableHead>
+                <TableHead>Roles</TableHead>
+                <TableHead>Status</TableHead>
+                <TableHead>Created Date</TableHead>
+                <TableHead align="right">Actions</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {users.map((user) => (
+                <TableRow key={user.id} clickable={false}>
+                  <TableCell>
+                    <div className="flex items-center gap-3">
+                      <div className="w-9 h-9 rounded-full bg-primary/10 text-primary font-bold flex items-center justify-center shrink-0 border border-primary/20 text-xs">
+                        {getInitial(user)}
                       </div>
-                    </td>
-                    <td className="px-6 py-4 text-gray-600">{user.email || 'N/A'}</td>
-                    <td className="px-6 py-4">
-                      <div className="flex flex-wrap gap-1">
-                        {user.roles && user.roles.length > 0 ? (
-                          user.roles.map(role => (
-                            <span key={role} className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-50 text-blue-700 border border-blue-100">
-                              {role.replace('ROLE_', '')}
-                            </span>
-                          ))
-                        ) : (
-                          <span className="text-gray-400 text-xs">No role</span>
-                        )}
+                      <div>
+                        <div className="font-semibold text-text-primary">{getName(user)}</div>
+                        <div className="text-xs text-text-muted">@{user.username}</div>
                       </div>
-                    </td>
-                    <td className="px-6 py-4">
-                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${user.enabled ? 'bg-green-50 text-green-700' : 'bg-gray-100 text-gray-600'
-                        }`}>
-                        {user.enabled ? 'Active' : 'Inactive'}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 text-gray-500 text-xs">
-                      {user.createdAt ? new Date(user.createdAt).toLocaleDateString() : 'N/A'}
-                    </td>
-                    <td className="px-6 py-4 text-right">
-                      <div className="flex items-center justify-end gap-2">
-                        {currentTab === 'Active' ? (
-                          <>
-                            <button
-                              onClick={() => openEdit(user)}
-                              className="p-1 text-gray-400 hover:text-blue-600 rounded"
-                              title="Edit user"
-                            >
-                              <Edit className="h-4 w-4" />
-                            </button>
-                            <button
-                              onClick={() => handleDelete(user.id)}
-                              className="p-1 text-gray-400 hover:text-red-600 rounded"
-                              title="Delete user"
-                            >
-                              <Trash2 className="h-4 w-4" />
-                            </button>
-                          </>
-                        ) : (
-                          <>
-                            <button
-                              onClick={() => handleRestore(user.id)}
-                              className="px-2 py-1 text-xs font-medium text-green-700 bg-green-50 hover:bg-green-100 rounded"
-                              title="Restore user"
-                            >
-                              Restore
-                            </button>
-                            <button
-                              onClick={() => handlePermanentDelete(user.id)}
-                              className="px-2 py-1 text-xs font-medium text-red-700 bg-red-50 hover:bg-red-100 rounded"
-                              title="Permanently delete user"
-                            >
-                              Perm Delete
-                            </button>
-                          </>
-                        )}
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                    </div>
+                  </TableCell>
+                  <TableCell className="text-text-secondary">{user.email || 'N/A'}</TableCell>
+                  <TableCell>
+                    <div className="flex flex-wrap gap-1">
+                      {user.roles && user.roles.length > 0 ? (
+                        user.roles.map(role => (
+                          <span key={role} className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-primary/10 text-primary border border-primary/20">
+                            {role.replace('ROLE_', '')}
+                          </span>
+                        ))
+                      ) : (
+                        <span className="text-text-muted text-xs">No role</span>
+                      )}
+                    </div>
+                  </TableCell>
+                  <TableCell>
+                    <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium ${
+                      user.enabled
+                        ? 'bg-emerald-50 text-emerald-700 border border-emerald-100'
+                        : 'bg-surface-subtle text-text-muted border border-border-subtle'
+                    }`}>
+                      <span className={`w-1.5 h-1.5 rounded-full ${user.enabled ? 'bg-emerald-500' : 'bg-text-muted'}`} />
+                      {user.enabled ? 'Active' : 'Inactive'}
+                    </span>
+                  </TableCell>
+                  <TableCell className="text-text-secondary text-xs">
+                    {user.createdAt ? new Date(user.createdAt).toLocaleDateString() : 'N/A'}
+                  </TableCell>
+                  <TableCell align="right">
+                    <div className="flex items-center justify-end gap-2">
+                      {currentTab === 'Active' ? (
+                        <>
+                          <button
+                            onClick={() => openEdit(user)}
+                            className="p-1.5 text-text-muted hover:text-primary hover:bg-surface-canvas rounded-lg transition-colors cursor-pointer"
+                            title="Edit user"
+                          >
+                            <Edit className="h-4 w-4" />
+                          </button>
+                          <button
+                            onClick={() => handleDelete(user.id)}
+                            className="p-1.5 text-text-muted hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors cursor-pointer"
+                            title="Delete user"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </button>
+                        </>
+                      ) : (
+                        <>
+                          <button
+                            onClick={() => handleRestore(user.id)}
+                            className="px-2.5 py-1 text-xs font-medium text-emerald-700 bg-emerald-50 hover:bg-emerald-100 rounded-lg transition-colors cursor-pointer border border-emerald-200"
+                            title="Restore user"
+                          >
+                            Restore
+                          </button>
+                          <button
+                            onClick={() => handlePermanentDelete(user.id)}
+                            className="px-2.5 py-1 text-xs font-medium text-red-700 bg-red-50 hover:bg-red-100 rounded-lg transition-colors cursor-pointer border border-red-200"
+                            title="Permanently delete user"
+                          >
+                            Perm Delete
+                          </button>
+                        </>
+                      )}
+                    </div>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+            </Table>
 
           {/* Pagination Footer */}
           {!loading && users.length > 0 && (
-            <div className="px-4 sm:px-6 py-3.5 border-t border-gray-100 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs sm:text-sm">
+            <div className="px-4 sm:px-6 py-3.5 border-t border-border-subtle bg-surface-canvas/40 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs sm:text-sm">
               <span className="text-gray-500 text-center sm:text-left">
                 Showing <span className="font-semibold text-gray-900">{page * size + 1}</span> to <span className="font-semibold text-gray-900">{Math.min((page + 1) * size, totalElements)}</span> of <span className="font-semibold text-gray-900">{totalElements}</span> results
               </span>
@@ -489,7 +500,7 @@ export const UserManagementPage: React.FC = () => {
               </div>
             </div>
           )}
-        </div>
+        </TableContainer>
       )}
 
       {/* Add Modal */}

@@ -18,12 +18,12 @@ export const FloorEmptyState: React.FC<FloorEmptyStateProps> = ({
         <Building2 className="w-6 h-6" />
       </div>
       <h3 className="text-base font-bold text-text-primary">
-        {searchKeyword ? 'Không tìm thấy tầng lầu phù hợp' : 'Chưa có tầng lầu nào trong hệ thống'}
+        {searchKeyword ? 'No matching floors found' : 'No floors registered yet'}
       </h3>
       <p className="text-xs sm:text-sm text-text-secondary max-w-sm mx-auto mt-1 mb-4">
         {searchKeyword
-          ? `Không có kết quả nào khớp với từ khóa "${searchKeyword}". Hãy thử lại với từ khóa khác.`
-          : 'Hãy bắt đầu bằng cách thêm tầng lầu đầu tiên để quản lý vị trí đặt thiết bị.'}
+          ? `No results matching "${searchKeyword}". Try searching with different keywords.`
+          : 'Get started by creating your first floor to organize equipment locations.'}
       </p>
       {searchKeyword ? (
         <button
@@ -31,7 +31,7 @@ export const FloorEmptyState: React.FC<FloorEmptyStateProps> = ({
           onClick={onClearSearch}
           className="px-3.5 py-1.5 text-xs font-semibold bg-surface-subtle hover:bg-border-subtle text-text-primary rounded-lg transition-colors cursor-pointer"
         >
-          Xóa bộ lọc tìm kiếm
+          Clear search filter
         </button>
       ) : (
         <button
@@ -40,7 +40,7 @@ export const FloorEmptyState: React.FC<FloorEmptyStateProps> = ({
           className="inline-flex items-center gap-1.5 px-4 py-2 bg-primary hover:bg-primary-hover text-white rounded-xl text-xs sm:text-sm font-semibold transition-colors cursor-pointer"
         >
           <Plus className="w-4 h-4" />
-          <span>Thêm Tầng Lầu Mới</span>
+          <span>Add New Floor</span>
         </button>
       )}
     </div>

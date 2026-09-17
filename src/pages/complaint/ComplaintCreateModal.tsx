@@ -1,9 +1,21 @@
-import React, { useState, useRef } from 'react';
-import { X, AlertTriangle, Calendar, CheckCircle2, ArrowRight, UploadCloud, Loader2, Image as ImageIcon } from 'lucide-react';
+import React, { useState, useRef, useEffect } from 'react';
+import {
+  X,
+  AlertTriangle,
+  Calendar,
+  CheckCircle2,
+  ArrowRight,
+  UploadCloud,
+  Loader2,
+  Image as ImageIcon,
+  ClipboardPaste,
+  FileSpreadsheet,
+} from 'lucide-react';
 import { complaintService } from '@/services/complaint/complaintService';
 import { storageService } from '@/services/storage';
 import type { ComplaintCreateRequest, ComplaintDetail } from '@/types/complaint/complaint.types';
 import { useNavigate } from 'react-router-dom';
+import toast from 'react-hot-toast';
 
 interface ComplaintCreateModalProps {
   isOpen: boolean;
@@ -18,6 +30,7 @@ export const ComplaintCreateModal: React.FC<ComplaintCreateModalProps> = ({
 }) => {
   const navigate = useNavigate();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitIntent, setSubmitIntent] = useState<'SAVE' | 'SAVE_AND_MEET'>('SAVE');
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [createdComplaint, setCreatedComplaint] = useState<ComplaintDetail | null>(null);
 
@@ -37,7 +50,6 @@ export const ComplaintCreateModal: React.FC<ComplaintCreateModalProps> = ({
     originOfComplaint: 'Customer',
     salesforceCapa: '',
     pictureUrls: '',
-    priority: 'MEDIUM',
   });
 
   interface UploadingPicture {
@@ -52,11 +64,8 @@ export const ComplaintCreateModal: React.FC<ComplaintCreateModalProps> = ({
   const [uploadedPictures, setUploadedPictures] = useState<UploadingPicture[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  if (!isOpen) return null;
-
-  const handlePictureFilesSelect = async (files: FileList | null) => {
-    if (!files || files.length === 0) return;
-    const fileArray = Array.from(files);
+  // Upload pictures to MinIO
+  const uploadFiles = async (fileArray: File[]) => {
     for (const file of fileArray) {
       if (!file.type.startsWith('image/')) continue;
       const id = Math.random().toString(36).substring(2, 9);
@@ -101,9 +110,45 @@ export const ComplaintCreateModal: React.FC<ComplaintCreateModalProps> = ({
     }
   };
 
+  const handlePictureFilesSelect = async (files: FileList | null) => {
+    if (!files || files.length === 0) return;
+    await uploadFiles(Array.from(files));
+  };
+
+  // Listen to clipboard paste (Ctrl + V) for images
+  useEffect(() => {
+    if (!isOpen) return;
+    const handlePaste = (e: ClipboardEvent) => {
+      if (!e.clipboardData || !e.clipboardData.items) return;
+      const files: File[] = [];
+      for (let i = 0; i < e.clipboardData.items.length; i++) {
+        const item = e.clipboardData.items[i];
+        if (item.type.startsWith('image/')) {
+          const file = item.getAsFile();
+          if (file) {
+            files.push(file);
+          }
+        }
+      }
+      if (files.length > 0) {
+        toast.success(`Received ${files.length} image(s) from Clipboard! Uploading to MinIO...`);
+        uploadFiles(files);
+      }
+    };
+
+    window.addEventListener('paste', handlePaste);
+    return () => window.removeEventListener('paste', handlePaste);
+  }, [isOpen]);
+
   const handleRemoveUploadedPicture = (id: string) => {
     setUploadedPictures((prev) => prev.filter((p) => p.id !== id));
   };
+
+  // Count serial numbers from input
+  const serialCount = (formData.serialNumbers || '')
+    .split(/[\n,;\t]+/)
+    .map((s) => s.trim())
+    .filter(Boolean).length;
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
@@ -121,7 +166,7 @@ export const ComplaintCreateModal: React.FC<ComplaintCreateModalProps> = ({
 
     const isAnyUploading = uploadedPictures.some((p) => p.isUploading);
     if (isAnyUploading) {
-      setErrorMessage('Vui lòng đợi các hình ảnh tải lên máy chủ MinIO hoàn tất trước khi lưu.');
+      setErrorMessage('Please wait for all images to finish uploading to MinIO before saving.');
       return;
     }
 
@@ -135,13 +180,21 @@ export const ComplaintCreateModal: React.FC<ComplaintCreateModalProps> = ({
       const result = await complaintService.createComplaint(payload);
       setCreatedComplaint(result);
       onSuccess(result);
+
+      if (submitIntent === 'SAVE_AND_MEET') {
+        onClose();
+        navigate(`/meeting-invite?complaintId=${result.id}`, {
+          state: { complaint: result },
+        });
+      } else {
+        toast.success(`Complaint case ${result.trackingNo} created successfully!`);
+      }
     } catch (err: any) {
-      setErrorMessage(err.message || 'Failed to create customer complaint record');
+      setErrorMessage(err.message || 'Failed to create complaint case. Please try again.');
     } finally {
       setIsSubmitting(false);
     }
   };
-
 
   const handleGoToMeeting = () => {
     if (createdComplaint) {
@@ -151,6 +204,8 @@ export const ComplaintCreateModal: React.FC<ComplaintCreateModalProps> = ({
       });
     }
   };
+
+  if (!isOpen) return null;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-xs animate-in fade-in duration-150">
@@ -163,10 +218,10 @@ export const ComplaintCreateModal: React.FC<ComplaintCreateModalProps> = ({
             </div>
             <div>
               <h2 className="text-base font-bold text-text-primary">
-                Customer Complaint Intake (Phase 1)
+                Customer Complaint Intake
               </h2>
               <p className="text-xs text-text-muted">
-                Initial intake & automatic tracking code generation for quality investigation
+                Enter preliminary complaint information; sequential tracking number is generated automatically
               </p>
             </div>
           </div>
@@ -187,9 +242,9 @@ export const ComplaintCreateModal: React.FC<ComplaintCreateModalProps> = ({
             </div>
             <div>
               <h3 className="text-lg font-bold text-text-primary">
-                Complaint Intake Recorded Successfully!
+                Complaint Intake Saved Successfully!
               </h3>
-              <div className="mt-2 inline-flex items-center gap-2 px-3 py-1 bg-primary/10 border border-primary/20 rounded-lg text-primary font-mono font-bold text-base">
+              <div className="mt-2 inline-flex items-center gap-2 px-3.5 py-1.5 bg-primary/10 border border-primary/20 rounded-xl text-primary font-mono font-bold text-base">
                 Tracking No: {createdComplaint.trackingNo}
               </div>
               <p className="text-xs text-text-muted mt-2">
@@ -197,13 +252,13 @@ export const ComplaintCreateModal: React.FC<ComplaintCreateModalProps> = ({
               </p>
             </div>
 
-            <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 text-left space-y-2">
-              <div className="flex items-center gap-2 text-amber-800 font-semibold text-xs uppercase tracking-wider">
-                <Calendar className="w-4 h-4 text-amber-600" />
-                Jeanette SLA Milestone: 1 Business Day
+            <div className="bg-sky-50 border border-sky-200 rounded-2xl p-4 text-left space-y-1.5">
+              <div className="flex items-center gap-2 text-sky-900 font-semibold text-xs">
+                <Calendar className="w-4 h-4 text-sky-600" />
+                Next Step: Schedule CFT Review Meeting
               </div>
-              <p className="text-xs text-amber-900 leading-relaxed">
-                Quality standards require CQE to <strong>convene the Cross-Functional Team (CFT) and conduct a Preliminary Review</strong> within 1 business day to assess the issue and define containment actions.
+              <p className="text-xs text-sky-800 leading-relaxed">
+                Issue details, model, customer, and proposed meeting agenda are pre-populated. You can dispatch invitations and calendar (.ics) files to the cross-functional team now!
               </p>
             </div>
 
@@ -211,24 +266,24 @@ export const ComplaintCreateModal: React.FC<ComplaintCreateModalProps> = ({
               <button
                 type="button"
                 onClick={onClose}
-                className="px-4 py-2 text-xs font-semibold text-text-secondary bg-surface-subtle hover:bg-border-subtle rounded-lg transition-colors cursor-pointer"
+                className="px-4 py-2.5 text-xs font-semibold text-text-secondary bg-surface-subtle hover:bg-border-subtle rounded-xl transition-colors cursor-pointer"
               >
-                Dismiss (Later)
+                Close & View Case
               </button>
               <button
                 type="button"
                 onClick={handleGoToMeeting}
-                className="inline-flex items-center gap-2 px-5 py-2.5 text-xs font-semibold text-white bg-primary hover:bg-primary-container rounded-lg shadow-sm transition-all cursor-pointer"
+                className="inline-flex items-center gap-2 px-5 py-2.5 text-xs font-semibold text-white bg-primary hover:bg-primary-hover rounded-xl shadow-xs transition-all cursor-pointer"
               >
                 <Calendar className="w-4 h-4" />
-                Schedule Preliminary Review Now
+                Schedule CFT Meeting Now
                 <ArrowRight className="w-3.5 h-3.5" />
               </button>
             </div>
           </div>
         ) : (
           /* Intake Form */
-          <form onSubmit={handleSubmit} className="p-6 overflow-y-auto space-y-4 text-xs">
+          <form onSubmit={handleSubmit} className="p-6 overflow-y-auto space-y-5 text-xs">
             {errorMessage && (
               <div className="p-3.5 rounded-xl bg-rose-50 border border-rose-200 text-rose-800 text-xs flex items-start gap-2.5">
                 <AlertTriangle className="w-4 h-4 text-rose-600 shrink-0 mt-0.5" />
@@ -239,277 +294,324 @@ export const ComplaintCreateModal: React.FC<ComplaintCreateModalProps> = ({
               </div>
             )}
 
-            {/* Row 1: Timeline & Classification (Excel Col 7, 9, 8, 2) */}
-            <div className="grid grid-cols-1 sm:grid-cols-4 gap-3 p-3 bg-surface-canvas/60 rounded-xl border border-border-subtle/80">
-              <div>
-                <label className="block text-[11px] font-semibold text-text-secondary mb-1">
-                  Received Date <span className="text-rose-500">*</span>
-                </label>
-                <input
-                  type="date"
-                  name="receivedDate"
-                  value={formData.receivedDate}
-                  onChange={handleChange}
-                  onClick={(e) => e.currentTarget.showPicker?.()}
-                  required
-                  className="w-full px-2.5 py-1.5 text-xs bg-white border border-border-subtle rounded-lg text-text-primary cursor-pointer hover:border-primary/60 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
-                />
-              </div>
+            {/* BLOCK 1: ORIGIN & TIMELINE */}
+            <div className="p-4 bg-surface-canvas rounded-2xl border border-border-subtle space-y-3">
+              <h3 className="text-xs font-bold text-text-primary uppercase tracking-wider flex items-center gap-2">
+                <Calendar className="w-3.5 h-3.5 text-primary" />
+                1. Origin & Timeline
+              </h3>
 
-              <div>
-                <label className="block text-[11px] font-semibold text-text-secondary mb-1">
-                  Internal / External
-                </label>
-                <select
-                  name="internalExternal"
-                  value={formData.internalExternal}
-                  onChange={handleChange}
-                  className="w-full px-2.5 py-1.5 text-xs bg-white border border-border-subtle rounded-lg text-text-primary font-semibold focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
-                >
-                  <option value="EXTERNAL">External (Khách hàng)</option>
-                  <option value="INTERNAL">Internal (Nội bộ)</option>
-                </select>
-              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
+                <div>
+                  <label className="block text-[11px] font-semibold text-text-secondary mb-1">
+                    Received Date <span className="text-rose-500">*</span>
+                  </label>
+                  <input
+                    type="date"
+                    required
+                    name="receivedDate"
+                    value={formData.receivedDate}
+                    onChange={handleChange}
+                    className="w-full px-2.5 py-1.5 bg-white border border-border-subtle rounded-xl text-text-primary focus:outline-none focus:ring-2 focus:ring-primary/20 text-xs"
+                  />
+                </div>
 
-              <div>
-                <label className="block text-[11px] font-semibold text-text-secondary mb-1">
-                  Origin of Complaint
-                </label>
-                <select
-                  name="originOfComplaint"
-                  value={formData.originOfComplaint}
-                  onChange={handleChange}
-                  className="w-full px-2.5 py-1.5 text-xs bg-white border border-border-subtle rounded-lg text-text-primary focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
-                >
-                  <option value="Customer">Customer (Khách hàng)</option>
-                  <option value="Market / Field">Market / Field (Thị trường)</option>
-                  <option value="Internal OQC">Internal OQC (Kiểm tra nội bộ)</option>
-                  <option value="Supplier">Supplier (Nhà cung ứng)</option>
-                  <option value="Third-Party Audit">Third-Party Audit (Kiểm toán)</option>
-                  <option value="Other">Other (Khác)</option>
-                </select>
-              </div>
+                <div>
+                  <label className="block text-[11px] font-semibold text-text-secondary mb-1">
+                    Building Stage
+                  </label>
+                  <select
+                    name="buildingStage"
+                    value={formData.buildingStage}
+                    onChange={handleChange}
+                    className="w-full px-2.5 py-1.5 bg-white border border-border-subtle rounded-xl text-text-primary focus:outline-none focus:ring-2 focus:ring-primary/20 text-xs font-semibold"
+                  >
+                    <option value="MP">MP (Mass Production)</option>
+                    <option value="Pilot">Pilot</option>
+                    <option value="EVT">EVT</option>
+                    <option value="DVT">DVT</option>
+                    <option value="PVT">PVT</option>
+                  </select>
+                </div>
 
-              <div>
-                <label className="block text-[11px] font-semibold text-text-secondary mb-1">
-                  Building Stage
-                </label>
-                <select
-                  name="buildingStage"
-                  value={formData.buildingStage}
-                  onChange={handleChange}
-                  className="w-full px-2.5 py-1.5 text-xs bg-white border border-border-subtle rounded-lg text-text-primary focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
-                >
-                  <option value="MP">MP (Mass Production)</option>
-                  <option value="Pilot">Pilot / Ramp-up</option>
-                  <option value="NPI">NPI (New Product Intro)</option>
-                  <option value="Proto">Prototype / EVT / DVT</option>
-                </select>
-              </div>
-            </div>
+                <div>
+                  <label className="block text-[11px] font-semibold text-text-secondary mb-1">
+                    Origin of Complaint
+                  </label>
+                  <select
+                    name="originOfComplaint"
+                    value={formData.originOfComplaint}
+                    onChange={handleChange}
+                    className="w-full px-2.5 py-1.5 bg-white border border-border-subtle rounded-xl text-text-primary focus:outline-none focus:ring-2 focus:ring-primary/20 text-xs"
+                  >
+                    <option value="Customer">Customer</option>
+                    <option value="QA">QA / QC</option>
+                    <option value="Production">Production</option>
+                    <option value="Audit">Audit</option>
+                    <option value="Field">Field Service</option>
+                  </select>
+                </div>
 
-            {/* Row 2: Customer & Product (Excel Col 12, 13, 10) */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-              <div>
-                <label className="block text-xs font-semibold text-text-secondary mb-1">
-                  Customer Name <span className="text-rose-500">*</span>
-                </label>
-                <input
-                  type="text"
-                  name="customerName"
-                  value={formData.customerName}
-                  onChange={handleChange}
-                  placeholder="e.g., Foxconn, Pegatron..."
-                  required
-                  className="w-full px-3 py-2 text-xs bg-surface-canvas border border-border-subtle rounded-lg text-text-primary focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-semibold text-text-secondary mb-1">
-                  Model / Product Code <span className="text-rose-500">*</span>
-                </label>
-                <input
-                  type="text"
-                  name="model"
-                  value={formData.model}
-                  onChange={handleChange}
-                  placeholder="e.g., MDL-9000, ABC-100..."
-                  required
-                  className="w-full px-3 py-2 text-xs bg-surface-canvas border border-border-subtle rounded-lg text-text-primary focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary font-mono"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-semibold text-text-secondary mb-1">
-                  Salesforce CAPA (Ref No.)
-                </label>
-                <input
-                  type="text"
-                  name="salesforceCapa"
-                  value={formData.salesforceCapa || ''}
-                  onChange={handleChange}
-                  placeholder="e.g., SF-CAPA-2026-091..."
-                  className="w-full px-3 py-2 text-xs bg-surface-canvas border border-border-subtle rounded-lg text-text-primary focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary font-mono"
-                />
+                <div>
+                  <label className="block text-[11px] font-semibold text-text-secondary mb-1">
+                    Classification
+                  </label>
+                  <div className="flex bg-white rounded-xl border border-border-subtle p-0.5">
+                    <button
+                      type="button"
+                      onClick={() => setFormData((p) => ({ ...p, internalExternal: 'EXTERNAL' }))}
+                      className={`flex-1 py-1 rounded-lg text-center font-semibold text-[11px] transition-all cursor-pointer ${
+                        formData.internalExternal === 'EXTERNAL'
+                          ? 'bg-primary text-white shadow-2xs'
+                          : 'text-text-muted hover:text-text-primary'
+                      }`}
+                    >
+                      External
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setFormData((p) => ({ ...p, internalExternal: 'INTERNAL' }))}
+                      className={`flex-1 py-1 rounded-lg text-center font-semibold text-[11px] transition-all cursor-pointer ${
+                        formData.internalExternal === 'INTERNAL'
+                          ? 'bg-primary text-white shadow-2xs'
+                          : 'text-text-muted hover:text-text-primary'
+                      }`}
+                    >
+                      Internal
+                    </button>
+                  </div>
+                </div>
               </div>
             </div>
 
-            {/* Row 3: Defect Specifics (Excel Col 15, 16, 17) */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-              <div>
-                <label className="block text-xs font-semibold text-text-secondary mb-1">
-                  Defect Category
-                </label>
-                <select
-                  name="defectCategory"
-                  value={formData.defectCategory}
-                  onChange={handleChange}
-                  className="w-full px-3 py-2 text-xs bg-surface-canvas border border-border-subtle rounded-lg text-text-primary focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
-                >
-                  <option value="Mechanical">Mechanical (Cơ khí / Lắp ráp)</option>
-                  <option value="Electrical">Electrical (Điện tử / Mạch)</option>
-                  <option value="Cosmetic">Cosmetic (Ngoại quan / Trầy xước)</option>
-                  <option value="Functional">Functional (Tính năng / Hiệu năng)</option>
-                  <option value="Packaging">Packaging (Đóng gói / Tem nhãn)</option>
-                  <option value="Firmware">Firmware / Software</option>
-                  <option value="Other">Other (Khác)</option>
-                </select>
+            {/* BLOCK 2: PRODUCT & DEFECT DETAILS */}
+            <div className="p-4 bg-surface-canvas rounded-2xl border border-border-subtle space-y-3">
+              <h3 className="text-xs font-bold text-text-primary uppercase tracking-wider flex items-center gap-2">
+                <FileSpreadsheet className="w-3.5 h-3.5 text-primary" />
+                2. Product & Defect Details
+              </h3>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-[11px] font-semibold text-text-secondary mb-1">
+                    Customer Name <span className="text-rose-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    name="customerName"
+                    value={formData.customerName}
+                    onChange={handleChange}
+                    placeholder="e.g. Foxconn, Samsung, Intel..."
+                    className="w-full px-3 py-1.5 bg-white border border-border-subtle rounded-xl text-text-primary focus:outline-none focus:ring-2 focus:ring-primary/20 text-xs"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-[11px] font-semibold text-text-secondary mb-1">
+                    Product Model <span className="text-rose-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    name="model"
+                    value={formData.model}
+                    onChange={handleChange}
+                    placeholder="e.g. ABC-100, MD-550..."
+                    className="w-full px-3 py-1.5 bg-white border border-border-subtle rounded-xl text-text-primary focus:outline-none focus:ring-2 focus:ring-primary/20 text-xs font-mono"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
+                <div>
+                  <label className="block text-[11px] font-semibold text-text-secondary mb-1">
+                    Defect Category
+                  </label>
+                  <select
+                    name="defectCategory"
+                    value={formData.defectCategory}
+                    onChange={handleChange}
+                    className="w-full px-2.5 py-1.5 bg-white border border-border-subtle rounded-xl text-text-primary focus:outline-none focus:ring-2 focus:ring-primary/20 text-xs"
+                  >
+                    <option value="Mechanical">Mechanical</option>
+                    <option value="Electrical">Electrical</option>
+                    <option value="Cosmetic">Cosmetic</option>
+                    <option value="Functional">Functional</option>
+                    <option value="Firmware">Firmware / Software</option>
+                    <option value="Packaging">Packaging</option>
+                    <option value="Other">Other</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-[11px] font-semibold text-text-secondary mb-1">
+                    Defect Name
+                  </label>
+                  <input
+                    type="text"
+                    name="defectName"
+                    value={formData.defectName}
+                    onChange={handleChange}
+                    placeholder="e.g. Abnormal noise, Scratch..."
+                    className="w-full px-2.5 py-1.5 bg-white border border-border-subtle rounded-xl text-text-primary focus:outline-none focus:ring-2 focus:ring-primary/20 text-xs"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-[11px] font-semibold text-text-secondary mb-1">
+                    Affected Qty (EA)
+                  </label>
+                  <div className="flex items-center">
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setFormData((p) => ({ ...p, quantity: Math.max(1, (p.quantity || 1) - 1) }))
+                      }
+                      className="px-2.5 py-1.5 bg-white border border-border-subtle rounded-l-xl text-text-secondary hover:bg-surface-subtle"
+                    >
+                      -
+                    </button>
+                    <input
+                      type="number"
+                      min={1}
+                      name="quantity"
+                      value={formData.quantity || 1}
+                      onChange={handleChange}
+                      className="w-full text-center py-1.5 bg-white border-y border-border-subtle text-text-primary focus:outline-none text-xs font-semibold"
+                    />
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setFormData((p) => ({ ...p, quantity: (p.quantity || 1) + 1 }))
+                      }
+                      className="px-2.5 py-1.5 bg-white border border-border-subtle rounded-r-xl text-text-secondary hover:bg-surface-subtle"
+                    >
+                      +
+                    </button>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-[11px] font-semibold text-text-secondary mb-1">
+                    Area / Line
+                  </label>
+                  <input
+                    type="text"
+                    name="area"
+                    value={formData.area}
+                    onChange={handleChange}
+                    placeholder="e.g. Assembly Line 2..."
+                    className="w-full px-2.5 py-1.5 bg-white border border-border-subtle rounded-xl text-text-primary focus:outline-none focus:ring-2 focus:ring-primary/20 text-xs"
+                  />
+                </div>
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-text-secondary mb-1">
-                  Specific Defect Name
-                </label>
-                <input
-                  type="text"
-                  name="defectName"
-                  value={formData.defectName}
-                  onChange={handleChange}
-                  placeholder="e.g., Abnormal noise, Scratch, Burrs..."
-                  className="w-full px-3 py-2 text-xs bg-surface-canvas border border-border-subtle rounded-lg text-text-primary focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-semibold text-text-secondary mb-1">
-                  Defect Quantity (Q'ty EA)
-                </label>
-                <input
-                  type="number"
-                  name="quantity"
-                  min="1"
-                  value={formData.quantity || ''}
-                  onChange={handleChange}
-                  className="w-full px-3 py-2 text-xs bg-surface-canvas border border-border-subtle rounded-lg text-text-primary focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
-                />
-              </div>
-            </div>
-
-            {/* Row 4: Findings & Description (Excel Col 12, 14) */}
-            <div>
-              <label className="block text-xs font-semibold text-text-secondary mb-1">
-                Customer Finding / Feedback
-              </label>
-              <input
-                type="text"
-                name="customerFinding"
-                value={formData.customerFinding}
-                onChange={handleChange}
-                placeholder="e.g., Customer noticed vibration during high-speed rotation test at inbound hub..."
-                className="w-full px-3 py-2 text-xs bg-surface-canvas border border-border-subtle rounded-lg text-text-primary focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
-              />
-            </div>
-
-            <div>
-              <label className="block text-xs font-semibold text-text-secondary mb-1">
-                Issue Description <span className="text-rose-500">*</span>
-              </label>
-              <textarea
-                name="issueDescription"
-                rows={3}
-                value={formData.issueDescription}
-                onChange={handleChange}
-                required
-                placeholder="Describe failure symptoms, occurrence conditions, customer observations, impact..."
-                className="w-full px-3 py-2 text-xs bg-surface-canvas border border-border-subtle rounded-lg text-text-primary focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary font-sans"
-              />
-            </div>
-
-            {/* Row 5: Area & SN (Excel Col 12, 19) */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <div>
-                <label className="block text-xs font-semibold text-text-secondary mb-1">
-                  Area
-                </label>
-                <input
-                  type="text"
-                  name="area"
-                  value={formData.area}
-                  onChange={handleChange}
-                  placeholder="e.g., SMT Line 2, Final Assembly, Packing..."
-                  className="w-full px-3 py-2 text-xs bg-surface-canvas border border-border-subtle rounded-lg text-text-primary focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-semibold text-text-secondary mb-1">
-                  SN (Serial Number)
-                </label>
+                <div className="flex items-center justify-between mb-1">
+                  <label className="block text-[11px] font-semibold text-text-secondary">
+                    Serial Numbers (SN)
+                  </label>
+                  {serialCount > 0 && (
+                    <span className="text-[10px] text-primary font-semibold">
+                      {serialCount} serial(s) detected
+                      {serialCount !== formData.quantity && (
+                        <button
+                          type="button"
+                          onClick={() => setFormData((p) => ({ ...p, quantity: serialCount }))}
+                          className="ml-2 underline text-text-muted hover:text-primary cursor-pointer"
+                        >
+                          (Set Qty = {serialCount})
+                        </button>
+                      )}
+                    </span>
+                  )}
+                </div>
                 <input
                   type="text"
                   name="serialNumbers"
                   value={formData.serialNumbers}
                   onChange={handleChange}
-                  placeholder="e.g., SN001, SN002, LOT-202609A..."
-                  className="w-full px-3 py-2 text-xs bg-surface-canvas border border-border-subtle rounded-lg text-text-primary focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary font-mono"
+                  placeholder="Paste serial numbers separated by commas, tabs or spaces (e.g. SN001, SN002, SN003...)"
+                  className="w-full px-3 py-1.5 bg-white border border-border-subtle rounded-xl text-text-primary focus:outline-none focus:ring-2 focus:ring-primary/20 text-xs font-mono"
                 />
               </div>
             </div>
 
-            {/* Row 6: Defect Pictures & Upload */}
-            <div className="space-y-3">
-              <div className="flex items-center justify-between">
-                <label className="block text-xs font-semibold text-text-secondary flex items-center gap-1.5">
-                  <ImageIcon className="w-3.5 h-3.5 text-primary" />
-                  Defect Pictures & Evidence (Hình ảnh lỗi)
+            {/* BLOCK 3: DESCRIPTION & DEFECT PHOTOS */}
+            <div className="p-4 bg-surface-canvas rounded-2xl border border-border-subtle space-y-3">
+              <h3 className="text-xs font-bold text-text-primary uppercase tracking-wider flex items-center gap-2">
+                <ImageIcon className="w-3.5 h-3.5 text-primary" />
+                3. Description & Defect Photos
+              </h3>
+
+              <div>
+                <label className="block text-[11px] font-semibold text-text-secondary mb-1">
+                  Issue Description <span className="text-rose-500">*</span>
                 </label>
-                <span className="text-[10px] text-text-muted">
-                  Tải trực tiếp lên MinIO hoặc dán liên kết ảnh
-                </span>
-              </div>
-
-              {/* MinIO Upload Area */}
-              <div
-                onClick={() => fileInputRef.current?.click()}
-                className="border-2 border-dashed border-border-subtle hover:border-primary/50 bg-surface-canvas/50 hover:bg-surface-canvas rounded-xl p-4 text-center cursor-pointer transition-colors space-y-1.5"
-              >
-                <input
-                  ref={fileInputRef}
-                  type="file"
-                  multiple
-                  accept="image/*"
-                  className="hidden"
-                  onChange={(e) => handlePictureFilesSelect(e.target.files)}
+                <textarea
+                  required
+                  name="issueDescription"
+                  value={formData.issueDescription}
+                  onChange={handleChange}
+                  rows={3}
+                  placeholder="Describe defect symptoms, failure circumstances, and affected scope in detail..."
+                  className="w-full px-3 py-2 bg-white border border-border-subtle rounded-xl text-text-primary focus:outline-none focus:ring-2 focus:ring-primary/20 text-xs leading-relaxed resize-y"
                 />
-                <div className="flex items-center justify-center gap-2 text-primary">
-                  <UploadCloud className="w-5 h-5" />
-                  <span className="text-xs font-semibold">Nhấp để tải lên nhiều ảnh lỗi (MinIO)</span>
-                </div>
-                <p className="text-[11px] text-text-muted">Hỗ trợ PNG, JPG, JPEG, WEBP (Tối đa 20MB/ảnh)</p>
               </div>
 
-              {/* Uploaded Pictures Thumbnails with progress */}
-              {uploadedPictures.length > 0 && (
-                <div className="space-y-2">
-                  <span className="text-[11px] font-semibold text-text-secondary block">
-                    Ảnh đã chọn ({uploadedPictures.length}):
+              <div>
+                <label className="block text-[11px] font-semibold text-text-secondary mb-1">
+                  Customer Finding / Initial Feedback
+                </label>
+                <input
+                  type="text"
+                  name="customerFinding"
+                  value={formData.customerFinding}
+                  onChange={handleChange}
+                  placeholder="e.g. Customer observed abnormal vibration during initial line run..."
+                  className="w-full px-3 py-1.5 bg-white border border-border-subtle rounded-xl text-text-primary focus:outline-none focus:ring-2 focus:ring-primary/20 text-xs"
+                />
+              </div>
+
+              {/* MinIO Upload Area with Clipboard Paste support */}
+              <div className="space-y-2 pt-1">
+                <div className="flex items-center justify-between">
+                  <span className="text-[11px] font-semibold text-text-secondary">
+                    Defect Images & Visual Evidence
                   </span>
-                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+                  <span className="text-[10px] text-text-muted flex items-center gap-1">
+                    <ClipboardPaste className="w-3 h-3 text-primary" />
+                    Clipboard image paste supported (Ctrl + V)
+                  </span>
+                </div>
+
+                <div
+                  onClick={() => fileInputRef.current?.click()}
+                  className="border-2 border-dashed border-border-subtle hover:border-primary/50 bg-white hover:bg-surface-subtle/40 rounded-xl p-3.5 text-center cursor-pointer transition-colors space-y-1"
+                >
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    multiple
+                    accept="image/*"
+                    className="hidden"
+                    onChange={(e) => handlePictureFilesSelect(e.target.files)}
+                  />
+                  <div className="flex items-center justify-center gap-2 text-primary">
+                    <UploadCloud className="w-5 h-5" />
+                    <span className="text-xs font-semibold">Click to upload images or press Ctrl + V</span>
+                  </div>
+                  <p className="text-[10px] text-text-muted">Automatically stored in MinIO (PNG, JPG, WEBP)</p>
+                </div>
+
+                {/* Uploaded pictures thumbnails */}
+                {uploadedPictures.length > 0 && (
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 pt-1">
                     {uploadedPictures.map((pic) => (
                       <div
                         key={pic.id}
-                        className="relative rounded-lg overflow-hidden border border-border-subtle bg-surface-canvas shadow-2xs group aspect-video"
+                        className="relative rounded-lg overflow-hidden border border-border-subtle bg-white shadow-2xs group aspect-video"
                       >
                         <img src={pic.previewUrl} alt="Preview" className="w-full h-full object-cover" />
 
@@ -530,7 +632,7 @@ export const ComplaintCreateModal: React.FC<ComplaintCreateModalProps> = ({
                               handleRemoveUploadedPicture(pic.id);
                             }}
                             className="absolute top-1 right-1 p-1 bg-black/60 hover:bg-rose-600 text-white rounded-full transition-colors opacity-0 group-hover:opacity-100 cursor-pointer"
-                            title="Xóa ảnh"
+                            title="Remove picture"
                           >
                             <X className="w-3 h-3" />
                           </button>
@@ -541,42 +643,44 @@ export const ComplaintCreateModal: React.FC<ComplaintCreateModalProps> = ({
                       </div>
                     ))}
                   </div>
-                </div>
-              )}
-
-              {/* External URLs Textarea */}
-              <div className="pt-2 border-t border-border-subtle/60">
-                <label className="block text-[11px] font-medium text-text-muted mb-1">
-                  Hoặc dán URL liên kết ngoài (nếu có):
-                </label>
-                <textarea
-                  name="pictureUrls"
-                  rows={2}
-                  value={formData.pictureUrls || ''}
-                  onChange={handleChange}
-                  placeholder="e.g., https://example.com/defect1.jpg, https://example.com/defect2.jpg..."
-                  className="w-full px-3 py-1.5 text-xs bg-surface-canvas border border-border-subtle rounded-lg text-text-primary focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary font-mono text-[11px]"
-                />
+                )}
               </div>
             </div>
 
-
-            {/* Footer */}
-            <div className="pt-4 border-t border-border-subtle flex items-center justify-end gap-2.5">
+            {/* Footer Buttons: Dual CTA */}
+            <div className="pt-3 border-t border-border-subtle flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
               <button
                 type="button"
                 onClick={onClose}
-                className="px-4 py-2 text-xs font-semibold text-text-secondary bg-surface-subtle hover:bg-border-subtle rounded-lg transition-colors cursor-pointer"
+                className="px-4 py-2 text-xs font-semibold text-text-secondary bg-surface-subtle hover:bg-border-subtle rounded-xl transition-colors cursor-pointer order-2 sm:order-1"
               >
                 Cancel
               </button>
-              <button
-                type="submit"
-                disabled={isSubmitting}
-                className="px-5 py-2 text-xs font-semibold text-white bg-primary hover:bg-primary-container rounded-lg shadow-sm transition-all disabled:opacity-50 cursor-pointer"
-              >
-                {isSubmitting ? 'Saving...' : 'Save Record (Generate Tracking Code)'}
-              </button>
+
+              <div className="flex items-center gap-2.5 order-1 sm:order-2">
+                <button
+                  type="submit"
+                  disabled={isSubmitting}
+                  onClick={() => setSubmitIntent('SAVE')}
+                  className="px-4 py-2.5 text-xs font-semibold text-text-primary bg-white hover:bg-surface-canvas border border-border-subtle rounded-xl shadow-2xs transition-colors cursor-pointer disabled:opacity-50"
+                >
+                  {isSubmitting && submitIntent === 'SAVE' ? 'Saving...' : 'Save Draft Intake'}
+                </button>
+
+                <button
+                  type="submit"
+                  disabled={isSubmitting}
+                  onClick={() => setSubmitIntent('SAVE_AND_MEET')}
+                  className="inline-flex items-center gap-2 px-5 py-2.5 text-xs font-semibold text-white bg-primary hover:bg-primary-hover rounded-xl shadow-xs transition-all cursor-pointer disabled:opacity-50"
+                >
+                  {isSubmitting && submitIntent === 'SAVE_AND_MEET' ? (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  ) : (
+                    <Calendar className="w-4 h-4" />
+                  )}
+                  ★ Save & Schedule Meeting →
+                </button>
+              </div>
             </div>
           </form>
         )}

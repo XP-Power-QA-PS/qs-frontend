@@ -41,9 +41,9 @@ export const FloorFormModal: React.FC<FloorFormModalProps> = ({
     const errors: { name?: string } = {};
     const trimmedName = form.name.trim();
     if (!trimmedName) {
-      errors.name = 'Tên tầng lầu không được để trống';
+      errors.name = 'Floor name is required';
     } else if (trimmedName.length > 100) {
-      errors.name = 'Tên tầng lầu không vượt quá 100 ký tự';
+      errors.name = 'Floor name cannot exceed 100 characters';
     }
     setFormErrors(errors);
     return Object.keys(errors).length === 0;
@@ -69,12 +69,12 @@ export const FloorFormModal: React.FC<FloorFormModalProps> = ({
             </div>
             <div>
               <h3 className="text-base font-bold font-headline-sm text-text-primary">
-                {isAdd ? 'Thêm Tầng Lầu Mới' : 'Chỉnh Sửa Tầng Lầu'}
+                {isAdd ? 'Add New Floor' : 'Edit Floor'}
               </h3>
               <p className="text-xs text-text-secondary">
                 {isAdd
-                  ? 'Khai báo khu vực/tầng lầu để quản lý thiết bị'
-                  : 'Cập nhật tên hoặc mô tả tầng lầu'}
+                  ? 'Register a floor area to organize and monitor equipment'
+                  : 'Update floor name or area description'}
               </p>
             </div>
           </div>
@@ -90,11 +90,11 @@ export const FloorFormModal: React.FC<FloorFormModalProps> = ({
         <form onSubmit={handleSubmit} className="p-5 space-y-4">
           <div>
             <label className="block text-xs font-semibold text-text-primary mb-1">
-              Tên Tầng Lầu <span className="text-rose-500">*</span>
+              Floor Name <span className="text-rose-500">*</span>
             </label>
             <input
               type="text"
-              placeholder={isAdd ? 'ví dụ: 1st Floor, 4th Floor, Tầng 4 - Xưởng B' : 'Tên tầng lầu...'}
+              placeholder={isAdd ? 'e.g. 1st Floor, 4th Floor, Workshop B' : 'Floor name...'}
               value={form.name}
               onChange={(e) => {
                 setForm({ ...form, name: e.target.value });
@@ -110,27 +110,27 @@ export const FloorFormModal: React.FC<FloorFormModalProps> = ({
             )}
             {!isAdd && (
               <p className="text-[11px] text-text-muted mt-1">
-                Lưu ý: Tên mới sẽ tự động hiển thị trên Dashboard người dùng và trang Go/No-Go check.
+                Note: Changes will automatically sync across user dashboards and Go/No-Go inspection pages.
               </p>
             )}
           </div>
 
           <div>
             <label className="block text-xs font-semibold text-text-primary mb-1">
-              Mô Tả Khu Vực
+              Area Description
             </label>
             <textarea
               rows={3}
               placeholder={
                 isAdd
-                  ? 'ví dụ: Khu vực sản xuất lắp ráp linh kiện, dây chuyền SMT...'
-                  : 'Mô tả khu vực sản xuất...'
+                  ? 'e.g. PCB assembly area, SMT line section...'
+                  : 'Area description...'
               }
               value={form.description}
               onChange={(e) => setForm({ ...form, description: e.target.value })}
               className="w-full px-3.5 py-2 bg-surface-subtle border border-border-subtle rounded-xl text-sm text-text-primary placeholder:text-text-muted focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all resize-none"
             />
-            {isAdd && <p className="text-[11px] text-text-muted mt-1">Tối đa 500 ký tự</p>}
+            {isAdd && <p className="text-[11px] text-text-muted mt-1">Maximum 500 characters</p>}
           </div>
 
           <div className="pt-3 border-t border-border-subtle flex items-center justify-end gap-2.5">
@@ -140,7 +140,7 @@ export const FloorFormModal: React.FC<FloorFormModalProps> = ({
               disabled={submitting}
               className="px-4 py-2 text-xs sm:text-sm font-semibold text-text-secondary hover:text-text-primary hover:bg-surface-subtle rounded-xl border border-border-subtle transition-colors cursor-pointer"
             >
-              Hủy
+              Cancel
             </button>
             <button
               type="submit"
@@ -148,7 +148,7 @@ export const FloorFormModal: React.FC<FloorFormModalProps> = ({
               className="inline-flex items-center gap-1.5 px-4 py-2 text-xs sm:text-sm font-semibold bg-primary hover:bg-primary-hover text-white rounded-xl shadow-xs transition-colors cursor-pointer disabled:opacity-50"
             >
               {submitting && <Loader2 className="w-4 h-4 animate-spin" />}
-              <span>{isAdd ? 'Tạo Tầng Lầu' : 'Lưu Thay Đổi'}</span>
+              <span>{isAdd ? 'Create Floor' : 'Save Changes'}</span>
             </button>
           </div>
         </form>

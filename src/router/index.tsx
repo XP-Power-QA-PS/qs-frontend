@@ -26,7 +26,7 @@ export interface BreadcrumbCrumbResult {
 export interface BreadcrumbContext {
   params: Record<string, string | undefined>;
   searchParams: URLSearchParams;
-  location: { pathname: string; search: string };
+  location: { pathname: string; search: string; state?: any };
 }
 
 export interface BreadcrumbHandle {
@@ -85,7 +85,7 @@ export const router = createBrowserRouter([
             path: '/complaints',
             element: <Outlet />,
             handle: {
-              crumb: () => ({ label: 'Khiếu Nại Khách Hàng (CAPA)', path: '/complaints' }),
+              crumb: () => ({ label: 'Customer Complaints (CAPA)', path: '/complaints' }),
             } satisfies BreadcrumbHandle,
             children: [
               {
@@ -96,7 +96,22 @@ export const router = createBrowserRouter([
                 path: ':id',
                 element: <ComplaintDetailPage />,
                 handle: {
-                  crumb: ({ params }) => ({ label: `Hồ Sơ #${params.id}` }),
+                  crumb: ({ params, location }) => {
+                    const stateTrackingNo = location.state?.trackingNo;
+                    if (stateTrackingNo) {
+                      return { label: stateTrackingNo };
+                    }
+                    if (params.id) {
+                      if (params.id.includes('-') || !/^\d{15,}$/.test(params.id)) {
+                        return { label: params.id };
+                      }
+                      const cached = typeof window !== 'undefined' ? sessionStorage.getItem(`trackingNo_${params.id}`) : null;
+                      if (cached) {
+                        return { label: cached };
+                      }
+                    }
+                    return { label: params.id || 'Complaint Detail' };
+                  },
                 } satisfies BreadcrumbHandle,
               },
             ],
@@ -105,7 +120,7 @@ export const router = createBrowserRouter([
             path: '/meeting-invite',
             element: <MeetingInvitePage />,
             handle: {
-              crumb: () => ({ label: 'Tổ Chức Họp & Gửi Mail', path: '/meeting-invite' }),
+              crumb: () => ({ label: 'Schedule CFT Meeting & Email', path: '/meeting-invite' }),
             } satisfies BreadcrumbHandle,
           },
           {

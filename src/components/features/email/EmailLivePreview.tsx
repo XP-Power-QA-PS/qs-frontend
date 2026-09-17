@@ -133,7 +133,11 @@ export const EmailLivePreview: React.FC<EmailLivePreviewProps> = ({ request }) =
                   <FileText className="w-3.5 h-3.5 text-[#006194]" /> Agenda:
                 </span>
                 <div className="bg-white border border-sky-100 rounded p-2 text-slate-800 whitespace-pre-line text-xs font-normal">
-                  {request.agenda || 'Meeting agenda details...'}
+                  {request.agenda ? (
+                    request.agenda
+                  ) : (
+                    <span className="text-slate-400 italic">No agenda specified yet</span>
+                  )}
                 </div>
               </div>
 

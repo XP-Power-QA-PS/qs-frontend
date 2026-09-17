@@ -10,14 +10,22 @@ import {
   UserPlus,
   Loader2,
   ArrowRight,
-  CheckCircle2,
-  XCircle,
   Layers,
 } from 'lucide-react';
 import { adminService } from '@/services/admin';
 import { authService } from '@/services/auth';
 import type { User, Role } from '@/types/admin';
 import toast from 'react-hot-toast';
+import {
+  TableContainer,
+  Table,
+  TableHeader,
+  TableHead,
+  TableBody,
+  TableRow,
+  TableCell,
+  TableEmptyRow,
+} from '@/components/common/table';
 
 export const AdminDashboardPage: React.FC = () => {
   const navigate = useNavigate();
@@ -288,75 +296,69 @@ export const AdminDashboardPage: React.FC = () => {
                 </button>
               </div>
 
-              <div className="bg-surface-card rounded-xl border border-border-subtle shadow-xs overflow-hidden">
-                <div className="overflow-x-auto">
-                  <table className="w-full text-left text-sm">
-                    <thead className="bg-surface-subtle text-text-muted text-xs font-semibold uppercase tracking-wider border-b border-border-subtle">
-                      <tr>
-                        <th className="px-4 py-3">User</th>
-                        <th className="px-4 py-3">Email</th>
-                        <th className="px-4 py-3">Role</th>
-                        <th className="px-4 py-3">Status</th>
-                        <th className="px-4 py-3 text-right">Action</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-border-subtle">
-                      {users.length === 0 ? (
-                        <tr>
-                          <td colSpan={5} className="px-4 py-8 text-center text-text-muted">
-                            No user accounts found.
-                          </td>
-                        </tr>
-                      ) : (
-                        users.map((user) => (
-                          <tr key={user.id} className="hover:bg-surface-subtle/50 transition-colors">
-                            <td className="px-4 py-3">
-                              <div className="flex items-center gap-2.5">
-                                <div className="w-7 h-7 rounded-full bg-primary/10 text-primary flex items-center justify-center text-xs font-bold shrink-0">
-                                  {user.username.charAt(0).toUpperCase()}
-                                </div>
-                                <div>
-                                  <p className="font-semibold text-text-primary leading-tight">{user.username}</p>
-                                  <p className="text-[11px] text-text-muted">
-                                    {[user.firstName, user.lastName].filter(Boolean).join(' ') || '—'}
-                                  </p>
-                                </div>
+              <TableContainer>
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>User</TableHead>
+                      <TableHead>Email</TableHead>
+                      <TableHead>Role</TableHead>
+                      <TableHead>Status</TableHead>
+                      <TableHead align="right">Action</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {users.length === 0 ? (
+                      <TableEmptyRow colSpan={5} message="No user accounts found." />
+                    ) : (
+                      users.map((user) => (
+                        <TableRow key={user.id}>
+                          <TableCell>
+                            <div className="flex items-center gap-2.5">
+                              <div className="w-7 h-7 rounded-full bg-primary/10 text-primary flex items-center justify-center text-xs font-bold shrink-0">
+                                {user.username.charAt(0).toUpperCase()}
                               </div>
-                            </td>
-                            <td className="px-4 py-3 text-text-secondary text-xs">{user.email || '—'}</td>
-                            <td className="px-4 py-3">
-                              <span className="px-2 py-0.5 rounded-md bg-surface-subtle text-text-primary text-xs font-medium border border-border-subtle">
-                                {user.roles?.join(', ') || 'ROLE_USER'}
+                              <div>
+                                <p className="font-semibold text-text-primary leading-tight">{user.username}</p>
+                                <p className="text-[11px] text-text-muted">
+                                  {[user.firstName, user.lastName].filter(Boolean).join(' ') || '—'}
+                                </p>
+                              </div>
+                            </div>
+                          </TableCell>
+                          <TableCell className="text-text-secondary text-xs">{user.email || '—'}</TableCell>
+                          <TableCell>
+                            <span className="px-2 py-0.5 rounded-md bg-surface-subtle text-text-primary text-xs font-medium border border-border-subtle">
+                              {user.roles?.join(', ') || 'ROLE_USER'}
+                            </span>
+                          </TableCell>
+                          <TableCell>
+                            {user.enabled ? (
+                              <span className="inline-flex items-center gap-1.5 text-xs font-medium text-emerald-600 bg-emerald-50 px-2.5 py-1 rounded-full border border-emerald-100">
+                                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                                <span>Active</span>
                               </span>
-                            </td>
-                            <td className="px-4 py-3">
-                              {user.enabled ? (
-                                <span className="inline-flex items-center gap-1 text-xs font-medium text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-100">
-                                  <CheckCircle2 className="w-3 h-3" />
-                                  <span>Active</span>
-                                </span>
-                              ) : (
-                                <span className="inline-flex items-center gap-1 text-xs font-medium text-text-muted bg-surface-subtle px-2 py-0.5 rounded-md border border-border-subtle">
-                                  <XCircle className="w-3 h-3" />
-                                  <span>Inactive</span>
-                                </span>
-                              )}
-                            </td>
-                            <td className="px-4 py-3 text-right">
-                              <button
-                                onClick={() => navigate('/admin/users')}
-                                className="text-xs font-semibold text-primary hover:underline cursor-pointer"
-                              >
-                                Edit
-                              </button>
-                            </td>
-                          </tr>
-                        ))
-                      )}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
+                            ) : (
+                              <span className="inline-flex items-center gap-1.5 text-xs font-medium text-text-muted bg-surface-subtle px-2.5 py-1 rounded-full border border-border-subtle">
+                                <span className="w-1.5 h-1.5 rounded-full bg-text-muted" />
+                                <span>Inactive</span>
+                              </span>
+                            )}
+                          </TableCell>
+                          <TableCell align="right">
+                            <button
+                              onClick={() => navigate('/admin/users')}
+                              className="text-xs font-semibold text-primary hover:underline cursor-pointer"
+                            >
+                              Edit
+                            </button>
+                          </TableCell>
+                        </TableRow>
+                      ))
+                    )}
+                  </TableBody>
+                </Table>
+              </TableContainer>
             </div>
           </>
         )}
