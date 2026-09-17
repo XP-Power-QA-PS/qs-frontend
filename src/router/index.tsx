@@ -5,6 +5,7 @@ import { AdminDashboardPage } from '@/pages/dashboard/AdminDashboardPage';
 import { UserManagementPage } from '@/pages/admin/UserManagementPage';
 import { RoleManagementPage } from '@/pages/admin/RoleManagementPage';
 import { FloorManagementPage } from '@/pages/admin/FloorManagementPage';
+import { PermissionMatrixPage } from '@/pages/admin/PermissionMatrixPage';
 import { ProtectedRoute } from './ProtectedRoute';
 import { AdminRoute } from './AdminRoute';
 import { AdminLayout } from '@/components/layout/AdminLayout';
@@ -77,6 +78,13 @@ export const router = createBrowserRouter([
                 element: <FloorManagementPage />,
                 handle: {
                   crumb: () => ({ label: 'Floor Management', path: '/admin/floors' }),
+                } satisfies BreadcrumbHandle,
+              },
+              {
+                path: '/admin/permissions',
+                element: <PermissionMatrixPage />,
+                handle: {
+                  crumb: () => ({ label: 'Permissions Matrix', path: '/admin/permissions' }),
                 } satisfies BreadcrumbHandle,
               },
             ],

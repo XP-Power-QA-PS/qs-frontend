@@ -7,9 +7,10 @@ import {
   ChevronRight,
   FileSpreadsheet,
 } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Navigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { complaintService } from '@/services/complaint/complaintService';
+import { authService } from '@/services/auth';
 import type { ComplaintSummary } from '@/types/complaint/complaint.types';
 import { COMPLAINT_STAGE_META } from '@/types/complaint/complaint.types';
 import { ComplaintCreateModal } from './ComplaintCreateModal';
@@ -26,6 +27,12 @@ import {
 
 
 export const ComplaintListPage: React.FC = () => {
+  const userRoles = authService.getUserRoles();
+  const isOperatorOnly = userRoles.includes('ROLE_OPERATOR') && !userRoles.some((r) => r !== 'ROLE_OPERATOR');
+  if (isOperatorOnly) {
+    return <Navigate to="/dashboard" replace />;
+  }
+
   const navigate = useNavigate();
   const currentYear = new Date().getFullYear();
 

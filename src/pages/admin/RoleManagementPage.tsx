@@ -182,7 +182,6 @@ export const RoleManagementPage: React.FC = () => {
                       <span className="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-bold bg-blue-50 text-blue-700 border border-blue-100">
                         {role.name.replace('ROLE_', '')}
                       </span>
-                      <span className="text-xs text-gray-400 font-mono">#{role.id}</span>
                     </div>
                     <p className="text-xs sm:text-sm text-gray-600 line-clamp-3 mb-3">
                       {role.description || 'No description provided.'}
@@ -262,7 +261,6 @@ export const RoleManagementPage: React.FC = () => {
           <Table className="min-w-[600px]">
             <TableHeader>
               <TableRow>
-                <TableHead className="w-24">ID</TableHead>
                 <TableHead className="w-1/3">ROLE NAME</TableHead>
                 <TableHead>DESCRIPTION</TableHead>
                 <TableHead align="right">ACTIONS</TableHead>
@@ -270,11 +268,10 @@ export const RoleManagementPage: React.FC = () => {
             </TableHeader>
             <TableBody>
               {filteredRoles.length === 0 ? (
-                <TableEmptyRow colSpan={4} message="No roles found." />
+                <TableEmptyRow colSpan={3} message="No roles found." />
               ) : (
                 filteredRoles.map((role) => (
                   <TableRow key={role.id}>
-                    <TableCell className="font-medium text-text-secondary">#{role.id}</TableCell>
                     <TableCell>
                       <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-primary/10 text-primary border border-primary/20">
                         {role.name.replace('ROLE_', '')}
