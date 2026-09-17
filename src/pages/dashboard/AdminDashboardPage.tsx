@@ -321,7 +321,7 @@ export const AdminDashboardPage: React.FC = () => {
                               <div>
                                 <p className="font-semibold text-text-primary leading-tight">{user.username}</p>
                                 <p className="text-[11px] text-text-muted">
-                                  {[user.firstName, user.lastName].filter(Boolean).join(' ') || '—'}
+                                  {user.fullName || '—'}
                                 </p>
                               </div>
                             </div>
