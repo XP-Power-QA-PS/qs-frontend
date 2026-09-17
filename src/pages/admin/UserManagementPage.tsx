@@ -60,7 +60,7 @@ export const UserManagementPage: React.FC = () => {
   const [isAddOpen, setIsAddOpen] = useState(false);
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [editingUser, setEditingUser] = useState<User | null>(null);
-  const [form, setForm] = useState({ username: '', email: '', password: '', role: 'ROLE_OPERATOR', status: 'Active' });
+  const [form, setForm] = useState({ username: '', fullName: '', email: '', password: '', role: 'ROLE_OPERATOR', status: 'Active' });
 
   const loadUsers = async () => {
     setLoading(true);
@@ -96,13 +96,14 @@ export const UserManagementPage: React.FC = () => {
     try {
       await adminService.createUser({
         username: form.username.trim(),
+        fullName: form.fullName.trim() || undefined,
         email: form.email.trim() || undefined,
         password: form.password || undefined,
         roles: [form.role]
       });
       toast.success('Thêm tài khoản thành công');
       setIsAddOpen(false);
-      setForm({ username: '', email: '', password: '', role: 'ROLE_OPERATOR', status: 'Active' });
+      setForm({ username: '', fullName: '', email: '', password: '', role: 'ROLE_OPERATOR', status: 'Active' });
       loadUsers();
     } catch (error: any) {
       toast.error('Không thể thêm tài khoản: ' + (error.message || 'Unknown error'));
@@ -110,21 +111,19 @@ export const UserManagementPage: React.FC = () => {
   };
 
   const getInitial = (user: User) => {
-    if (user.firstName) return user.firstName.charAt(0).toUpperCase();
+    if (user.fullName) return user.fullName.charAt(0).toUpperCase();
     return user.username.charAt(0).toUpperCase();
   };
 
   const getName = (user: User) => {
-    if (user.firstName || user.lastName) {
-      return `${user.firstName || ''} ${user.lastName || ''}`.trim();
-    }
-    return user.username;
+    return user.fullName || user.username;
   };
 
   const openEdit = (user: User) => {
     setEditingUser(user);
     setForm({
       username: user.username,
+      fullName: user.fullName || '',
       email: user.email || '',
       password: '',
       role: user.roles && user.roles.length > 0 ? user.roles[0] : 'ROLE_OPERATOR',
@@ -144,6 +143,7 @@ export const UserManagementPage: React.FC = () => {
     try {
       await adminService.updateUser(editingUser.id, {
         username: form.username.trim(),
+        fullName: form.fullName.trim() || undefined,
         email: form.email.trim() || '',
         roles: [form.role],
         isEnabled: form.status === 'Active',
@@ -625,6 +625,16 @@ export const UserManagementPage: React.FC = () => {
                 />
               </div>
               <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Họ và tên (Full Name)</label>
+                <input
+                  type="text"
+                  placeholder="Ví dụ: Nguyễn Văn A"
+                  className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 bg-white"
+                  value={form.fullName}
+                  onChange={(e) => setForm({ ...form, fullName: e.target.value })}
+                />
+              </div>
+              <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Vai trò (Role) *</label>
                 <select
                   className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 bg-white"
@@ -699,6 +709,16 @@ export const UserManagementPage: React.FC = () => {
                   className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 bg-white"
                   value={form.username}
                   onChange={(e) => setForm({ ...form, username: e.target.value })}
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Họ và tên (Full Name)</label>
+                <input
+                  type="text"
+                  placeholder="Ví dụ: Nguyễn Văn A"
+                  className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 bg-white"
+                  value={form.fullName}
+                  onChange={(e) => setForm({ ...form, fullName: e.target.value })}
                 />
               </div>
               <div>
